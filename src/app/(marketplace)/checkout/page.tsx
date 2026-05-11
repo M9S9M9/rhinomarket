@@ -8,12 +8,6 @@ import { Button } from "@/components/ui/button";
 import { formatPrice } from "@/lib/utils";
 import toast from "react-hot-toast";
 
-declare global {
-  interface Window {
-    Stripe: any;
-  }
-}
-
 export default function CheckoutPage() {
   const searchParams = useSearchParams();
   const router = useRouter();
