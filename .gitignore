@@ -21,7 +21,7 @@ uploads/previews/*
 # Logs
 *.log
 *.err
-url*.txt
+*url*.txt
 
 # OS
 .DS_Store
