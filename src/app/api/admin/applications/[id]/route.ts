@@ -4,7 +4,7 @@ import { prisma } from "@/lib/db";
 
 export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const session = await auth();
-  if ((session?.user as any)?.role !== "ADMIN") {
+  if (!session || (session.user as any)?.role !== "ADMIN") {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
