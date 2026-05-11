@@ -1,13 +1,28 @@
+# Dependencies
 node_modules/
+
+# Next.js
 .next/
+
+# Environment
+.env
+.env.local
+
+# Database
 *.db
 *.db-journal
+
+# Uploads
 uploads/models/*
 uploads/previews/*
 !uploads/models/.gitkeep
 !uploads/previews/.gitkeep
-.env
-.env.local
-.tunnel*.log
-url*.txt
+
+# Logs
+*.log
 *.err
+url*.txt
+
+# OS
+.DS_Store
+Thumbs.db

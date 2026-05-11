@@ -1,5 +1,0 @@
-﻿ssh : Pseudo-terminal will not be allocated because stdin is not a terminal.
-    + CategoryInfo          : NotSpecified: (Pseudo-terminal...not a terminal.:String) [], RemoteException
-    + FullyQualifiedErrorId : NativeCommandError
- 
-[32mForwarding HTTP traffic from https://fba23dfc7217ae7f-79-127-160-208.serveousercontent.com
