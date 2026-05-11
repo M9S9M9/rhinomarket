@@ -1,0 +1,394 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  BUYER
+  DESIGNER
+  ADMIN
+}
+
+enum ListingStatus {
+  DRAFT
+  PENDING_REVIEW
+  APPROVED
+  REJECTED
+  ARCHIVED
+}
+
+enum LicenseType {
+  PERSONAL
+  COMMERCIAL
+  EXCLUSIVE
+}
+
+enum PaymentStatus {
+  PENDING
+  COMPLETED
+  REFUNDED
+  PARTIALLY_REFUNDED
+  FAILED
+}
+
+enum PayoutStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
+}
+
+enum WithdrawalStatus {
+  PENDING
+  APPROVED
+  PROCESSING
+  COMPLETED
+  REJECTED
+}
+
+enum DisputeStatus {
+  OPEN
+  UNDER_REVIEW
+  RESOLVED
+  DISMISSED
+}
+
+enum ReviewStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+model User {
+  id                String    @id @default(cuid())
+  email             String    @unique
+  emailVerified     DateTime?
+  passwordHash      String?
+  name              String?
+  username          String?   @unique
+  avatarUrl         String?
+  bio               String?
+  role              UserRole  @default(BUYER)
+  stripeAccountId   String?
+  stripeOnboarding  Boolean   @default(false)
+  isActive          Boolean   @default(true)
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  designerApplication DesignerApplication?
+  listings             Listing[]
+  sales                Transaction[]   @relation("DesignerSales")
+  purchases            Transaction[]   @relation("BuyerPurchases")
+  reviewsGiven         Review[]        @relation("Reviewer")
+  reviewsReceived      Review[]        @relation("Designer")
+  favorites            Favorite[]
+  payoutMethods        PayoutMethod[]
+  withdrawals          Withdrawal[]
+  disputes             Dispute[]       @relation("Disputant")
+  disputesAssigned     Dispute[]       @relation("Admin")
+
+  accounts  Account[]
+  sessions  Session[]
+  downloads Download[]
+  earnings  Earnings?
+
+  @@map("users")
+}
+
+model DesignerApplication {
+  id              String   @id @default(cuid())
+  userId          String   @unique
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  fullName        String
+  portfolioUrl    String?
+  experience      String
+  reason          String
+  status          String   @default("PENDING")
+  reviewedBy      String?
+  reviewNotes     String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@map("designer_applications")
+}
+
+model Listing {
+  id              String        @id @default(cuid())
+  designerId      String
+  designer        User          @relation(fields: [designerId], references: [id], onDelete: Cascade)
+  title           String
+  slug            String        @unique
+  description     String
+  tags            String        @default("[]")
+  categoryId      String?
+  category        Category?     @relation(fields: [categoryId], references: [id])
+  price           Float
+  licenseType     LicenseType   @default(PERSONAL)
+  status          ListingStatus @default(DRAFT)
+  fileUrl         String?
+  fileSize        Int?
+  fileHash        String?
+  previewUrls     String        @default("[]")
+  thumbnailUrl    String?
+  polyCount       Int?
+  fileFormat      String        @default(".3dm")
+  rhinocerosVersion String?
+  isFeatured      Boolean       @default(false)
+  viewCount       Int           @default(0)
+  downloadCount   Int           @default(0)
+  copyrightConfirmed Boolean    @default(false)
+  rejectionReason String?
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+  publishedAt     DateTime?
+
+  reviews         Review[]
+  transactions    Transaction[]
+  favorites       Favorite[]
+  downloads       Download[]
+  dmcaReports     DMCAReport[]
+
+  @@index([status])
+  @@index([categoryId])
+  @@index([designerId])
+  @@index([slug])
+  @@map("listings")
+}
+
+model Category {
+  id          String    @id @default(cuid())
+  name        String    @unique
+  slug        String    @unique
+  description String?
+  icon        String?
+  parentId    String?
+  parent      Category?  @relation("CategoryHierarchy", fields: [parentId], references: [id])
+  children    Category[] @relation("CategoryHierarchy")
+  listings    Listing[]
+  createdAt   DateTime   @default(now())
+
+  @@map("categories")
+}
+
+model Review {
+  id          String       @id @default(cuid())
+  listingId   String
+  listing     Listing      @relation(fields: [listingId], references: [id], onDelete: Cascade)
+  reviewerId  String
+  reviewer    User         @relation("Reviewer", fields: [reviewerId], references: [id], onDelete: Cascade)
+  designerId  String
+  designer    User         @relation("Designer", fields: [designerId], references: [id])
+  rating      Int
+  title       String?
+  content     String?
+  status      ReviewStatus @default(PENDING)
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  @@unique([listingId, reviewerId])
+  @@map("reviews")
+}
+
+model Transaction {
+  id              String        @id @default(cuid())
+  listingId       String
+  listing         Listing       @relation(fields: [listingId], references: [id])
+  buyerId         String
+  buyer           User          @relation("BuyerPurchases", fields: [buyerId], references: [id])
+  designerId      String
+  designer        User          @relation("DesignerSales", fields: [designerId], references: [id])
+  amount          Float
+  commission      Float
+  designerEarning Float
+  status          PaymentStatus @default(PENDING)
+  stripePaymentIntentId String?
+  stripeTransferId       String?
+  refundAmount    Float?
+  refundReason    String?
+  createdAt       DateTime      @default(now())
+  completedAt     DateTime?
+  refundedAt      DateTime?
+
+  downloads Download[]
+  disputes  Dispute[]
+
+  @@index([buyerId])
+  @@index([designerId])
+  @@index([listingId])
+  @@map("transactions")
+}
+
+model Download {
+  id            String      @id @default(cuid())
+  transactionId String
+  transaction   Transaction @relation(fields: [transactionId], references: [id], onDelete: Cascade)
+  userId        String
+  user          User        @relation(fields: [userId], references: [id])
+  listingId     String
+  listing       Listing     @relation(fields: [listingId], references: [id])
+  ipAddress     String?
+  userAgent     String?
+  downloadedAt  DateTime    @default(now())
+
+  @@map("downloads")
+}
+
+model Favorite {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  listingId String
+  listing   Listing  @relation(fields: [listingId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@unique([userId, listingId])
+  @@map("favorites")
+}
+
+model PayoutMethod {
+  id              String   @id @default(cuid())
+  userId          String
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type            String
+  accountHolderName String
+  accountNumber   String?
+  routingNumber   String?
+  bankName        String?
+  stripeAccountId String?
+  isDefault       Boolean  @default(false)
+  withdrawals     Withdrawal[]
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@map("payout_methods")
+}
+
+model Withdrawal {
+  id              String           @id @default(cuid())
+  userId          String
+  user            User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  amount          Float
+  fee             Float            @default(0)
+  netAmount       Float
+  status          WithdrawalStatus @default(PENDING)
+  payoutMethodId  String?
+  payoutMethod    PayoutMethod?    @relation(fields: [payoutMethodId], references: [id])
+  stripeTransferId String?
+  notes           String?
+  processedAt     DateTime?
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+
+  @@map("withdrawals")
+}
+
+model Earnings {
+  id          String   @id @default(cuid())
+  userId      String   @unique
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  totalEarned Float    @default(0)
+  totalPaidOut Float   @default(0)
+  pendingBalance Float @default(0)
+  availableBalance Float @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("earnings")
+}
+
+model Dispute {
+  id          String         @id @default(cuid())
+  transactionId String
+  transaction Transaction   @relation(fields: [transactionId], references: [id])
+  raisedById  String
+  raisedBy    User           @relation("Disputant", fields: [raisedById], references: [id])
+  againstUserId String?
+  assignedToId String?
+  assignedTo  User?          @relation("Admin", fields: [assignedToId], references: [id])
+  reason      String
+  description String
+  status      DisputeStatus  @default(OPEN)
+  resolution  String?
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+  resolvedAt  DateTime?
+
+  @@map("disputes")
+}
+
+model DMCAReport {
+  id              String   @id @default(cuid())
+  listingId       String?
+  listing         Listing? @relation(fields: [listingId], references: [id])
+  reporterName    String
+  reporterEmail   String
+  infringingUrl   String
+  originalWorkUrl String
+  description     String
+  status          String   @default("PENDING")
+  notes           String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@map("dmca_reports")
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+
+  @@unique([provider, providerAccountId])
+  @@map("accounts")
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expires      DateTime
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@map("sessions")
+}
+
+model EmailVerification {
+  id        String   @id @default(cuid())
+  email     String
+  token     String
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  @@index([email])
+  @@index([token])
+  @@map("email_verifications")
+}
+
+model PasswordReset {
+  id        String   @id @default(cuid())
+  email     String
+  token     String
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime @default(now())
+
+  @@index([email])
+  @@index([token])
+  @@map("password_resets")
+}

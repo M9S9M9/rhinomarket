@@ -1,0 +1,13 @@
+node_modules/
+.next/
+*.db
+*.db-journal
+uploads/models/*
+uploads/previews/*
+!uploads/models/.gitkeep
+!uploads/previews/.gitkeep
+.env
+.env.local
+.tunnel*.log
+url*.txt
+*.err
