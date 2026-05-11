@@ -95,8 +95,8 @@ model User {
   // Auth
   accounts  Account[]
   sessions  Session[]
-  verifications EmailVerification[]
-  passwordResets PasswordReset[]
+  downloads Download[]
+  earnings  Earnings?
 
   @@map("users")
 }
@@ -151,6 +151,8 @@ model Listing {
   reviews         Review[]
   transactions    Transaction[]
   favorites       Favorite[]
+  downloads       Download[]
+  dmcaReports     DMCAReport[]
 
   @@index([status])
   @@index([categoryId])
@@ -214,6 +216,7 @@ model Transaction {
   refundedAt      DateTime?
 
   downloads Download[]
+  disputes  Dispute[]
 
   @@index([buyerId])
   @@index([designerId])
@@ -259,6 +262,7 @@ model PayoutMethod {
   bankName        String?
   stripeAccountId String?
   isDefault       Boolean  @default(false)
+  withdrawals     Withdrawal[]
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
 
