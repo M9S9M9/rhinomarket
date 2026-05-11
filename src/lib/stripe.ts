@@ -123,3 +123,53 @@ export async function createPaymentIntent(
 
   return { paymentIntent, commission, designerEarning };
 }
+
+export async function createCheckoutSession(
+  amount: number,
+  designerStripeAccountId: string,
+  listingId: string,
+  buyerId: string,
+  designerId: string,
+  listingTitle: string
+) {
+  const { commission, designerEarning } = calculateCommission(amount);
+
+  if (isStripeDevMode) {
+    const pi = devCreatePaymentIntent(amount, designerStripeAccountId);
+    const url = `${process.env.NEXT_PUBLIC_APP_URL}/dashboard/purchases?payment_intent=${pi.id}`;
+    return { url, paymentIntentId: pi.id };
+  }
+
+  const session = await stripe.checkout.sessions.create({
+    mode: "payment",
+    line_items: [{
+      price_data: {
+        currency: "usd",
+        product_data: { name: listingTitle },
+        unit_amount: Math.round(amount * 100),
+      },
+      quantity: 1,
+    }],
+    payment_intent_data: {
+      application_fee_amount: Math.round(commission * 100),
+      transfer_data: { destination: designerStripeAccountId },
+      metadata: {
+        listingId, buyerId, designerId,
+        commission: commission.toString(),
+        designerEarning: designerEarning.toString(),
+      },
+    },
+    metadata: {
+      listingId, buyerId, designerId,
+      commission: commission.toString(),
+      designerEarning: designerEarning.toString(),
+    },
+    success_url: `${process.env.NEXT_PUBLIC_APP_URL}/dashboard/purchases?success=true`,
+    cancel_url: `${process.env.NEXT_PUBLIC_APP_URL}/checkout?listingId=${listingId}&canceled=true`,
+  });
+
+  const paymentIntentId = typeof session.payment_intent === "string"
+    ? session.payment_intent
+    : session.payment_intent?.id;
+  return { url: session.url!, paymentIntentId: paymentIntentId! };
+}

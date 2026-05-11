@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
-import { stripe, createPaymentIntent } from "@/lib/stripe";
+import { createCheckoutSession, calculateCommission } from "@/lib/stripe";
 
 export async function POST(req: Request) {
   const session = await auth();
@@ -30,15 +30,17 @@ export async function POST(req: Request) {
     }
 
     const amount = Number(listing.price);
-    const { paymentIntent, commission, designerEarning } = await createPaymentIntent(
+    const { url, paymentIntentId } = await createCheckoutSession(
       amount,
       listing.designer.stripeAccountId,
       listing.id,
       session.user.id,
-      listing.designerId
+      listing.designerId,
+      listing.title
     );
 
-    // Create pending transaction
+    const { commission, designerEarning } = calculateCommission(amount);
+
     await prisma.transaction.create({
       data: {
         listingId: listing.id,
@@ -48,16 +50,13 @@ export async function POST(req: Request) {
         commission,
         designerEarning,
         status: "PENDING",
-        stripePaymentIntentId: paymentIntent.id,
+        stripePaymentIntentId: paymentIntentId,
       },
     });
 
-    return NextResponse.json({
-      clientSecret: paymentIntent.client_secret,
-      paymentIntentId: paymentIntent.id,
-    });
+    return NextResponse.json({ url, paymentIntentId });
   } catch (error) {
-    console.error("Payment intent error:", error);
-    return NextResponse.json({ error: "Failed to create payment" }, { status: 500 });
+    console.error("Checkout session error:", error);
+    return NextResponse.json({ error: "Failed to create checkout session" }, { status: 500 });
   }
 }

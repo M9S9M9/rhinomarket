@@ -32,11 +32,6 @@ export default function CheckoutPage() {
     setLoading(true);
 
     try {
-      // Load Stripe.js
-      const stripeJs = await import("@stripe/stripe-js");
-      const stripe = await stripeJs.loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!);
-
-      // Get client secret from the payment intent
       const res = await fetch("/api/payments/create-payment-intent", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -46,24 +41,7 @@ export default function CheckoutPage() {
 
       if (!res.ok) { toast.error(data.error); setLoading(false); return; }
 
-      if (!stripe) { toast.error("Stripe failed to load"); setLoading(false); return; }
-
-      const { error } = await stripe.confirmCardPayment(data.clientSecret, {
-        payment_method: {
-          card: {
-            // In production, use Elements for card input
-            // For now, redirect to Stripe Checkout
-          },
-        },
-      });
-
-      if (error) {
-        toast.error(error.message || "Payment failed");
-        setLoading(false);
-      } else {
-        toast.success("Payment successful!");
-        router.push("/dashboard/purchases");
-      }
+      window.location.href = data.url;
     } catch {
       toast.error("Payment failed");
       setLoading(false);
