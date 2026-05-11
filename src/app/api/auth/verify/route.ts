@@ -8,7 +8,7 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: "Missing token" }, { status: 400 });
   }
 
-  const verification = await prisma.emailVerification.findUnique({
+  const verification = await prisma.emailVerification.findFirst({
     where: { token },
   });
 

@@ -26,7 +26,6 @@ export async function POST(req: NextRequest) {
     const validation = validateFile({
       name: file.name,
       size: file.size,
-      type: file.type,
     });
 
     if (!validation.valid) {

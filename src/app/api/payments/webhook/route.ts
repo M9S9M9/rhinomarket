@@ -22,20 +22,19 @@ export async function POST(req: NextRequest) {
   switch (event.type) {
     case "payment_intent.succeeded": {
       const paymentIntent = event.data.object;
-      await prisma.transaction.update({
-        where: { stripePaymentIntentId: paymentIntent.id },
-        data: {
-          status: "COMPLETED",
-          completedAt: new Date(),
-        },
-      });
-
-      // Update designer earnings
-      const transaction = await prisma.transaction.findUnique({
+      const transaction = await prisma.transaction.findFirst({
         where: { stripePaymentIntentId: paymentIntent.id },
       });
 
       if (transaction) {
+        await prisma.transaction.update({
+          where: { id: transaction.id },
+          data: {
+            status: "COMPLETED",
+            completedAt: new Date(),
+          },
+        });
+
         await prisma.earnings.upsert({
           where: { userId: transaction.designerId },
           create: {
@@ -55,10 +54,15 @@ export async function POST(req: NextRequest) {
 
     case "payment_intent.payment_failed": {
       const failedIntent = event.data.object;
-      await prisma.transaction.update({
+      const failedTx = await prisma.transaction.findFirst({
         where: { stripePaymentIntentId: failedIntent.id },
-        data: { status: "FAILED" },
       });
+      if (failedTx) {
+        await prisma.transaction.update({
+          where: { id: failedTx.id },
+          data: { status: "FAILED" },
+        });
+      }
       break;
     }
 

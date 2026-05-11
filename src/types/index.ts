@@ -1,28 +1,18 @@
-export type {
-  User,
-  Listing,
-  Category,
-  Review,
-  Transaction,
-  Favorite,
-  Download,
-  Earnings,
-  Withdrawal,
-  Dispute,
-  DesignerApplication,
-  PayoutMethod,
-  DMCAReport,
+import type {
+  User, Listing, Category, Review, Transaction, Favorite,
+  Download, Earnings, Withdrawal, Dispute, DesignerApplication,
+  PayoutMethod, DMCAReport,
+  UserRole, ListingStatus, LicenseType, PaymentStatus,
+  PayoutStatus, WithdrawalStatus, DisputeStatus,
 } from "@prisma/client";
 
 export type {
-  UserRole,
-  ListingStatus,
-  LicenseType,
-  PaymentStatus,
-  PayoutStatus,
-  WithdrawalStatus,
-  DisputeStatus,
-} from "@prisma/client";
+  User, Listing, Category, Review, Transaction, Favorite,
+  Download, Earnings, Withdrawal, Dispute, DesignerApplication,
+  PayoutMethod, DMCAReport,
+  UserRole, ListingStatus, LicenseType, PaymentStatus,
+  PayoutStatus, WithdrawalStatus, DisputeStatus,
+};
 
 export interface ListingWithRelations extends Listing {
   designer: Pick<User, "id" | "name" | "avatarUrl">;

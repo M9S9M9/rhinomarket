@@ -6,7 +6,7 @@ export async function POST(req: Request) {
   try {
     const { token, password } = await req.json();
 
-    const reset = await prisma.passwordReset.findUnique({ where: { token } });
+    const reset = await prisma.passwordReset.findFirst({ where: { token } });
 
     if (!reset) {
       return NextResponse.json({ error: "Invalid token" }, { status: 400 });
