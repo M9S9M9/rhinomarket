@@ -1,15 +1,39 @@
 "use client";
 
-import { Suspense } from "react";
+import { Suspense, useState } from "react";
 import { signIn } from "next-auth/react";
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 
 function LoginForm() {
+  const router = useRouter();
   const searchParams = useSearchParams();
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setLoading(true);
+    setError("");
+
+    const formData = new FormData(e.currentTarget);
+    const result = await signIn("credentials", {
+      email: formData.get("email") as string,
+      password: formData.get("password") as string,
+      redirect: false,
+    });
+
+    if (result?.error) {
+      setError("Invalid email or password");
+      setLoading(false);
+      return;
+    }
+
+    router.replace(searchParams.get("redirect") || "/dashboard");
+  };
 
   return (
     <div className="min-h-[80vh] flex items-center justify-center px-4 py-12">
@@ -25,17 +49,7 @@ function LoginForm() {
           </div>
         )}
 
-        <form
-          action={async (formData) => {
-            await signIn("credentials", {
-              email: formData.get("email"),
-              password: formData.get("password"),
-              redirect: true,
-              callbackUrl: searchParams.get("redirect") || "/dashboard",
-            });
-          }}
-          className="space-y-4"
-        >
+        <form onSubmit={handleSubmit} className="space-y-4">
           <Input
             id="email"
             name="email"
@@ -59,7 +73,8 @@ function LoginForm() {
               </Link>
             </div>
           </div>
-          <Button type="submit" className="w-full">
+          {error && <p className="text-sm text-red-600">{error}</p>}
+          <Button type="submit" loading={loading} className="w-full">
             Sign In
           </Button>
         </form>
