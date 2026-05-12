@@ -33,7 +33,6 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ tran
     return NextResponse.json({ error: "File not available" }, { status: 404 });
   }
 
-  // Log download
   await prisma.download.create({
     data: {
       transactionId: transaction.id,
@@ -44,15 +43,19 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ tran
     },
   });
 
-  // Increment download count
   await prisma.listing.update({
     where: { id: transaction.listingId },
     data: { downloadCount: { increment: 1 } },
   });
 
-  // Serve file
-  const filePath = path.join(process.cwd(), "uploads", transaction.listing.fileUrl!.replace("/uploads/", ""));
-  
+  const fileUrl = transaction.listing.fileUrl;
+
+  if (fileUrl.startsWith("http")) {
+    return NextResponse.redirect(fileUrl);
+  }
+
+  const filePath = path.join(process.cwd(), "uploads", fileUrl.replace("/uploads/", ""));
+
   if (!fs.existsSync(filePath)) {
     return NextResponse.json({ error: "File not found on server" }, { status: 404 });
   }

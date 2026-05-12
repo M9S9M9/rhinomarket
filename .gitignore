@@ -28,3 +28,4 @@ uploads/previews/*
 Thumbs.db
 
 .vercel
+.env*.local

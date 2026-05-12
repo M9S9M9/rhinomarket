@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
+import { prisma } from "@/lib/db";
 import { validateFile, saveModelFile, savePreviewImage } from "@/lib/upload";
 
 export async function POST(req: NextRequest) {
@@ -22,7 +23,6 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "No file provided" }, { status: 400 });
     }
 
-    // Validate file
     const validation = validateFile({
       name: file.name,
       size: file.size,
@@ -32,11 +32,9 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: validation.error }, { status: 400 });
     }
 
-    // Save model file
     const buffer = Buffer.from(await file.arrayBuffer());
     const { url, hash, size } = await saveModelFile(buffer, file.name);
 
-    // Save preview images
     const previewUrls: string[] = [];
     for (let i = 0; i < previews.length; i++) {
       const previewBuffer = Buffer.from(await previews[i].arrayBuffer());
@@ -56,5 +54,3 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Upload failed" }, { status: 500 });
   }
 }
-
-import { prisma } from "@/lib/db";
