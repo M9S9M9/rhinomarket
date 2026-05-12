@@ -1,38 +1,15 @@
 "use client";
 
-import { Suspense, useState } from "react";
+import { Suspense } from "react";
 import { signIn } from "next-auth/react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
-import toast from "react-hot-toast";
 
 function LoginForm() {
   const searchParams = useSearchParams();
-  const [loading, setLoading] = useState(false);
-  const [form, setForm] = useState({ email: "", password: "" });
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
-
-    const result = await signIn("credentials", {
-      email: form.email,
-      password: form.password,
-      redirect: false,
-    });
-
-    if (result?.error) {
-      toast.error("Invalid email or password");
-      setLoading(false);
-      return;
-    }
-
-    toast.success("Welcome back!");
-    window.location.href = searchParams.get("redirect") || "/dashboard";
-  };
 
   return (
     <div className="min-h-[80vh] flex items-center justify-center px-4 py-12">
@@ -48,24 +25,32 @@ function LoginForm() {
           </div>
         )}
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form
+          action={async (formData) => {
+            await signIn("credentials", {
+              email: formData.get("email"),
+              password: formData.get("password"),
+              redirect: true,
+              callbackUrl: searchParams.get("redirect") || "/dashboard",
+            });
+          }}
+          className="space-y-4"
+        >
           <Input
             id="email"
+            name="email"
             label="Email"
             type="email"
             placeholder="you@example.com"
-            value={form.email}
-            onChange={(e) => setForm({ ...form, email: e.target.value })}
             required
           />
           <div>
             <Input
               id="password"
+              name="password"
               label="Password"
               type="password"
               placeholder="Enter your password"
-              value={form.password}
-              onChange={(e) => setForm({ ...form, password: e.target.value })}
               required
             />
             <div className="text-right mt-1">
@@ -74,7 +59,7 @@ function LoginForm() {
               </Link>
             </div>
           </div>
-          <Button type="submit" loading={loading} className="w-full">
+          <Button type="submit" className="w-full">
             Sign In
           </Button>
         </form>
