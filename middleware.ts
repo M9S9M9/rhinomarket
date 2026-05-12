@@ -8,6 +8,8 @@ export function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
 
   const hasSession =
+    req.cookies.has("authjs.session-token") ||
+    req.cookies.has("__Secure-authjs.session-token") ||
     req.cookies.has("next-auth.session-token") ||
     req.cookies.has("__Secure-next-auth.session-token");
 
