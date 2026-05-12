@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { Suspense, useEffect, useState, useCallback } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { Search, SlidersHorizontal, X, FileText } from "lucide-react";
@@ -22,7 +22,7 @@ interface Category {
   _count: { listings: number };
 }
 
-export default function MarketplacePage() {
+function MarketplaceContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
 
@@ -285,5 +285,13 @@ export default function MarketplacePage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function MarketplacePage() {
+  return (
+    <Suspense fallback={<div className="min-h-[80vh] flex items-center justify-center"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600" /></div>}>
+      <MarketplaceContent />
+    </Suspense>
   );
 }
