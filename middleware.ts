@@ -28,7 +28,7 @@ export async function middleware(req: NextRequest) {
     return NextResponse.redirect(new URL("/dashboard", req.url));
   }
 
-  if (!isAuth && !publicPaths.some((p) => pathname.startsWith(p)) && !pathname.startsWith("/api") && !pathname.startsWith("/_next") && !pathname.startsWith("/uploads") && pathname !== "/favicon.ico" && pathname !== "/marketplace" && pathname !== "/categories" && pathname !== "/product" && !pathname.startsWith("/terms") && !pathname.startsWith("/privacy") && !pathname.startsWith("/dmca") && !pathname.startsWith("/designer-agreement")) {
+  if (!isAuth && !publicPaths.some((p) => pathname.startsWith(p)) && !pathname.startsWith("/api") && !pathname.startsWith("/_next") && !pathname.startsWith("/uploads") && pathname !== "/favicon.ico" && !pathname.startsWith("/marketplace") && !pathname.startsWith("/categories") && !pathname.startsWith("/product") && !pathname.startsWith("/terms") && !pathname.startsWith("/privacy") && !pathname.startsWith("/dmca") && !pathname.startsWith("/designer-agreement")) {
     const loginUrl = new URL("/auth/login", req.url);
     loginUrl.searchParams.set("redirect", pathname);
     return NextResponse.redirect(loginUrl);

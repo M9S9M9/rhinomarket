@@ -29,11 +29,12 @@ export default function AdminPage() {
     if (status === "unauthenticated") { router.push("/auth/login"); return; }
     if (status === "authenticated" && user?.role !== "ADMIN") { router.push("/dashboard"); return; }
     if (status === "authenticated") {
-      fetch("/api/admin/stats").then(r => r.json()).then(setStats).catch(() => {});
+      fetch("/api/admin/stats").then(r => r.json()).then(data => setStats(data)).catch(() => setStats(null));
     }
   }, [status, router, user?.role]);
 
-  if (status === "loading" || !stats) return <div className="p-8 text-center text-gray-500">Loading...</div>;
+  if (status === "loading") return <div className="p-8 text-center text-gray-500">Loading...</div>;
+  if (!stats) return <div className="p-8 text-center text-gray-500">Failed to load admin stats.</div>;
   if (!session || user?.role !== "ADMIN") return null;
 
   return (

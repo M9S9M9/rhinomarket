@@ -2,7 +2,7 @@
 
 import { Suspense, useState } from "react";
 import { signIn } from "next-auth/react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -10,7 +10,6 @@ import { Card } from "@/components/ui/card";
 import toast from "react-hot-toast";
 
 function LoginForm() {
-  const router = useRouter();
   const searchParams = useSearchParams();
   const [loading, setLoading] = useState(false);
   const [form, setForm] = useState({ email: "", password: "" });
@@ -32,7 +31,7 @@ function LoginForm() {
     }
 
     toast.success("Welcome back!");
-    setTimeout(() => router.push(searchParams.get("redirect") || "/dashboard"), 100);
+    window.location.href = searchParams.get("redirect") || "/dashboard";
   };
 
   return (
