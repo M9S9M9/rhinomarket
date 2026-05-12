@@ -32,8 +32,7 @@ function LoginForm() {
     }
 
     toast.success("Welcome back!");
-    router.push(searchParams.get("redirect") || "/dashboard");
-    router.refresh();
+    setTimeout(() => router.push(searchParams.get("redirect") || "/dashboard"), 100);
   };
 
   return (
