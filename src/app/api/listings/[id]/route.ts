@@ -20,7 +20,9 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
     },
   });
 
-  if (!listing || (listing.status !== "APPROVED" && listing.designerId !== (await auth())?.user?.id)) {
+  const session = await auth();
+  const isAdmin = (session?.user as any)?.role === "ADMIN";
+  if (!listing || (listing.status !== "APPROVED" && listing.designerId !== session?.user?.id && !isAdmin)) {
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
 

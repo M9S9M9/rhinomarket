@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -77,7 +78,7 @@ export default function AdminListingsPage() {
             <CardContent className="p-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="font-medium text-gray-900">{listing.title}</p>
+                  <Link href={`/admin/listings/${listing.id}`} className="font-medium text-gray-900 hover:text-indigo-600">{listing.title}</Link>
                   <p className="text-sm text-gray-500">
                     by {listing.designer.name} · {formatPrice(listing.price)}
                     {listing.category && ` · ${listing.category.name}`}
