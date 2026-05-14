@@ -47,10 +47,17 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     }),
   ],
   callbacks: {
-    async jwt({ token, user }) {
+    async jwt({ token, user, trigger, session: triggerSession }) {
       if (user) {
         token.role = (user as any).role;
         token.id = user.id;
+      }
+      if (trigger === "update" && triggerSession) {
+        token.stripeOnboarding = (triggerSession as any).stripeOnboarding;
+      }
+      if (!token.stripeOnboarding && token.id) {
+        const dbUser = await prisma.user.findUnique({ where: { id: token.id as string }, select: { stripeOnboarding: true } });
+        token.stripeOnboarding = dbUser?.stripeOnboarding ?? false;
       }
       return token;
     },
@@ -58,6 +65,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       if (session.user) {
         (session.user as any).role = token.role;
         (session.user as any).id = token.id;
+        (session.user as any).stripeOnboarding = token.stripeOnboarding;
       }
       return session;
     },

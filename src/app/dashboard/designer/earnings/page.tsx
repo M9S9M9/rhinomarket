@@ -8,7 +8,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { formatPrice, formatDate } from "@/lib/utils";
-import { DollarSign, ArrowRight, CreditCard } from "lucide-react";
+import { DollarSign, ArrowRight, CreditCard, CheckCircle, XCircle } from "lucide-react";
 import toast from "react-hot-toast";
 
 interface Transaction {
@@ -18,11 +18,24 @@ interface Transaction {
   buyer: { name: string };
 }
 
+interface Stats {
+  stripeOnboarding: boolean;
+  totalListings: number;
+  activeListings: number;
+  totalSales: number;
+  totalRevenue: number;
+  pendingBalance: number;
+  availableBalance: number;
+  totalViews: number;
+  totalDownloads: number;
+  averageRating: number;
+}
+
 export default function EarningsPage() {
   const { data: session, status } = useSession();
   const router = useRouter();
   const [transactions, setTransactions] = useState<Transaction[]>([]);
-  const [stats, setStats] = useState<any>(null);
+  const [stats, setStats] = useState<Stats | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -73,15 +86,27 @@ export default function EarningsPage() {
       <Card className="mb-8">
         <CardContent className="p-6 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <CreditCard className="h-6 w-6 text-indigo-600" />
+            {stats?.stripeOnboarding ? (
+              <CheckCircle className="h-6 w-6 text-emerald-500" />
+            ) : (
+              <CreditCard className="h-6 w-6 text-indigo-600" />
+            )}
             <div>
               <p className="font-medium text-gray-900">Stripe Connect</p>
-              <p className="text-sm text-gray-500">Connect your Stripe account to receive payouts</p>
+              <p className="text-sm text-gray-500">
+                {stats?.stripeOnboarding
+                  ? "Your Stripe account is connected and ready to receive payouts"
+                  : "Connect your Stripe account to receive payouts"}
+              </p>
             </div>
           </div>
-          <Button onClick={handleStripeConnect}>
-            Connect Stripe <ArrowRight className="ml-2 h-4 w-4" />
-          </Button>
+          {stats?.stripeOnboarding ? (
+            <Badge variant="success" className="px-3 py-1">Connected</Badge>
+          ) : (
+            <Button onClick={handleStripeConnect}>
+              Connect Stripe <ArrowRight className="ml-2 h-4 w-4" />
+            </Button>
+          )}
         </CardContent>
       </Card>
 

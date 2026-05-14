@@ -10,6 +10,11 @@ export async function GET() {
 
   const userId = session.user.id;
 
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { stripeOnboarding: true },
+  });
+
   const [
     totalListings,
     activeListings,
@@ -44,6 +49,7 @@ export async function GET() {
   const totalRevenue = transactions.reduce((sum, t) => sum + Number(t.designerEarning), 0);
 
   return NextResponse.json({
+    stripeOnboarding: user?.stripeOnboarding || false,
     totalListings,
     activeListings,
     totalSales,
