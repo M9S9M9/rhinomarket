@@ -106,7 +106,8 @@ export default function ProductDetailPage() {
         setShowReport(false);
         setReportDesc("");
       } else {
-        toast.error("Failed to submit report");
+        const data = await res.json();
+        toast.error(data.error || "Failed to submit report");
       }
     } catch { toast.error("Failed to submit report"); }
   };
