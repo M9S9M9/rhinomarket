@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { validateFile, saveModelFile, savePreviewImage } from "@/lib/upload";
+import { extractMetadata } from "@/lib/metadata";
 
 export async function POST(req: NextRequest) {
   const session = await auth();
@@ -33,6 +34,15 @@ export async function POST(req: NextRequest) {
     }
 
     const buffer = Buffer.from(await file.arrayBuffer());
+
+    // Check for embedded buyer metadata (forensic watermark from a prior download)
+    const metadata = extractMetadata(buffer);
+    if (metadata) {
+      return NextResponse.json({
+        error: `This file was originally downloaded by ${metadata.buyerName} (${metadata.buyerEmail}). Re-uploading purchased files is a violation of our terms. If you believe this is a mistake, contact support.`,
+      }, { status: 409 });
+    }
+
     const { url, hash, size } = await saveModelFile(buffer, file.name);
 
     const existing = await prisma.listing.findFirst({

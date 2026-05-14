@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
+import { embedMetadata } from "@/lib/metadata";
 import fs from "fs";
 import path from "path";
 
@@ -33,15 +34,18 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ tran
     return NextResponse.json({ error: "File not available" }, { status: 404 });
   }
 
-  await prisma.download.create({
-    data: {
-      transactionId: transaction.id,
-      userId: session.user.id,
-      listingId: transaction.listingId,
-      ipAddress: req.headers.get("x-forwarded-for") || req.headers.get("x-real-ip") || undefined,
-      userAgent: req.headers.get("user-agent") || undefined,
-    },
-  });
+  const [buyer, designer] = await Promise.all([
+    prisma.user.findUnique({ where: { id: transaction.buyerId }, select: { name: true, email: true } }),
+    prisma.download.create({
+      data: {
+        transactionId: transaction.id,
+        userId: session.user.id,
+        listingId: transaction.listingId,
+        ipAddress: req.headers.get("x-forwarded-for") || req.headers.get("x-real-ip") || undefined,
+        userAgent: req.headers.get("user-agent") || undefined,
+      },
+    }),
+  ]);
 
   await prisma.listing.update({
     where: { id: transaction.listingId },
@@ -50,24 +54,35 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ tran
 
   const fileUrl = transaction.listing.fileUrl;
 
+  let fileBuffer: Buffer;
+
   if (fileUrl.startsWith("http")) {
-    return NextResponse.redirect(fileUrl);
+    const resp = await fetch(fileUrl);
+    fileBuffer = Buffer.from(await resp.arrayBuffer());
+  } else {
+    const filePath = path.join(process.cwd(), "uploads", fileUrl.replace("/uploads/", ""));
+    if (!fs.existsSync(filePath)) {
+      return NextResponse.json({ error: "File not found on server" }, { status: 404 });
+    }
+    fileBuffer = fs.readFileSync(filePath) as Buffer;
   }
 
-  const filePath = path.join(process.cwd(), "uploads", fileUrl.replace("/uploads/", ""));
+  // Embed buyer metadata into the file for forensic tracing
+  const taggedBuffer = embedMetadata(fileBuffer, {
+    buyerName: buyer?.name || "Unknown",
+    buyerEmail: buyer?.email || "Unknown",
+    transactionId: transaction.id,
+    listingId: transaction.listingId,
+    downloadedAt: new Date().toISOString(),
+  });
 
-  if (!fs.existsSync(filePath)) {
-    return NextResponse.json({ error: "File not found on server" }, { status: 404 });
-  }
-
-  const fileBuffer = fs.readFileSync(filePath);
   const fileName = `${transaction.listing.slug}.3dm`;
 
-  return new NextResponse(fileBuffer, {
+  return new NextResponse(taggedBuffer as any, {
     headers: {
       "Content-Type": "application/octet-stream",
       "Content-Disposition": `attachment; filename="${fileName}"`,
-      "Content-Length": fileBuffer.length.toString(),
+      "Content-Length": taggedBuffer.length.toString(),
     },
   });
 }
