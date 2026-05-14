@@ -75,7 +75,10 @@ export default function ProductDetailPage() {
       });
       const data = await res.json();
       if (!res.ok) { toast.error(data.error); return; }
-      // Redirect to checkout page
+      if (data.free) {
+        router.push("/dashboard/purchases");
+        return;
+      }
       router.push(`/checkout?paymentIntentId=${data.paymentIntentId}&listingId=${listing!.id}`);
     } catch { toast.error("Purchase failed"); }
   };

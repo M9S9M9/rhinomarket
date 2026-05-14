@@ -25,6 +25,30 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Cannot purchase your own listing" }, { status: 400 });
     }
 
+    const amount = Number(listing.price);
+
+    if (amount === 0) {
+      const { commission, designerEarning } = calculateCommission(amount);
+      await prisma.transaction.create({
+        data: {
+          listingId: listing.id,
+          buyerId: session.user.id,
+          designerId: listing.designerId,
+          amount,
+          commission,
+          designerEarning,
+          status: "COMPLETED",
+          completedAt: new Date(),
+        },
+      });
+      await prisma.earnings.upsert({
+        where: { userId: listing.designerId },
+        create: { userId: listing.designerId, totalEarned: 0, pendingBalance: 0, availableBalance: 0 },
+        update: {},
+      });
+      return NextResponse.json({ free: true });
+    }
+
     if (!listing.designer.stripeAccountId || !listing.designer.stripeOnboarding) {
       return NextResponse.json({ error: "Designer is not set up to receive payments" }, { status: 400 });
     }
@@ -33,7 +57,6 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Designer needs to reconnect Stripe" }, { status: 400 });
     }
 
-    const amount = Number(listing.price);
     const { url, paymentIntentId } = await createCheckoutSession(
       amount,
       listing.designer.stripeAccountId,
