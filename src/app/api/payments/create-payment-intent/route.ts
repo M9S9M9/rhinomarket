@@ -29,6 +29,10 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Designer is not set up to receive payments" }, { status: 400 });
     }
 
+    if (listing.designer.stripeAccountId.startsWith("acct_dev_")) {
+      return NextResponse.json({ error: "Designer needs to reconnect Stripe" }, { status: 400 });
+    }
+
     const amount = Number(listing.price);
     const { url, paymentIntentId } = await createCheckoutSession(
       amount,

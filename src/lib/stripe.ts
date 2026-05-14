@@ -74,7 +74,7 @@ export async function createStripeAccount(userId: string, email: string) {
 
   await prisma.user.update({
     where: { id: userId },
-    data: { stripeAccountId: account.id },
+    data: { stripeAccountId: account.id, stripeOnboarding: false },
   });
 
   return account;
