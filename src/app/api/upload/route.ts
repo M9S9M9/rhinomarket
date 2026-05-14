@@ -35,6 +35,16 @@ export async function POST(req: NextRequest) {
     const buffer = Buffer.from(await file.arrayBuffer());
     const { url, hash, size } = await saveModelFile(buffer, file.name);
 
+    const existing = await prisma.listing.findFirst({
+      where: { fileHash: hash, designerId: { not: session.user.id } },
+      include: { designer: { select: { name: true } } },
+    });
+    if (existing) {
+      return NextResponse.json({
+        error: `This file appears to already exist in another listing by ${existing.designer.name}. If you believe this is a mistake, contact support.`,
+      }, { status: 409 });
+    }
+
     const previewUrls: string[] = [];
     for (let i = 0; i < previews.length; i++) {
       const previewBuffer = Buffer.from(await previews[i].arrayBuffer());
