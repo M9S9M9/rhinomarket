@@ -65,7 +65,10 @@ export async function createStripeAccount(userId: string, email: string) {
     type: "express",
     country: "US",
     email,
-    capabilities: { transfers: { requested: true } },
+    capabilities: {
+      card_payments: { requested: true },
+      transfers: { requested: true },
+    },
     metadata: { userId },
   });
 
