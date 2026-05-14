@@ -17,6 +17,11 @@ export async function POST() {
   try {
     let accountId = user.stripeAccountId;
 
+    // If existing account ID looks like a dev mock, clear it and create fresh
+    if (accountId?.startsWith("acct_dev_")) {
+      accountId = null;
+    }
+
     if (!accountId) {
       const account = await createStripeAccount(user.id, user.email);
       accountId = account.id;
@@ -27,6 +32,13 @@ export async function POST() {
     return NextResponse.json({ url: accountLink.url });
   } catch (error) {
     console.error("Stripe Connect error:", error);
+    // If account link creation fails, the stored account ID may be stale
+    if (user.stripeAccountId) {
+      await prisma.user.update({
+        where: { id: user.id },
+        data: { stripeAccountId: null, stripeOnboarding: false },
+      });
+    }
     return NextResponse.json({ error: "Failed to create Stripe account" }, { status: 500 });
   }
 }
