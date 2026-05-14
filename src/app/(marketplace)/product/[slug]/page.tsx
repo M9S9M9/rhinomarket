@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { useSession } from "next-auth/react";
-import { Heart, Download, Eye, FileText, ChevronLeft, Shield, Star } from "lucide-react";
+import { Heart, Download, Eye, FileText, ChevronLeft, Shield, Star, Flag } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
@@ -34,6 +34,8 @@ export default function ProductDetailPage() {
   const [purchased, setPurchased] = useState(false);
   const [favorited, setFavorited] = useState(false);
   const [selectedImage, setSelectedImage] = useState(0);
+  const [showReport, setShowReport] = useState(false);
+  const [reportDesc, setReportDesc] = useState("");
 
   useEffect(() => {
     fetch(`/api/listings/by-slug?slug=${slug}`)
@@ -81,6 +83,32 @@ export default function ProductDetailPage() {
       }
       router.push(`/checkout?paymentIntentId=${data.paymentIntentId}&listingId=${listing!.id}`);
     } catch { toast.error("Purchase failed"); }
+  };
+
+  const handleReport = async () => {
+    if (!session) { router.push("/auth/login"); return; }
+    if (!reportDesc.trim()) { toast.error("Please describe the issue"); return; }
+    try {
+      const res = await fetch("/api/dmca", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          listingId: listing!.id,
+          infringingUrl: window.location.href,
+          reporterName: ((session?.user as any)?.name) || "Anonymous",
+          reporterEmail: session?.user?.email || "",
+          description: reportDesc,
+          originalWorkUrl: "",
+        }),
+      });
+      if (res.ok) {
+        toast.success("Report submitted. We'll review it shortly.");
+        setShowReport(false);
+        setReportDesc("");
+      } else {
+        toast.error("Failed to submit report");
+      }
+    } catch { toast.error("Failed to submit report"); }
   };
 
   if (loading) return (
@@ -168,9 +196,16 @@ export default function ProductDetailPage() {
                 </div>
               </div>
             </div>
-            <button onClick={toggleFavorite} className={`p-2 rounded-lg border transition-colors ${favorited ? 'bg-red-50 border-red-200 text-red-500' : 'border-gray-200 text-gray-400 hover:text-red-500'}`}>
-              <Heart className={`h-5 w-5 ${favorited ? 'fill-current' : ''}`} />
-            </button>
+            <div className="flex items-center gap-2">
+              {session && user?.id !== listing.designer.id && (
+                <button onClick={() => setShowReport(true)} className="p-2 rounded-lg border border-gray-200 text-gray-400 hover:text-red-500 hover:border-red-200 transition-colors" title="Report this model">
+                  <Flag className="h-5 w-5" />
+                </button>
+              )}
+              <button onClick={toggleFavorite} className={`p-2 rounded-lg border transition-colors ${favorited ? 'bg-red-50 border-red-200 text-red-500' : 'border-gray-200 text-gray-400 hover:text-red-500'}`}>
+                <Heart className={`h-5 w-5 ${favorited ? 'fill-current' : ''}`} />
+              </button>
+            </div>
           </div>
 
           <div className="mt-6">
@@ -268,6 +303,27 @@ export default function ProductDetailPage() {
           </div>
         )}
       </div>
+
+      {/* Report Modal */}
+      {showReport && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50" onClick={() => setShowReport(false)}>
+          <div className="bg-white rounded-2xl p-6 max-w-md w-full mx-4 shadow-xl" onClick={e => e.stopPropagation()}>
+            <h2 className="text-lg font-bold text-gray-900 mb-2">Report this Model</h2>
+            <p className="text-sm text-gray-500 mb-4">Let us know why this model violates our policies.</p>
+            <textarea
+              value={reportDesc}
+              onChange={e => setReportDesc(e.target.value)}
+              placeholder="Describe the issue (e.g., copyright infringement, inappropriate content)..."
+              rows={4}
+              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 resize-none"
+            />
+            <div className="flex gap-3 mt-4">
+              <Button variant="outline" className="flex-1" onClick={() => { setShowReport(false); setReportDesc(""); }}>Cancel</Button>
+              <Button className="flex-1" onClick={handleReport} disabled={!reportDesc.trim()}>Submit Report</Button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
