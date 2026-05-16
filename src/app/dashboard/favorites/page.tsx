@@ -67,7 +67,7 @@ export default function FavoritesPage() {
                   <h3 className="font-semibold text-gray-900 truncate">{fav.listing.title}</h3>
                   <p className="text-sm text-gray-500">by {fav.listing.designer.name}</p>
                   <div className="flex items-center justify-between mt-2">
-                    <span className="font-bold text-indigo-600">{formatPrice(fav.listing.price)}</span>
+                    <span className="font-bold text-gray-600">{formatPrice(fav.listing.price)}</span>
                   </div>
                 </div>
               </Card>

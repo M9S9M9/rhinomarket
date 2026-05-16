@@ -124,7 +124,7 @@ export default function AdminListingDetailPage() {
             <Card>
               <CardContent className="p-4 flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <Download className="h-5 w-5 text-indigo-600" />
+                  <Download className="h-5 w-5 text-gray-600" />
                   <div>
                     <p className="font-medium text-gray-900">Model File</p>
                     <p className="text-sm text-gray-500">
@@ -154,7 +154,7 @@ export default function AdminListingDetailPage() {
                         value={rejectReason}
                         onChange={e => setRejectReason(e.target.value)}
                         placeholder="Rejection reason..."
-                        className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none"
+                        className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-gray-500 focus:outline-none"
                       />
                       <div className="flex gap-2">
                         <Button size="sm" variant="danger" onClick={() => handleAction("REJECTED")} disabled={!rejectReason.trim()}>Confirm Reject</Button>
@@ -191,8 +191,8 @@ export default function AdminListingDetailPage() {
           <Card><CardContent className="p-4">
             <h2 className="font-semibold text-gray-900 mb-2">Designer</h2>
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-indigo-100 flex items-center justify-center">
-                <span className="text-sm font-medium text-indigo-600">{listing.designer.name?.charAt(0)}</span>
+              <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center">
+                <span className="text-sm font-medium text-gray-600">{listing.designer.name?.charAt(0)}</span>
               </div>
               <div>
                 <p className="font-medium text-sm text-gray-900">{listing.designer.name}</p>

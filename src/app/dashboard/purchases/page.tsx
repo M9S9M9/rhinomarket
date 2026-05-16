@@ -83,7 +83,7 @@ export default function PurchasesPage() {
                     )}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <Link href={`/product/${purchase.listing.slug}`} className="font-semibold text-gray-900 hover:text-indigo-600 truncate block">
+                    <Link href={`/product/${purchase.listing.slug}`} className="font-semibold text-gray-900 hover:text-gray-600 truncate block">
                       {purchase.listing.title}
                     </Link>
                     <div className="flex items-center gap-3 mt-1 text-sm text-gray-500">

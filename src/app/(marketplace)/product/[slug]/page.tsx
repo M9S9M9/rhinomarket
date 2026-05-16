@@ -150,7 +150,7 @@ export default function ProductDetailPage() {
     <div className="max-w-7xl mx-auto px-4 py-16 text-center">
       <FileText className="h-16 w-16 text-gray-300 mx-auto mb-4" />
       <h2 className="text-xl font-semibold text-gray-900">Model not found</h2>
-      <Link href="/marketplace" className="text-indigo-600 hover:text-indigo-700 mt-2 inline-block">Back to marketplace</Link>
+      <Link href="/marketplace" className="text-gray-600 hover:text-gray-700 mt-2 inline-block">Back to marketplace</Link>
     </div>
   );
 
@@ -191,7 +191,7 @@ export default function ProductDetailPage() {
                 <button
                   key={i}
                   onClick={() => setSelectedImage(i)}
-                  className={`w-20 h-16 rounded-lg overflow-hidden border-2 flex-shrink-0 ${selectedImage === i ? 'border-indigo-600' : 'border-transparent'}`}
+                  className={`w-20 h-16 rounded-lg overflow-hidden border-2 flex-shrink-0 ${selectedImage === i ? 'border-gray-600' : 'border-transparent'}`}
                 >
                   <img src={url} alt="" className="w-full h-full object-cover" />
                 </button>
@@ -207,8 +207,8 @@ export default function ProductDetailPage() {
               <h1 className="text-2xl md:text-3xl font-bold text-gray-900">{listing.title}</h1>
               <div className="flex items-center gap-4 mt-2">
                 <Link href={`/designer/${listing.designer.id}`} className="flex items-center gap-2 text-sm text-gray-500 hover:text-gray-700">
-                  <div className="w-6 h-6 rounded-full bg-indigo-100 flex items-center justify-center">
-                    <span className="text-xs font-medium text-indigo-600">{listing.designer.name?.charAt(0)}</span>
+                  <div className="w-6 h-6 rounded-full bg-gray-100 flex items-center justify-center">
+                    <span className="text-xs font-medium text-gray-600">{listing.designer.name?.charAt(0)}</span>
                   </div>
                   {listing.designer.name}
                 </Link>
@@ -231,7 +231,7 @@ export default function ProductDetailPage() {
           </div>
 
           <div className="mt-6">
-            <div className="text-3xl font-bold text-indigo-600">{formatPrice(listing.price)}</div>
+            <div className="text-3xl font-bold text-gray-600">{formatPrice(listing.price)}</div>
             <div className="flex items-center gap-2 mt-2">
               <Badge variant={listing.licenseType === "EXCLUSIVE" ? "warning" : listing.licenseType === "COMMERCIAL" ? "info" : "default"}>
                 {listing.licenseType} License
@@ -313,8 +313,8 @@ export default function ProductDetailPage() {
               <Card key={review.id}>
                 <CardContent className="py-4">
                   <div className="flex items-start gap-3">
-                    <div className="w-8 h-8 rounded-full bg-indigo-100 flex items-center justify-center flex-shrink-0">
-                      <span className="text-xs font-medium text-indigo-600">{review.reviewer.name?.charAt(0)}</span>
+                    <div className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center flex-shrink-0">
+                      <span className="text-xs font-medium text-gray-600">{review.reviewer.name?.charAt(0)}</span>
                     </div>
                     <div className="flex-1">
                       <div className="flex items-center gap-3">
@@ -353,7 +353,7 @@ export default function ProductDetailPage() {
                 <input
                   type="text" placeholder="Review title (optional)" value={reviewForm.title}
                   onChange={e => setReviewForm({...reviewForm, title: e.target.value})}
-                  className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none"
+                  className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-gray-500 focus:outline-none"
                 />
               </div>
               <div>
@@ -361,7 +361,7 @@ export default function ProductDetailPage() {
                   placeholder="Share your thoughts about this model..." value={reviewForm.content}
                   onChange={e => setReviewForm({...reviewForm, content: e.target.value})}
                   rows={4}
-                  className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none resize-none"
+                  className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-gray-500 focus:outline-none resize-none"
                 />
               </div>
             </div>
@@ -384,7 +384,7 @@ export default function ProductDetailPage() {
               onChange={e => setReportDesc(e.target.value)}
               placeholder="Describe the issue (e.g., copyright infringement, inappropriate content)..."
               rows={4}
-              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 resize-none"
+              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-gray-500 focus:outline-none focus:ring-1 focus:ring-gray-500 resize-none"
             />
             <div className="flex gap-3 mt-4">
               <Button variant="outline" className="flex-1" onClick={() => { setShowReport(false); setReportDesc(""); }}>Cancel</Button>

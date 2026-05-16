@@ -7,11 +7,8 @@ export function Footer() {
         <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
           {/* Brand */}
           <div className="col-span-2 md:col-span-1">
-            <Link href="/" className="flex items-center gap-2 mb-4">
-              <div className="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center">
-                <span className="text-white font-bold text-sm">3</span>
-              </div>
-              <span className="font-bold text-xl text-white">3DM Store</span>
+            <Link href="/" className="flex items-center mb-4">
+              <img src="/logo.png" alt="3DM Store" className="h-10 w-auto brightness-0 invert" />
             </Link>
             <p className="text-sm leading-relaxed">
               The premier marketplace for Rhino 3D files. Buy and sell premium .3dm models with confidence.

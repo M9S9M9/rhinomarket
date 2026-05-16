@@ -141,10 +141,10 @@ export default function AdminUsersPage() {
           <div className="bg-white rounded-2xl p-6 max-w-md w-full mx-4 shadow-xl" onClick={e => e.stopPropagation()}>
             <h2 className="text-lg font-bold text-gray-900 mb-4">Add User</h2>
             <div className="space-y-3">
-              <input type="email" placeholder="Email" value={form.email} onChange={e => setForm({...form, email: e.target.value})} className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none" />
-              <input type="text" placeholder="Name (optional)" value={form.name} onChange={e => setForm({...form, name: e.target.value})} className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none" />
-              <input type="password" placeholder="Password" value={form.password} onChange={e => setForm({...form, password: e.target.value})} className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none" />
-              <select value={form.role} onChange={e => setForm({...form, role: e.target.value})} className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none">
+              <input type="email" placeholder="Email" value={form.email} onChange={e => setForm({...form, email: e.target.value})} className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-gray-500 focus:outline-none" />
+              <input type="text" placeholder="Name (optional)" value={form.name} onChange={e => setForm({...form, name: e.target.value})} className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-gray-500 focus:outline-none" />
+              <input type="password" placeholder="Password" value={form.password} onChange={e => setForm({...form, password: e.target.value})} className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-gray-500 focus:outline-none" />
+              <select value={form.role} onChange={e => setForm({...form, role: e.target.value})} className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-gray-500 focus:outline-none">
                 {roles.map(r => <option key={r} value={r}>{r}</option>)}
               </select>
             </div>
@@ -162,11 +162,11 @@ export default function AdminUsersPage() {
           <div className="bg-white rounded-2xl p-6 max-w-md w-full mx-4 shadow-xl" onClick={e => e.stopPropagation()}>
             <h2 className="text-lg font-bold text-gray-900 mb-4">Edit User</h2>
             <div className="space-y-3">
-              <input type="text" placeholder="Name" value={editForm.name} onChange={e => setEditForm({...editForm, name: e.target.value})} className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none" />
-              <select value={editForm.role} onChange={e => setEditForm({...editForm, role: e.target.value})} className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none">
+              <input type="text" placeholder="Name" value={editForm.name} onChange={e => setEditForm({...editForm, name: e.target.value})} className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-gray-500 focus:outline-none" />
+              <select value={editForm.role} onChange={e => setEditForm({...editForm, role: e.target.value})} className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-gray-500 focus:outline-none">
                 {roles.map(r => <option key={r} value={r}>{r}</option>)}
               </select>
-              <input type="password" placeholder="New password (leave blank to keep current)" value={editForm.password} onChange={e => setEditForm({...editForm, password: e.target.value})} className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none" />
+              <input type="password" placeholder="New password (leave blank to keep current)" value={editForm.password} onChange={e => setEditForm({...editForm, password: e.target.value})} className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-gray-500 focus:outline-none" />
             </div>
             <div className="flex gap-3 mt-4">
               <Button variant="outline" className="flex-1" onClick={() => setEditId(null)}>Cancel</Button>
@@ -201,7 +201,7 @@ export default function AdminUsersPage() {
                   <select
                     value={u.role}
                     onChange={e => handleChangeRole(u.id, e.target.value)}
-                    className="rounded border border-gray-200 px-2 py-1 text-xs focus:border-indigo-500 focus:outline-none"
+                    className="rounded border border-gray-200 px-2 py-1 text-xs focus:border-gray-500 focus:outline-none"
                   >
                     {roles.map(r => <option key={r} value={r}>{r}</option>)}
                   </select>
@@ -215,7 +215,7 @@ export default function AdminUsersPage() {
                 <td className="py-3 px-4 text-gray-500">{formatDate(u.createdAt)}</td>
                 <td className="py-3 px-4">
                   <div className="flex items-center gap-1">
-                    <button onClick={() => { setEditId(u.id); setEditForm({ name: u.name || "", role: u.role, password: "" }); }} className="p-1.5 rounded hover:bg-gray-100 text-gray-500 hover:text-indigo-600" title="Edit">
+                    <button onClick={() => { setEditId(u.id); setEditForm({ name: u.name || "", role: u.role, password: "" }); }} className="p-1.5 rounded hover:bg-gray-100 text-gray-500 hover:text-gray-600" title="Edit">
                       <Shield className="h-4 w-4" />
                     </button>
                     <button onClick={() => handleResetPassword(u.id)} className="p-1.5 rounded hover:bg-gray-100 text-gray-500 hover:text-amber-600" title="Reset password">

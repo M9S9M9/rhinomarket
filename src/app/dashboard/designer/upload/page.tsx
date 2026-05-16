@@ -108,10 +108,10 @@ export default function UploadPage() {
       {/* Steps */}
       <div className="flex items-center gap-4 mb-8">
         {["Upload File", "Details", "Review"].map((s, i) => (
-          <div key={s} className={`flex items-center gap-2 ${i + 1 <= step ? 'text-indigo-600' : 'text-gray-400'}`}>
-            <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${i + 1 <= step ? 'bg-indigo-100 text-indigo-600' : 'bg-gray-100'}`}>{i + 1}</div>
+          <div key={s} className={`flex items-center gap-2 ${i + 1 <= step ? 'text-gray-600' : 'text-gray-400'}`}>
+            <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${i + 1 <= step ? 'bg-gray-100 text-gray-600' : 'bg-gray-100'}`}>{i + 1}</div>
             <span className="text-sm font-medium hidden sm:block">{s}</span>
-            {i < 2 && <div className={`w-8 h-0.5 ${i + 1 < step ? 'bg-indigo-600' : 'bg-gray-200'}`} />}
+            {i < 2 && <div className={`w-8 h-0.5 ${i + 1 < step ? 'bg-gray-600' : 'bg-gray-200'}`} />}
           </div>
         ))}
       </div>
@@ -119,7 +119,7 @@ export default function UploadPage() {
       {step === 1 && (
         <Card>
           <CardContent className="p-8 space-y-6">
-            <div className="border-2 border-dashed border-gray-300 rounded-2xl p-8 text-center hover:border-indigo-400 transition-colors">
+            <div className="border-2 border-dashed border-gray-300 rounded-2xl p-8 text-center hover:border-gray-400 transition-colors">
               <input type="file" accept=".3dm" onChange={handleFileSelect} className="hidden" id="model-upload" />
               <label htmlFor="model-upload" className="cursor-pointer">
                 <Upload className="h-10 w-10 text-gray-400 mx-auto mb-4" />
@@ -167,7 +167,7 @@ export default function UploadPage() {
                 value={form.description}
                 onChange={e => setForm({...form, description: e.target.value})}
                 rows={4}
-                className="block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                className="block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-gray-500 focus:outline-none focus:ring-1 focus:ring-gray-500"
                 placeholder="Describe your model in detail..."
               />
             </div>
@@ -175,7 +175,7 @@ export default function UploadPage() {
               <Input id="price" label="Price (USD) *" type="number" step="0.01" min="0" value={form.price} onChange={e => setForm({...form, price: e.target.value})} placeholder="19.99" />
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">License Type</label>
-                <select value={form.licenseType} onChange={e => setForm({...form, licenseType: e.target.value})} className="block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500">
+                <select value={form.licenseType} onChange={e => setForm({...form, licenseType: e.target.value})} className="block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-gray-500 focus:outline-none focus:ring-1 focus:ring-gray-500">
                   <option value="PERSONAL">Personal License</option>
                   <option value="COMMERCIAL">Commercial License</option>
                   <option value="EXCLUSIVE">Exclusive License</option>
@@ -199,7 +199,7 @@ export default function UploadPage() {
                     Uploading copyrighted material without permission may result in account termination.
                   </p>
                   <label className="flex items-center gap-2 mt-3 cursor-pointer">
-                    <input type="checkbox" checked={form.copyrightConfirmed} onChange={e => setForm({...form, copyrightConfirmed: e.target.checked})} className="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500" />
+                    <input type="checkbox" checked={form.copyrightConfirmed} onChange={e => setForm({...form, copyrightConfirmed: e.target.checked})} className="rounded border-gray-300 text-gray-600 focus:ring-gray-500" />
                     <span className="text-sm text-amber-800 font-medium">I confirm I own the copyright to this model</span>
                   </label>
                 </div>

@@ -89,7 +89,7 @@ export default function EarningsPage() {
             {stats?.stripeOnboarding ? (
               <CheckCircle className="h-6 w-6 text-emerald-500" />
             ) : (
-              <CreditCard className="h-6 w-6 text-indigo-600" />
+              <CreditCard className="h-6 w-6 text-gray-600" />
             )}
             <div>
               <p className="font-medium text-gray-900">Stripe Connect</p>
@@ -121,7 +121,7 @@ export default function EarningsPage() {
               <CardContent className="p-4">
                 <div className="flex items-center justify-between">
                   <div>
-                    <Link href={`/product/${t.listing.slug}`} className="font-medium text-gray-900 hover:text-indigo-600">{t.listing.title}</Link>
+                    <Link href={`/product/${t.listing.slug}`} className="font-medium text-gray-900 hover:text-gray-600">{t.listing.title}</Link>
                     <div className="flex items-center gap-3 mt-1 text-sm text-gray-500">
                       <span>Buyer: {t.buyer.name}</span>
                       <Badge variant={t.status === "COMPLETED" ? "success" : "default"}>{t.status}</Badge>

@@ -65,7 +65,7 @@ export default function MyListingsPage() {
                     {listing.thumbnailUrl ? <img src={listing.thumbnailUrl} alt="" className="w-full h-full object-cover" /> : <div className="flex items-center justify-center h-full text-gray-400"><FileText className="h-6 w-6" /></div>}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <Link href={`/product/${listing.slug}`} className="font-semibold text-gray-900 hover:text-indigo-600 truncate block">{listing.title}</Link>
+                    <Link href={`/product/${listing.slug}`} className="font-semibold text-gray-900 hover:text-gray-600 truncate block">{listing.title}</Link>
                     <div className="flex items-center gap-3 mt-1 text-sm text-gray-500">
                       <span>{formatPrice(listing.price)}</span>
                       <Badge variant={listing.status === "APPROVED" ? "success" : listing.status === "PENDING_REVIEW" ? "warning" : listing.status === "DRAFT" ? "default" : "danger"}>{listing.status}</Badge>

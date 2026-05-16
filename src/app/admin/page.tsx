@@ -47,7 +47,7 @@ export default function AdminPage() {
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
         <Card><CardContent className="p-4">
           <div className="flex items-center gap-3">
-            <Users className="h-5 w-5 text-indigo-600" />
+            <Users className="h-5 w-5 text-gray-600" />
             <div><p className="text-xs text-gray-500">Total Users</p><p className="text-xl font-bold">{stats.totalUsers}</p></div>
           </div>
         </CardContent></Card>
@@ -77,7 +77,7 @@ export default function AdminPage() {
           <CardContent className="p-6">
             <div className="flex items-center justify-between mb-4">
               <h2 className="font-semibold text-gray-900">Designer Applications</h2>
-              <Link href="/admin/applications" className="text-sm text-indigo-600 hover:text-indigo-700">View All</Link>
+              <Link href="/admin/applications" className="text-sm text-gray-600 hover:text-gray-700">View All</Link>
             </div>
             {stats.pendingApplications.length === 0 ? (
               <p className="text-sm text-gray-500">No pending applications</p>
@@ -104,7 +104,7 @@ export default function AdminPage() {
           <CardContent className="p-6">
             <div className="flex items-center justify-between mb-4">
               <h2 className="font-semibold text-gray-900">Recent Transactions</h2>
-              <Link href="/admin/transactions" className="text-sm text-indigo-600 hover:text-indigo-700">View All</Link>
+              <Link href="/admin/transactions" className="text-sm text-gray-600 hover:text-gray-700">View All</Link>
             </div>
             {stats.recentTransactions.length === 0 ? (
               <p className="text-sm text-gray-500">No transactions yet</p>
@@ -131,13 +131,13 @@ export default function AdminPage() {
       {/* Admin Navigation */}
       <div className="grid md:grid-cols-3 gap-4 mt-8">
         <Link href="/admin/listings">
-          <Card hover className="p-6"><FileText className="h-6 w-6 text-indigo-600 mb-2" /><h3 className="font-semibold">Manage Listings</h3><p className="text-sm text-gray-500">Approve, reject, or manage models</p></Card>
+          <Card hover className="p-6"><FileText className="h-6 w-6 text-gray-600 mb-2" /><h3 className="font-semibold">Manage Listings</h3><p className="text-sm text-gray-500">Approve, reject, or manage models</p></Card>
         </Link>
         <Link href="/admin/users">
-          <Card hover className="p-6"><Users className="h-6 w-6 text-indigo-600 mb-2" /><h3 className="font-semibold">Manage Users</h3><p className="text-sm text-gray-500">View and manage platform users</p></Card>
+          <Card hover className="p-6"><Users className="h-6 w-6 text-gray-600 mb-2" /><h3 className="font-semibold">Manage Users</h3><p className="text-sm text-gray-500">View and manage platform users</p></Card>
         </Link>
         <Link href="/admin/dmca">
-          <Card hover className="p-6"><AlertTriangle className="h-6 w-6 text-indigo-600 mb-2" /><h3 className="font-semibold">DMCA Reports</h3><p className="text-sm text-gray-500">Review copyright and policy reports</p></Card>
+          <Card hover className="p-6"><AlertTriangle className="h-6 w-6 text-gray-600 mb-2" /><h3 className="font-semibold">DMCA Reports</h3><p className="text-sm text-gray-500">Review copyright and policy reports</p></Card>
         </Link>
       </div>
     </div>

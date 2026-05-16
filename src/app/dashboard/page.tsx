@@ -33,12 +33,12 @@ export default function DashboardPage() {
         {isDesigner && (
           <Link href="/dashboard/designer">
             <Card hover className="p-6">
-              <div className="w-10 h-10 bg-indigo-100 rounded-xl flex items-center justify-center mb-4">
-                <User className="h-5 w-5 text-indigo-600" />
+              <div className="w-10 h-10 bg-gray-100 rounded-xl flex items-center justify-center mb-4">
+                <User className="h-5 w-5 text-gray-600" />
               </div>
               <h3 className="font-semibold text-gray-900">Designer Studio</h3>
               <p className="text-sm text-gray-500 mt-1">Manage your listings, earnings, and analytics</p>
-              <span className="text-sm text-indigo-600 font-medium mt-3 inline-flex items-center">
+              <span className="text-sm text-gray-600 font-medium mt-3 inline-flex items-center">
                 Go to Studio <ArrowRight className="ml-1 h-4 w-4" />
               </span>
             </Card>

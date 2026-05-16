@@ -67,7 +67,7 @@ export default function AdminListingsPage() {
       <div className="flex gap-2 mb-6">
         {["ALL", "PENDING_REVIEW", "APPROVED", "REJECTED", "DRAFT", "ARCHIVED"].map(f => (
           <button key={f} onClick={() => setFilter(f)}
-            className={`px-3 py-1.5 rounded-lg text-sm ${filter === f ? 'bg-indigo-100 text-indigo-700 font-medium' : 'text-gray-600 hover:bg-gray-100'}`}
+            className={`px-3 py-1.5 rounded-lg text-sm ${filter === f ? 'bg-gray-100 text-gray-700 font-medium' : 'text-gray-600 hover:bg-gray-100'}`}
           >{f.replace("_", " ")}</button>
         ))}
       </div>
@@ -78,7 +78,7 @@ export default function AdminListingsPage() {
             <CardContent className="p-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <Link href={`/admin/listings/${listing.id}`} className="font-medium text-gray-900 hover:text-indigo-600">{listing.title}</Link>
+                  <Link href={`/admin/listings/${listing.id}`} className="font-medium text-gray-900 hover:text-gray-600">{listing.title}</Link>
                   <p className="text-sm text-gray-500">
                     by {listing.designer.name} · {formatPrice(listing.price)}
                     {listing.category && ` · ${listing.category.name}`}

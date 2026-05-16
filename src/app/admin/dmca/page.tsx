@@ -91,7 +91,7 @@ export default function AdminDMCAPage() {
                     <span>Reported by: {r.reporterName} ({r.reporterEmail})</span>
                     <span>{formatDate(r.createdAt)}</span>
                     {r.listing && (
-                      <Link href={`/product/${r.listing.slug}`} className="text-indigo-600 hover:text-indigo-700 inline-flex items-center gap-1">
+                      <Link href={`/product/${r.listing.slug}`} className="text-gray-600 hover:text-gray-700 inline-flex items-center gap-1">
                         View listing <ExternalLinkIcon className="h-3 w-3" />
                       </Link>
                     )}
@@ -135,7 +135,7 @@ export default function AdminDMCAPage() {
                     onChange={e => setNoteInput(e.target.value)}
                     placeholder="Admin notes..."
                     rows={2}
-                    className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none resize-none"
+                    className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-gray-500 focus:outline-none resize-none"
                   />
                   <div className="flex gap-2">
                     <Button size="sm" onClick={() => handleSaveNotes(r.id)}>Save Notes</Button>

@@ -81,14 +81,14 @@ export default function DesignerApplyPage() {
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">3D Design Experience *</label>
               <textarea value={form.experience} onChange={e => setForm({...form, experience: e.target.value})} rows={3}
-                className="block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                className="block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-gray-500 focus:outline-none focus:ring-1 focus:ring-gray-500"
                 placeholder="Describe your experience with Rhino 3D and 3D modeling..."
               />
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Why do you want to join? *</label>
               <textarea value={form.reason} onChange={e => setForm({...form, reason: e.target.value})} rows={3}
-                className="block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                className="block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-gray-500 focus:outline-none focus:ring-1 focus:ring-gray-500"
                 placeholder="Tell us why you'd be a great addition to our marketplace..."
               />
             </div>

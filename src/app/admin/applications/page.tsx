@@ -70,7 +70,7 @@ export default function AdminApplicationsPage() {
                       <Badge variant="warning">Pending</Badge>
                     </div>
                     <p className="text-sm text-gray-500">{app.user.email}</p>
-                    {app.portfolioUrl && <p className="text-sm text-indigo-600 mt-1">Portfolio: {app.portfolioUrl}</p>}
+                    {app.portfolioUrl && <p className="text-sm text-gray-600 mt-1">Portfolio: {app.portfolioUrl}</p>}
                     <div className="mt-3 bg-gray-50 rounded-lg p-3">
                       <p className="text-xs text-gray-500 font-medium mb-1">Experience:</p>
                       <p className="text-sm text-gray-700">{app.experience}</p>

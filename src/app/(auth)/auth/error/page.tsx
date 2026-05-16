@@ -11,7 +11,7 @@ export default function AuthErrorPage() {
         <AlertTriangle className="h-12 w-12 text-red-400 mx-auto mb-4" />
         <h1 className="text-xl font-bold text-gray-900 mb-2">Authentication Error</h1>
         <p className="text-gray-500 mb-6">Something went wrong during authentication.</p>
-        <Link href="/auth/login" className="text-indigo-600 hover:text-indigo-700 font-medium">
+        <Link href="/auth/login" className="text-gray-600 hover:text-gray-700 font-medium">
           Try signing in again
         </Link>
       </Card>

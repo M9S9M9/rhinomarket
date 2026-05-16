@@ -21,11 +21,8 @@ export function Header() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
-          <Link href="/" className="flex items-center gap-2">
-            <div className="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center">
-              <span className="text-white font-bold text-sm">3</span>
-            </div>
-            <span className="font-bold text-xl text-gray-900">3DM Store</span>
+          <Link href="/" className="flex items-center">
+            <img src="/logo.png" alt="3DM Store" className="h-10 w-auto" />
           </Link>
 
           {/* Navigation */}
@@ -76,8 +73,8 @@ export function Header() {
                     onClick={() => setUserMenuOpen(!userMenuOpen)}
                     className="flex items-center gap-2 p-1.5 rounded-lg hover:bg-gray-100 transition-colors"
                   >
-                    <div className="h-8 w-8 rounded-full bg-indigo-100 flex items-center justify-center">
-                      <span className="text-sm font-medium text-indigo-600">
+                    <div className="h-8 w-8 rounded-full bg-gray-100 flex items-center justify-center">
+                      <span className="text-sm font-medium text-gray-600">
                         {user?.name?.charAt(0)?.toUpperCase() || user?.email?.charAt(0)?.toUpperCase()}
                       </span>
                     </div>
@@ -159,7 +156,7 @@ export function Header() {
             <Link href="/marketplace?sort=popular" className="block py-2 text-sm font-medium text-gray-700" onClick={() => setMobileMenuOpen(false)}>Popular</Link>
             <Link href="/categories" className="block py-2 text-sm font-medium text-gray-700" onClick={() => setMobileMenuOpen(false)}>Categories</Link>
             {session && isDesigner && (
-              <Link href="/dashboard/designer/upload" className="block py-2 text-sm font-medium text-indigo-600" onClick={() => setMobileMenuOpen(false)}>
+              <Link href="/dashboard/designer/upload" className="block py-2 text-sm font-medium text-gray-600" onClick={() => setMobileMenuOpen(false)}>
                 Upload Model
               </Link>
             )}

@@ -102,14 +102,14 @@ function MarketplaceContent() {
             placeholder="Search models..."
             value={searchInput}
             onChange={(e) => setSearchInput(e.target.value)}
-            className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-gray-300 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 outline-none text-sm"
+            className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-gray-300 focus:border-gray-500 focus:ring-2 focus:ring-gray-200 outline-none text-sm"
           />
         </form>
         <div className="flex gap-3">
           <select
             value={currentSort}
             onChange={(e) => updateSearch({ sort: e.target.value })}
-            className="px-4 py-2.5 rounded-xl border border-gray-300 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-200"
+            className="px-4 py-2.5 rounded-xl border border-gray-300 text-sm focus:outline-none focus:ring-2 focus:ring-gray-200"
           >
             <option value="newest">Newest</option>
             <option value="popular">Most Popular</option>
@@ -118,7 +118,7 @@ function MarketplaceContent() {
           </select>
           <button
             onClick={() => setShowFilters(!showFilters)}
-            className={`p-2.5 rounded-xl border ${showFilters ? 'bg-indigo-50 border-indigo-300' : 'border-gray-300'} hover:bg-gray-50 transition-colors`}
+            className={`p-2.5 rounded-xl border ${showFilters ? 'bg-gray-50 border-gray-300' : 'border-gray-300'} hover:bg-gray-50 transition-colors`}
           >
             <SlidersHorizontal className="h-5 w-5 text-gray-600" />
           </button>
@@ -134,7 +134,7 @@ function MarketplaceContent() {
               <div className="space-y-1">
                 <button
                   onClick={() => updateSearch({ category: "" })}
-                  className={`block w-full text-left px-3 py-1.5 rounded-lg text-sm ${!currentCategory ? 'bg-indigo-50 text-indigo-700 font-medium' : 'text-gray-600 hover:bg-gray-50'}`}
+                  className={`block w-full text-left px-3 py-1.5 rounded-lg text-sm ${!currentCategory ? 'bg-gray-50 text-gray-700 font-medium' : 'text-gray-600 hover:bg-gray-50'}`}
                 >
                   All Categories
                 </button>
@@ -142,7 +142,7 @@ function MarketplaceContent() {
                   <button
                     key={cat.id}
                     onClick={() => updateSearch({ category: cat.slug })}
-                    className={`block w-full text-left px-3 py-1.5 rounded-lg text-sm ${currentCategory === cat.slug ? 'bg-indigo-50 text-indigo-700 font-medium' : 'text-gray-600 hover:bg-gray-50'}`}
+                    className={`block w-full text-left px-3 py-1.5 rounded-lg text-sm ${currentCategory === cat.slug ? 'bg-gray-50 text-gray-700 font-medium' : 'text-gray-600 hover:bg-gray-50'}`}
                   >
                     {cat.name} ({cat._count.listings})
                   </button>
@@ -174,7 +174,7 @@ function MarketplaceContent() {
                   <button
                     key={lic}
                     onClick={() => updateSearch({ licenseType: lic })}
-                    className={`block w-full text-left px-3 py-1.5 rounded-lg text-sm ${currentLicense === lic ? 'bg-indigo-50 text-indigo-700 font-medium' : 'text-gray-600 hover:bg-gray-50'}`}
+                    className={`block w-full text-left px-3 py-1.5 rounded-lg text-sm ${currentLicense === lic ? 'bg-gray-50 text-gray-700 font-medium' : 'text-gray-600 hover:bg-gray-50'}`}
                   >
                     {lic || "All Licenses"}
                   </button>
@@ -228,10 +228,10 @@ function MarketplaceContent() {
                         )}
                       </div>
                       <div className="p-4">
-                        <h3 className="font-semibold text-gray-900 truncate group-hover:text-indigo-600 transition-colors">{listing.title}</h3>
+                        <h3 className="font-semibold text-gray-900 truncate group-hover:text-gray-600 transition-colors">{listing.title}</h3>
                         <p className="text-sm text-gray-500 mt-1">by {listing.designer.name}</p>
                         <div className="flex items-center justify-between mt-3">
-                          <span className="text-lg font-bold text-indigo-600">{formatPrice(listing.price)}</span>
+                          <span className="text-lg font-bold text-gray-600">{formatPrice(listing.price)}</span>
                           <span className="text-xs text-gray-400">{listing._count.favorites} ♥</span>
                         </div>
                       </div>
@@ -265,7 +265,7 @@ function MarketplaceContent() {
                       <button
                         key={pageNum}
                         onClick={() => updateSearch({ page: String(pageNum) })}
-                        className={`w-9 h-9 text-sm rounded-lg border ${currentPage === pageNum ? 'bg-indigo-600 text-white border-indigo-600' : 'border-gray-300 hover:bg-gray-50'}`}
+                        className={`w-9 h-9 text-sm rounded-lg border ${currentPage === pageNum ? 'bg-gray-600 text-white border-gray-600' : 'border-gray-300 hover:bg-gray-50'}`}
                       >
                         {pageNum}
                       </button>
@@ -290,7 +290,7 @@ function MarketplaceContent() {
 
 export default function MarketplacePage() {
   return (
-    <Suspense fallback={<div className="min-h-[80vh] flex items-center justify-center"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600" /></div>}>
+    <Suspense fallback={<div className="min-h-[80vh] flex items-center justify-center"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-600" /></div>}>
       <MarketplaceContent />
     </Suspense>
   );

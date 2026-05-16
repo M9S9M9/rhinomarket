@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 40" fill="none">
+  <defs>
+    <linearGradient id="logoGrad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#767676"/>
+      <stop offset="100%" stop-color="#767676"/>
+    </linearGradient>
+  </defs>
+  <rect x="2" y="4" width="32" height="32" rx="8" fill="url(#logoGrad)"/>
+  <path d="M10 20L18 12L26 20L18 28L10 20Z" fill="white" opacity="0.9"/>
+  <path d="M14 17L18 13.5L22 17" fill="white" opacity="0.5"/>
+  <text x="42" y="27" font-family="system-ui, -apple-system, sans-serif" font-size="18" font-weight="700" fill="#111827">3DM</text>
+  <text x="84" y="27" font-family="system-ui, -apple-system, sans-serif" font-size="18" font-weight="400" fill="#4b5563">Store</text>
+</svg>

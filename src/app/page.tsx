@@ -30,27 +30,27 @@ export default function HomePage() {
   return (
     <div>
       {/* Hero Section */}
-      <section className="relative bg-gradient-to-br from-indigo-900 via-indigo-800 to-purple-900 text-white overflow-hidden">
+      <section className="relative bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 text-white overflow-hidden">
         <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmYiIGZpbGwtb3BhY2l0eT0iMC4wNSI+PGNpcmNsZSBjeD0iMzAiIGN5PSIzMCIgcj0iMiIvPjwvZz48L2c+PC9zdmc+')] opacity-30" />
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24 md:py-32">
           <div className="max-w-3xl">
             <h1 className="text-4xl md:text-6xl font-bold leading-tight mb-6">
               The Marketplace for{" "}
-              <span className="text-indigo-300">Rhino 3D</span> Models
+              <span className="text-gray-300">Rhino 3D</span> Models
             </h1>
-            <p className="text-lg md:text-xl text-indigo-200 mb-8 leading-relaxed">
+            <p className="text-lg md:text-xl text-gray-200 mb-8 leading-relaxed">
               Buy and sell premium .3dm files. Join thousands of designers and architects
               sharing high-quality Rhino 3D models.
             </p>
             <div className="flex flex-col sm:flex-row gap-4">
               <Link href="/marketplace">
-                <Button size="lg" className="bg-white text-indigo-900 hover:bg-indigo-50 text-base px-8">
+                <Button size="lg" className="bg-white text-gray-900 hover:bg-gray-50 text-base px-8">
                   Browse Marketplace
                   <ArrowRight className="ml-2 h-5 w-5" />
                 </Button>
               </Link>
               <Link href="/auth/register">
-                <Button size="lg" variant="outline" className="border-indigo-400 text-white hover:bg-indigo-800 text-base px-8">
+                <Button size="lg" variant="outline" className="border-gray-400 text-white hover:bg-gray-800 text-base px-8">
                   Start Selling
                 </Button>
               </Link>
@@ -70,7 +70,7 @@ export default function HomePage() {
               { icon: Shield, label: "Secure Payments", value: "100%" },
             ].map((stat) => (
               <div key={stat.label} className="text-center">
-                <stat.icon className="h-6 w-6 text-indigo-600 mx-auto mb-2" />
+                <stat.icon className="h-6 w-6 text-gray-600 mx-auto mb-2" />
                 <div className="text-2xl font-bold text-gray-900">{stat.value}</div>
                 <div className="text-sm text-gray-500">{stat.label}</div>
               </div>
@@ -86,7 +86,7 @@ export default function HomePage() {
             <h2 className="text-2xl md:text-3xl font-bold text-gray-900">Featured Models</h2>
             <p className="text-gray-500 mt-1">Popular .3dm files from top designers</p>
           </div>
-          <Link href="/marketplace" className="hidden sm:flex items-center text-indigo-600 hover:text-indigo-700 font-medium text-sm">
+          <Link href="/marketplace" className="hidden sm:flex items-center text-gray-600 hover:text-gray-700 font-medium text-sm">
             View All <ArrowRight className="ml-1 h-4 w-4" />
           </Link>
         </div>
@@ -112,7 +112,7 @@ export default function HomePage() {
                   <h3 className="font-semibold text-gray-900 truncate">{listing.title}</h3>
                   <p className="text-sm text-gray-500 mt-1">by {listing.designer.name}</p>
                   <div className="flex items-center justify-between mt-3">
-                    <span className="text-lg font-bold text-indigo-600">{formatPrice(listing.price)}</span>
+                    <span className="text-lg font-bold text-gray-600">{formatPrice(listing.price)}</span>
                     <div className="flex items-center gap-3 text-xs text-gray-400">
                       <span className="flex items-center gap-1"><Star className="h-3 w-3" /> {listing._count.reviews}</span>
                       <span>{listing._count.favorites} ♥</span>
@@ -142,8 +142,8 @@ export default function HomePage() {
               { step: "03", title: "Instant Download", desc: "Get immediate access to your purchased files. Download anytime, anywhere." },
             ].map((item) => (
               <div key={item.step} className="text-center">
-                <div className="w-12 h-12 bg-indigo-100 rounded-xl flex items-center justify-center mx-auto mb-4">
-                  <span className="text-indigo-600 font-bold">{item.step}</span>
+                <div className="w-12 h-12 bg-gray-100 rounded-xl flex items-center justify-center mx-auto mb-4">
+                  <span className="text-gray-600 font-bold">{item.step}</span>
                 </div>
                 <h3 className="text-lg font-semibold text-gray-900 mb-2">{item.title}</h3>
                 <p className="text-gray-500 text-sm leading-relaxed">{item.desc}</p>
@@ -154,14 +154,14 @@ export default function HomePage() {
       </section>
 
       {/* Sell CTA */}
-      <section className="bg-gradient-to-r from-indigo-600 to-purple-600 py-16">
+      <section className="bg-gradient-to-r from-gray-600 to-gray-600 py-16">
         <div className="max-w-4xl mx-auto px-4 text-center">
           <h2 className="text-3xl font-bold text-white mb-4">Start Selling Your Designs</h2>
-          <p className="text-indigo-100 text-lg mb-8">
+          <p className="text-gray-100 text-lg mb-8">
             Join our community of designers. Set your own prices, reach global customers, and earn what you deserve.
           </p>
           <Link href="/auth/register">
-            <Button size="lg" className="bg-white text-indigo-700 hover:bg-indigo-50 text-base px-8">
+            <Button size="lg" className="bg-white text-gray-700 hover:bg-gray-50 text-base px-8">
               Become a Designer <ArrowRight className="ml-2 h-5 w-5" />
             </Button>
           </Link>

@@ -67,7 +67,7 @@ function CheckoutForm() {
             </div>
             <div className="flex justify-between py-3 text-lg font-bold">
               <span>Total</span>
-              <span className="text-indigo-600">{formatPrice(listing.price)}</span>
+              <span className="text-gray-600">{formatPrice(listing.price)}</span>
             </div>
           </div>
 
@@ -86,7 +86,7 @@ function CheckoutForm() {
 
 export default function CheckoutPage() {
   return (
-    <Suspense fallback={<div className="min-h-[80vh] flex items-center justify-center"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600" /></div>}>
+    <Suspense fallback={<div className="min-h-[80vh] flex items-center justify-center"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-600" /></div>}>
       <CheckoutForm />
     </Suspense>
   );

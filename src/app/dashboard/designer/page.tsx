@@ -69,7 +69,7 @@ export default function DesignerDashboardPage() {
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
         <Card><CardContent className="p-4">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-indigo-100 rounded-lg flex items-center justify-center"><Package className="h-5 w-5 text-indigo-600" /></div>
+            <div className="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center"><Package className="h-5 w-5 text-gray-600" /></div>
             <div><p className="text-xs text-gray-500">Active Listings</p><p className="text-xl font-bold">{stats?.activeListings || 0}</p></div>
           </div>
         </CardContent></Card>
@@ -98,7 +98,7 @@ export default function DesignerDashboardPage() {
         <CardContent className="p-6">
           <div className="flex items-center justify-between mb-4">
             <h2 className="font-semibold text-gray-900">Earnings Summary</h2>
-            <Link href="/dashboard/designer/earnings" className="text-sm text-indigo-600 hover:text-indigo-700 flex items-center">
+            <Link href="/dashboard/designer/earnings" className="text-sm text-gray-600 hover:text-gray-700 flex items-center">
               View Details <ArrowRight className="h-4 w-4 ml-1" />
             </Link>
           </div>
@@ -123,7 +123,7 @@ export default function DesignerDashboardPage() {
       <div>
         <div className="flex items-center justify-between mb-4">
           <h2 className="font-semibold text-gray-900">My Models</h2>
-          <Link href="/dashboard/designer/listings" className="text-sm text-indigo-600 hover:text-indigo-700">View All</Link>
+          <Link href="/dashboard/designer/listings" className="text-sm text-gray-600 hover:text-gray-700">View All</Link>
         </div>
         <div className="space-y-3">
           {listings.map((listing) => (
@@ -134,7 +134,7 @@ export default function DesignerDashboardPage() {
                     {listing.thumbnailUrl ? <img src={listing.thumbnailUrl} alt="" className="w-full h-full object-cover" /> : <div className="flex items-center justify-center h-full text-gray-400">No img</div>}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <Link href={`/product/${listing.slug}`} className="font-semibold text-gray-900 hover:text-indigo-600 truncate block">{listing.title}</Link>
+                    <Link href={`/product/${listing.slug}`} className="font-semibold text-gray-900 hover:text-gray-600 truncate block">{listing.title}</Link>
                     <div className="flex items-center gap-3 mt-1 text-sm text-gray-500">
                       <span>{formatPrice(listing.price)}</span>
                       <Badge variant={listing.status === "APPROVED" ? "success" : listing.status === "PENDING_REVIEW" ? "warning" : "default"}>{listing.status}</Badge>
