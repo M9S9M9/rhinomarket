@@ -8,7 +8,7 @@ export function Footer() {
           {/* Brand */}
           <div className="col-span-2 md:col-span-1">
             <Link href="/" className="flex items-center mb-4">
-              <img src="/logo.png" alt="3DM Store" className="h-10 w-auto brightness-0 invert" />
+              <img src="/logo-white.svg" alt="3DM Store" className="h-10 w-auto" />
             </Link>
             <p className="text-sm leading-relaxed">
               The premier marketplace for Rhino 3D files. Buy and sell premium .3dm models with confidence.
