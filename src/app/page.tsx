@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { ArrowRight, Star, Shield, Zap, Users, FileText, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { AnimatedSection, StaggerContainer, StaggerItem } from "@/components/ui/animated-section";
 import { formatPrice } from "@/lib/utils";
 
 interface Listing {
@@ -30,6 +31,7 @@ export default function HomePage() {
   return (
     <div>
       {/* Hero Section */}
+      <AnimatedSection direction="none" duration={0.6}>
       <section className="relative bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 text-white overflow-hidden">
         <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmYiIGZpbGwtb3BhY2l0eT0iMC4wNSI+PGNpcmNsZSBjeD0iMzAiIGN5PSIzMCIgcj0iMiIvPjwvZz48L2c+PC9zdmc+')] opacity-30" />
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24 md:py-32">
@@ -58,28 +60,34 @@ export default function HomePage() {
           </div>
         </div>
       </section>
+      </AnimatedSection>
 
       {/* Stats Bar */}
+      <AnimatedSection>
       <section className="bg-white border-b border-gray-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
+          <StaggerContainer className="grid grid-cols-2 md:grid-cols-4 gap-8">
             {[
               { icon: FileText, label: "Premium Models", value: "10,000+" },
               { icon: Users, label: "Active Designers", value: "2,500+" },
               { icon: Star, label: "Average Rating", value: "4.8/5" },
               { icon: Shield, label: "Secure Payments", value: "100%" },
             ].map((stat) => (
-              <div key={stat.label} className="text-center">
+              <StaggerItem key={stat.label}>
+              <div className="text-center">
                 <stat.icon className="h-6 w-6 text-gray-600 mx-auto mb-2" />
                 <div className="text-2xl font-bold text-gray-900">{stat.value}</div>
                 <div className="text-sm text-gray-500">{stat.label}</div>
               </div>
+              </StaggerItem>
             ))}
-          </div>
+          </StaggerContainer>
         </div>
       </section>
+      </AnimatedSection>
 
       {/* Featured Listings */}
+      <AnimatedSection>
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
         <div className="flex items-center justify-between mb-8">
           <div>
@@ -91,9 +99,10 @@ export default function HomePage() {
           </Link>
         </div>
 
-        <div className="marketplace-grid">
+        <StaggerContainer staggerDelay={0.08} className="marketplace-grid">
           {featuredListings.map((listing) => (
-            <Link key={listing.id} href={`/product/${listing.slug}`}>
+            <StaggerItem key={listing.id}>
+            <Link href={`/product/${listing.slug}`}>
               <Card hover className="overflow-hidden group">
                 <div className="aspect-[4/3] bg-gray-100 relative overflow-hidden">
                   {listing.thumbnailUrl ? (
@@ -121,8 +130,9 @@ export default function HomePage() {
                 </div>
               </Card>
             </Link>
+            </StaggerItem>
           ))}
-        </div>
+        </StaggerContainer>
 
         <div className="mt-8 text-center sm:hidden">
           <Link href="/marketplace">
@@ -130,30 +140,36 @@ export default function HomePage() {
           </Link>
         </div>
       </section>
+      </AnimatedSection>
 
       {/* How It Works */}
+      <AnimatedSection>
       <section className="bg-white py-16 border-t border-gray-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <h2 className="text-2xl md:text-3xl font-bold text-gray-900 text-center mb-12">How It Works</h2>
-          <div className="grid md:grid-cols-3 gap-8">
+          <StaggerContainer className="grid md:grid-cols-3 gap-8">
             {[
               { step: "01", title: "Browse & Discover", desc: "Explore thousands of high-quality .3dm files from talented designers worldwide." },
               { step: "02", title: "Purchase Securely", desc: "Buy with confidence using our secure Stripe payment system with buyer protection." },
               { step: "03", title: "Instant Download", desc: "Get immediate access to your purchased files. Download anytime, anywhere." },
             ].map((item) => (
-              <div key={item.step} className="text-center">
+              <StaggerItem key={item.step}>
+              <div className="text-center">
                 <div className="w-12 h-12 bg-gray-100 rounded-xl flex items-center justify-center mx-auto mb-4">
                   <span className="text-gray-600 font-bold">{item.step}</span>
                 </div>
                 <h3 className="text-lg font-semibold text-gray-900 mb-2">{item.title}</h3>
                 <p className="text-gray-500 text-sm leading-relaxed">{item.desc}</p>
               </div>
+              </StaggerItem>
             ))}
-          </div>
+          </StaggerContainer>
         </div>
       </section>
+      </AnimatedSection>
 
       {/* Sell CTA */}
+      <AnimatedSection>
       <section className="bg-gradient-to-r from-gray-600 to-gray-600 py-16">
         <div className="max-w-4xl mx-auto px-4 text-center">
           <h2 className="text-3xl font-bold text-white mb-4">Start Selling Your Designs</h2>
@@ -167,6 +183,7 @@ export default function HomePage() {
           </Link>
         </div>
       </section>
+      </AnimatedSection>
     </div>
   );
 }
