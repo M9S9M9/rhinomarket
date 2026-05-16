@@ -52,7 +52,8 @@ async function main() {
   });
   console.log("Buyer created:", buyer.email);
 
-  // Create categories
+  // Replace all categories
+  await prisma.category.deleteMany();
   const categories = [
     { name: "Footwear", slug: "footwear", description: "Shoes, sandals, boots, and footwear designs" },
     { name: "Jewelry", slug: "jewelry", description: "Rings, necklaces, bracelets, and accessories" },
