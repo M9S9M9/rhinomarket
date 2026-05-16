@@ -8,10 +8,10 @@ export default function DesignerAgreementPage() {
         <p>Last updated: January 2026</p>
 
         <h2 className="text-lg font-semibold text-gray-900 mt-8">1. Designer Status</h2>
-        <p>Designers are independent creators, not employees or contractors of RhinoMarket. You retain full ownership of your intellectual property.</p>
+        <p>Designers are independent creators, not employees or contractors of 3DM Store. You retain full ownership of your intellectual property.</p>
 
         <h2 className="text-lg font-semibold text-gray-900 mt-8">2. License Grant to Platform</h2>
-        <p>By uploading a model, you grant RhinoMarket a limited license to host, display, and distribute your model through the marketplace. You retain all other rights.</p>
+        <p>By uploading a model, you grant 3DM Store a limited license to host, display, and distribute your model through the marketplace. You retain all other rights.</p>
 
         <h2 className="text-lg font-semibold text-gray-900 mt-8">3. Pricing and Commissions</h2>
         <p>You set your own prices. The platform deducts a commission of {process.env.PLATFORM_COMMISSION_PERCENT || "15"}% from each sale. Commissions are non-negotiable.</p>
@@ -29,7 +29,7 @@ export default function DesignerAgreementPage() {
         </ul>
 
         <h2 className="text-lg font-semibold text-gray-900 mt-8">6. Model Approval</h2>
-        <p>All models are subject to review before publication. RhinoMarket reserves the right to reject or remove models that violate our standards.</p>
+        <p>All models are subject to review before publication. 3DM Store reserves the right to reject or remove models that violate our standards.</p>
 
         <h2 className="text-lg font-semibold text-gray-900 mt-8">7. Account Termination</h2>
         <p>Violation of this agreement may result in account suspension, removal of listings, and forfeiture of pending earnings in cases of fraud.</p>

@@ -26,7 +26,7 @@ export async function sendEmail(params: {
   }
 
   await client.emails.send({
-    from: `RhinoMarket <noreply@${process.env.EMAIL_DOMAIN || "rhinomarket.com"}>`,
+    from: `3DM Store <noreply@${process.env.EMAIL_DOMAIN || "3dmstore.com"}>`,
     to: params.to,
     subject: params.subject,
     html: params.html,

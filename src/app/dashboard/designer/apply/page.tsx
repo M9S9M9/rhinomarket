@@ -71,7 +71,7 @@ export default function DesignerApplyPage() {
   return (
     <div className="max-w-2xl mx-auto px-4 py-8">
       <h1 className="text-2xl font-bold text-gray-900 mb-2">Become a Designer</h1>
-      <p className="text-gray-500 mb-8">Start selling your .3dm models on RhinoMarket</p>
+      <p className="text-gray-500 mb-8">Start selling your .3dm models on 3DM Store</p>
 
       <Card>
         <CardContent className="p-6">

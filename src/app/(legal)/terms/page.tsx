@@ -8,10 +8,10 @@ export default function TermsPage() {
         <p>Last updated: January 2026</p>
 
         <h2 className="text-lg font-semibold text-gray-900 mt-8">1. Acceptance of Terms</h2>
-        <p>By accessing or using RhinoMarket ("the Platform"), you agree to be bound by these Terms of Service. If you do not agree, do not use the Platform.</p>
+        <p>By accessing or using 3DM Store ("the Platform"), you agree to be bound by these Terms of Service. If you do not agree, do not use the Platform.</p>
 
         <h2 className="text-lg font-semibold text-gray-900 mt-8">2. Platform Description</h2>
-        <p>RhinoMarket is a marketplace connecting buyers and sellers of Rhino 3D (.3dm) files. We provide the platform infrastructure but are not a party to the transaction between buyers and designers.</p>
+        <p>3DM Store is a marketplace connecting buyers and sellers of Rhino 3D (.3dm) files. We provide the platform infrastructure but are not a party to the transaction between buyers and designers.</p>
 
         <h2 className="text-lg font-semibold text-gray-900 mt-8">3. User Accounts</h2>
         <p>You are responsible for maintaining the confidentiality of your account credentials. You must be at least 18 years old to use the Platform.</p>
@@ -38,7 +38,7 @@ export default function TermsPage() {
         <p>Refunds are handled on a case-by-case basis. If a file is corrupted or significantly different from its description, the buyer may request a refund within 14 days of purchase.</p>
 
         <h2 className="text-lg font-semibold text-gray-900 mt-8">8. Limitation of Liability</h2>
-        <p>RhinoMarket is not liable for any damages arising from the use of the Platform or from files purchased through the Platform. All files are provided "as is."</p>
+        <p>3DM Store is not liable for any damages arising from the use of the Platform or from files purchased through the Platform. All files are provided "as is."</p>
 
         <h2 className="text-lg font-semibold text-gray-900 mt-8">9. Termination</h2>
         <p>We reserve the right to terminate accounts that violate these terms or engage in fraudulent activity.</p>

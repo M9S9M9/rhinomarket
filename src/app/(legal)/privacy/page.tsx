@@ -26,7 +26,7 @@ export default function PrivacyPage() {
         <p>We implement industry-standard security measures including encryption at rest and in transit, regular security audits, and access controls.</p>
 
         <h2 className="text-lg font-semibold text-gray-900 mt-8">Your Rights</h2>
-        <p>You have the right to access, correct, or delete your personal data. Contact us at privacy@rhinomarket.com for data requests.</p>
+        <p>You have the right to access, correct, or delete your personal data. Contact us at privacy@3dmstore.com for data requests.</p>
 
         <h2 className="text-lg font-semibold text-gray-900 mt-8">Cookies</h2>
         <p>We use essential cookies for authentication and security. Analytics cookies are used to improve our service.</p>

@@ -39,7 +39,7 @@ export async function POST(req: Request) {
 
     await sendEmail({
       to: email,
-      subject: "Verify your RhinoMarket account",
+      subject: "Verify your 3DM Store account",
       html: getVerificationEmailHtml(token),
     });
 

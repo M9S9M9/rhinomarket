@@ -9,9 +9,9 @@ export function Footer() {
           <div className="col-span-2 md:col-span-1">
             <Link href="/" className="flex items-center gap-2 mb-4">
               <div className="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center">
-                <span className="text-white font-bold text-sm">R</span>
+                <span className="text-white font-bold text-sm">3</span>
               </div>
-              <span className="font-bold text-xl text-white">RhinoMarket</span>
+              <span className="font-bold text-xl text-white">3DM Store</span>
             </Link>
             <p className="text-sm leading-relaxed">
               The premier marketplace for Rhino 3D files. Buy and sell premium .3dm models with confidence.
@@ -52,7 +52,7 @@ export function Footer() {
         </div>
 
         <div className="border-t border-gray-800 mt-12 pt-8 flex flex-col sm:flex-row items-center justify-between gap-4">
-          <p className="text-sm">&copy; {new Date().getFullYear()} RhinoMarket. All rights reserved.</p>
+          <p className="text-sm">&copy; {new Date().getFullYear()} 3DM Store. All rights reserved.</p>
           <div className="flex items-center gap-6">
             <span className="text-xs text-gray-500">Built for Rhino 3D Community</span>
           </div>

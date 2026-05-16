@@ -6,8 +6,8 @@ import { Footer } from "@/components/layout/footer";
 
 export const metadata: Metadata = {
   title: {
-    default: "RhinoMarket - Premium .3D Models Marketplace",
-    template: "%s | RhinoMarket",
+    default: "3DM Store - Premium .3D Models Marketplace",
+    template: "%s | 3DM Store",
   },
   description: "Buy and sell premium Rhino 3D (.3dm) models. The premier marketplace for 3D designers and architects.",
   keywords: ["rhino 3d", "3dm files", "3d models", "rhinoceros", "marketplace", "3d design"],

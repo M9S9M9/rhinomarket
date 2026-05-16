@@ -9,10 +9,10 @@ async function main() {
   // Create admin user
   const adminPassword = await hash("admin123456", 12);
   const admin = await prisma.user.upsert({
-    where: { email: "admin@rhinomarket.com" },
+    where: { email: "admin@3dmstore.com" },
     update: {},
     create: {
-      email: "admin@rhinomarket.com",
+      email: "admin@3dmstore.com",
       name: "Admin",
       passwordHash: adminPassword,
       role: "ADMIN",
@@ -75,7 +75,7 @@ async function main() {
 
   console.log("\nSeed completed!");
   console.log("\nTest accounts:");
-  console.log("  Admin:    admin@rhinomarket.com / admin123456");
+  console.log("  Admin:    admin@3dmstore.com / admin123456");
   console.log("  Designer: designer@example.com / designer123456");
   console.log("  Buyer:    buyer@example.com / buyer123456");
 }

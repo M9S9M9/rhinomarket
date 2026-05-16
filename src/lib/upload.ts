@@ -60,7 +60,7 @@ export async function saveModelFile(
       },
       forcePathStyle: true,
     });
-    const bucket = process.env.S3_BUCKET || "rhinomarket";
+    const bucket = process.env.S3_BUCKET || "3dmstore";
     await s3.send(new PutObjectCommand({
       Bucket: bucket,
       Key: `models/${uniqueName}`,
@@ -106,7 +106,7 @@ export async function savePreviewImage(
       },
       forcePathStyle: true,
     });
-    const bucket = process.env.S3_BUCKET || "rhinomarket";
+    const bucket = process.env.S3_BUCKET || "3dmstore";
     await s3.send(new PutObjectCommand({
       Bucket: bucket,
       Key: `previews/${uniqueName}`,

@@ -1,4 +1,4 @@
-# RhinoMarket — Multi-Vendor .3DM Marketplace
+# 3DM Store — Multi-Vendor .3DM Marketplace
 
 A production-ready marketplace for buying and selling Rhino 3D (.3dm) files. Built with Next.js 16, React 19, TypeScript, Tailwind CSS v4, Prisma ORM, and Stripe Connect.
 
@@ -21,7 +21,7 @@ Visit **http://localhost:3000**
 
 | Role     | Email                       | Password         |
 |----------|-----------------------------|------------------|
-| Admin    | admin@rhinomarket.com       | admin123456      |
+| Admin    | admin@3dmstore.com       | admin123456      |
 | Designer | designer@example.com        | designer123456   |
 | Buyer    | buyer@example.com           | buyer123456      |
 

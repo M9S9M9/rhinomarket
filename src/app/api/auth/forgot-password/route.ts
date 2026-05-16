@@ -23,7 +23,7 @@ export async function POST(req: Request) {
 
     await sendEmail({
       to: email,
-      subject: "Reset your RhinoMarket password",
+      subject: "Reset your 3DM Store password",
       html: getPasswordResetEmailHtml(token),
     });
 

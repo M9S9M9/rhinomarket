@@ -7,7 +7,7 @@ export default function DMCAPage() {
       <div className="text-gray-600 text-sm leading-relaxed space-y-4">
         <p>Last updated: January 2026</p>
 
-        <p>RhinoMarket respects intellectual property rights and expects its users to do the same. In accordance with the Digital Millennium Copyright Act (DMCA), we will respond promptly to notices of alleged copyright infringement.</p>
+        <p>3DM Store respects intellectual property rights and expects its users to do the same. In accordance with the Digital Millennium Copyright Act (DMCA), we will respond promptly to notices of alleged copyright infringement.</p>
 
         <h2 className="text-lg font-semibold text-gray-900 mt-8">Filing a DMCA Notice</h2>
         <p>If you believe your copyrighted work has been infringed, please provide the following information:</p>
@@ -20,7 +20,7 @@ export default function DMCAPage() {
           <li>Your physical or electronic signature</li>
         </ul>
 
-        <p className="mt-4">Send DMCA notices to: dmca@rhinomarket.com</p>
+        <p className="mt-4">Send DMCA notices to: dmca@3dmstore.com</p>
 
         <h2 className="text-lg font-semibold text-gray-900 mt-8">Counter-Notice</h2>
         <p>If you believe your content was removed in error, you may submit a counter-notice with the following:</p>
