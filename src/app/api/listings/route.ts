@@ -72,6 +72,9 @@ export async function POST(req: Request) {
   if (user?.role !== "DESIGNER") {
     return NextResponse.json({ error: "Only designers can create listings" }, { status: 403 });
   }
+  if (!user?.isActive) {
+    return NextResponse.json({ error: "Account restricted. Contact support." }, { status: 403 });
+  }
 
   try {
     const body = await req.json();

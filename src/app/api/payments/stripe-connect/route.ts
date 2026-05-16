@@ -13,6 +13,9 @@ export async function POST() {
   if (!user) {
     return NextResponse.json({ error: "User not found" }, { status: 404 });
   }
+  if (!user.isActive) {
+    return NextResponse.json({ error: "Account restricted. Contact support." }, { status: 403 });
+  }
 
   try {
     let accountId = user.stripeAccountId;

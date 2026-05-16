@@ -14,6 +14,9 @@ export async function POST(req: NextRequest) {
   if (user?.role !== "DESIGNER") {
     return NextResponse.json({ error: "Only designers can upload files" }, { status: 403 });
   }
+  if (!user?.isActive) {
+    return NextResponse.json({ error: "Account restricted. Contact support." }, { status: 403 });
+  }
 
   try {
     const formData = await req.formData();

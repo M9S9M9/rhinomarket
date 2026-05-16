@@ -9,6 +9,11 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
+  const buyer = await prisma.user.findUnique({ where: { id: session.user.id }, select: { isActive: true } });
+  if (!buyer?.isActive) {
+    return NextResponse.json({ error: "Account restricted. Contact support." }, { status: 403 });
+  }
+
   try {
     const { listingId } = await req.json();
 
