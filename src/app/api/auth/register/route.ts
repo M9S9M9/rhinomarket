@@ -24,27 +24,30 @@ export async function POST(req: Request) {
     const passwordHash = await hash(password, 12);
 
     const user = await prisma.user.create({
-      data: { name, email, passwordHash, role: "BUYER" },
+      data: { name, email, passwordHash, role: "BUYER", emailVerified: new Date() },
     });
 
-    // Send verification email
-    const token = randomUUID();
-    await prisma.emailVerification.create({
-      data: {
-        email,
-        token,
-        expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000), // 24 hours
-      },
-    });
-
-    await sendEmail({
-      to: email,
-      subject: "Verify your 3DM Store account",
-      html: getVerificationEmailHtml(token),
-    });
+    // Try to send verification email (Resend requires a custom domain to deliver to any recipient)
+    try {
+      const token = randomUUID();
+      await prisma.emailVerification.create({
+        data: {
+          email,
+          token,
+          expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000),
+        },
+      });
+      await sendEmail({
+        to: email,
+        subject: "Verify your 3DM Store account",
+        html: getVerificationEmailHtml(token),
+      });
+    } catch {
+      // Email delivery is best-effort; users are auto-verified
+    }
 
     return NextResponse.json({
-      message: "Account created. Please check your email to verify.",
+      message: "Account created! You can now sign in.",
       userId: user.id,
     });
   } catch (error: any) {

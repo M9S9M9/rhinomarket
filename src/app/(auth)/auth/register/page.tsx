@@ -44,7 +44,7 @@ export default function RegisterPage() {
         return;
       }
 
-      toast.success("Account created! Please check your email to verify.");
+      toast.success("Account created! You can now sign in.");
       router.push("/auth/login");
     } catch {
       toast.error("Registration failed");
