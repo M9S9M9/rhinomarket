@@ -25,8 +25,9 @@ export async function sendEmail(params: {
     return { success: true };
   }
 
+  const fromDomain = process.env.EMAIL_DOMAIN;
   await client.emails.send({
-    from: `3DM Store <noreply@${process.env.EMAIL_DOMAIN || "3dmstore.com"}>`,
+    from: fromDomain ? `3DM Store <noreply@${fromDomain}>` : "3DM Store <onboarding@resend.dev>",
     to: params.to,
     subject: params.subject,
     html: params.html,
@@ -40,7 +41,7 @@ export function getVerificationEmailHtml(token: string): string {
   return `
     <h1>Verify your email</h1>
     <p>Click the link below to verify your email address:</p>
-    <a href="${url}" style="display:inline-block;padding:12px 24px;background:#6366f1;color:#fff;text-decoration:none;border-radius:6px;">Verify Email</a>
+    <a href="${url}" style="display:inline-block;padding:12px 24px;background:#767676;color:#fff;text-decoration:none;border-radius:6px;">Verify Email</a>
     <p>Or copy: ${url}</p>
   `;
 }
@@ -50,7 +51,7 @@ export function getPasswordResetEmailHtml(token: string): string {
   return `
     <h1>Reset your password</h1>
     <p>Click the link below to reset your password:</p>
-    <a href="${url}" style="display:inline-block;padding:12px 24px;background:#6366f1;color:#fff;text-decoration:none;border-radius:6px;">Reset Password</a>
+    <a href="${url}" style="display:inline-block;padding:12px 24px;background:#767676;color:#fff;text-decoration:none;border-radius:6px;">Reset Password</a>
     <p>Or copy: ${url}</p>
     <p>This link expires in 1 hour.</p>
   `;
