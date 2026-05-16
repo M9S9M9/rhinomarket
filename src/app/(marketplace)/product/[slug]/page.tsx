@@ -36,6 +36,8 @@ export default function ProductDetailPage() {
   const [selectedImage, setSelectedImage] = useState(0);
   const [showReport, setShowReport] = useState(false);
   const [reportDesc, setReportDesc] = useState("");
+  const [showReview, setShowReview] = useState(false);
+  const [reviewForm, setReviewForm] = useState({ rating: 5, title: "", content: "" });
 
   useEffect(() => {
     fetch(`/api/listings/by-slug?slug=${slug}`)
@@ -112,6 +114,24 @@ export default function ProductDetailPage() {
     } catch { toast.error("Failed to submit report"); }
   };
 
+  const handleReview = async () => {
+    try {
+      const res = await fetch("/api/reviews", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ listingId: listing!.id, ...reviewForm }),
+      });
+      if (res.ok) {
+        toast.success("Review submitted!");
+        setShowReview(false);
+        setReviewForm({ rating: 5, title: "", content: "" });
+      } else {
+        const data = await res.json();
+        toast.error(data.error || "Failed to submit review");
+      }
+    } catch { toast.error("Failed to submit review"); }
+  };
+
   if (loading) return (
     <div className="max-w-7xl mx-auto px-4 py-8 animate-pulse">
       <div className="h-8 bg-gray-100 rounded w-64 mb-8" />
@@ -136,6 +156,7 @@ export default function ProductDetailPage() {
 
   const previews = [listing.thumbnailUrl, ...listing.previewUrls].filter(Boolean) as string[];
   const user = session?.user as any;
+  const alreadyReviewed = listing.reviews.some(r => r.reviewer.id === user?.id);
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -272,7 +293,14 @@ export default function ProductDetailPage() {
 
       {/* Reviews */}
       <div className="mt-16">
-        <h2 className="text-xl font-bold text-gray-900 mb-6">Reviews ({listing.reviews.length})</h2>
+        <div className="flex items-center justify-between mb-6">
+          <h2 className="text-xl font-bold text-gray-900">Reviews ({listing.reviews.length})</h2>
+          {purchased && !alreadyReviewed && (
+            <Button size="sm" variant="outline" onClick={() => setShowReview(true)}>
+              Write a Review
+            </Button>
+          )}
+        </div>
         {listing.reviews.length === 0 ? (
           <Card>
             <CardContent className="py-8 text-center text-gray-500">
@@ -304,6 +332,46 @@ export default function ProductDetailPage() {
           </div>
         )}
       </div>
+
+      {/* Review Modal */}
+      {showReview && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50" onClick={() => setShowReview(false)}>
+          <div className="bg-white rounded-2xl p-6 max-w-md w-full mx-4 shadow-xl" onClick={e => e.stopPropagation()}>
+            <h2 className="text-lg font-bold text-gray-900 mb-4">Write a Review</h2>
+            <div className="space-y-4">
+              <div>
+                <p className="text-sm font-medium text-gray-700 mb-2">Rating</p>
+                <div className="flex gap-1">
+                  {[1, 2, 3, 4, 5].map(s => (
+                    <button key={s} type="button" onClick={() => setReviewForm({...reviewForm, rating: s})}>
+                      <Star className={`h-6 w-6 ${s <= reviewForm.rating ? 'text-amber-400 fill-amber-400' : 'text-gray-300'}`} />
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <div>
+                <input
+                  type="text" placeholder="Review title (optional)" value={reviewForm.title}
+                  onChange={e => setReviewForm({...reviewForm, title: e.target.value})}
+                  className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none"
+                />
+              </div>
+              <div>
+                <textarea
+                  placeholder="Share your thoughts about this model..." value={reviewForm.content}
+                  onChange={e => setReviewForm({...reviewForm, content: e.target.value})}
+                  rows={4}
+                  className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none resize-none"
+                />
+              </div>
+            </div>
+            <div className="flex gap-3 mt-4">
+              <Button variant="outline" className="flex-1" onClick={() => { setShowReview(false); setReviewForm({ rating: 5, title: "", content: "" }); }}>Cancel</Button>
+              <Button className="flex-1" onClick={handleReview}>Submit Review</Button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Report Modal */}
       {showReport && (
