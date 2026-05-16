@@ -54,14 +54,12 @@ async function main() {
 
   // Create categories
   const categories = [
-    { name: "Architecture", slug: "architecture", description: "Buildings, structures, and architectural elements" },
-    { name: "Furniture", slug: "furniture", description: "Chairs, tables, sofas, and interior furnishings" },
-    { name: "Product Design", slug: "product-design", description: "Consumer products, electronics, and industrial design" },
-    { name: "Jewelry", slug: "jewelry", description: "Rings, necklaces, watches, and accessories" },
-    { name: "Transportation", slug: "transportation", description: "Cars, boats, aircraft, and vehicles" },
-    { name: "Nature", slug: "nature", description: "Plants, trees, rocks, and organic forms" },
-    { name: "Mechanical", slug: "mechanical", description: "Machine parts, engines, and mechanical assemblies" },
-    { name: "Characters", slug: "characters", description: "People, animals, and fantasy characters" },
+    { name: "Footwear", slug: "footwear", description: "Shoes, sandals, boots, and footwear designs" },
+    { name: "Jewelry", slug: "jewelry", description: "Rings, necklaces, bracelets, and accessories" },
+    { name: "Architect", slug: "architect", description: "Buildings, structures, and architectural elements" },
+    { name: "Human Artificial Limbs", slug: "human-artificial-limbs", description: "Prosthetics and orthotic devices" },
+    { name: "Industrial Parts", slug: "industrial-parts", description: "Machine parts, components, and industrial designs" },
+    { name: "Other", slug: "other", description: "Other 3D models" },
   ];
 
   for (const cat of categories) {

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
@@ -24,9 +24,15 @@ export default function UploadPage() {
 
   const [form, setForm] = useState({
     title: "", description: "", price: "", licenseType: "PERSONAL",
-    categoryId: "", tags: "", polyCount: "", rhinocerosVersion: "8",
+    categoryId: "", tags: "", rhinocerosVersion: "8",
     copyrightConfirmed: false,
   });
+
+  const [categories, setCategories] = useState<{ id: string; name: string; slug: string }[]>([]);
+
+  useEffect(() => {
+    fetch("/api/categories").then(r => r.json()).then(setCategories).catch(() => {});
+  }, []);
 
   if (status === "unauthenticated") { router.push("/auth/login"); return null; }
   if (user?.role !== "DESIGNER") { router.push("/dashboard"); return null; }
@@ -183,7 +189,15 @@ export default function UploadPage() {
               </div>
             </div>
             <div className="grid grid-cols-2 gap-4">
-              <Input id="polyCount" label="Polygon Count" type="number" value={form.polyCount} onChange={e => setForm({...form, polyCount: e.target.value})} placeholder="50000" />
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Category</label>
+                <select value={form.categoryId} onChange={e => setForm({...form, categoryId: e.target.value})} className="block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-gray-500 focus:outline-none focus:ring-1 focus:ring-gray-500">
+                  <option value="">Select a category</option>
+                  {categories.map(cat => (
+                    <option key={cat.id} value={cat.id}>{cat.name}</option>
+                  ))}
+                </select>
+              </div>
               <Input id="rhinoVersion" label="Rhino Version" value={form.rhinocerosVersion} onChange={e => setForm({...form, rhinocerosVersion: e.target.value})} placeholder="8" />
             </div>
             <Input id="tags" label="Tags (comma separated)" value={form.tags} onChange={e => setForm({...form, tags: e.target.value})} placeholder="furniture, chair, modern, interior" />
