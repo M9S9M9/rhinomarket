@@ -9,12 +9,12 @@ export async function GET(req: NextRequest) {
 
   const user = await prisma.user.findUnique({
     where: { email },
-    select: { isActive: true, role: true },
+    select: { isActive: true, role: true, emailVerified: true },
   });
 
   if (!user) {
     return NextResponse.json({ exists: false });
   }
 
-  return NextResponse.json({ exists: true, isActive: user.isActive });
+  return NextResponse.json({ exists: true, isActive: user.isActive, emailVerified: user.emailVerified });
 }

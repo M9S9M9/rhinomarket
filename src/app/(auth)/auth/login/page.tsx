@@ -25,7 +25,7 @@ function LoginForm() {
 
     try {
       const check = await fetch(`/api/auth/check-email?email=${encodeURIComponent(email)}`);
-      const { exists, isActive } = await check.json();
+      const { exists, isActive, emailVerified } = await check.json();
 
       if (!exists) {
         setError("No account found with this email");
@@ -35,6 +35,12 @@ function LoginForm() {
 
       if (!isActive) {
         setError("Your account has been restricted. Contact support for assistance.");
+        setLoading(false);
+        return;
+      }
+
+      if (!emailVerified) {
+        setError("Please verify your email before signing in. Check your inbox for the verification link.");
         setLoading(false);
         return;
       }
