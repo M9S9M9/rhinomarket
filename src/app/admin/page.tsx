@@ -136,8 +136,8 @@ export default function AdminPage() {
         <Link href="/admin/users">
           <Card hover className="p-6"><Users className="h-6 w-6 text-indigo-600 mb-2" /><h3 className="font-semibold">Manage Users</h3><p className="text-sm text-gray-500">View and manage platform users</p></Card>
         </Link>
-        <Link href="/admin/disputes">
-          <Card hover className="p-6"><AlertTriangle className="h-6 w-6 text-indigo-600 mb-2" /><h3 className="font-semibold">Disputes</h3><p className="text-sm text-gray-500">Handle disputes and DMCA reports</p></Card>
+        <Link href="/admin/dmca">
+          <Card hover className="p-6"><AlertTriangle className="h-6 w-6 text-indigo-600 mb-2" /><h3 className="font-semibold">DMCA Reports</h3><p className="text-sm text-gray-500">Review copyright and policy reports</p></Card>
         </Link>
       </div>
     </div>
