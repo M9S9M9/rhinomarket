@@ -12,6 +12,8 @@ function LoginForm() {
   const router = useRouter();
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [showResend, setShowResend] = useState<string | null>(null);
+  const [resending, setResending] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -40,7 +42,8 @@ function LoginForm() {
       }
 
       if (!emailVerified) {
-        setError("Please verify your email before signing in. Check your inbox for the verification link.");
+        setError("Please verify your email before signing in. Check your inbox (and spam) for the verification link.");
+        setShowResend(email);
         setLoading(false);
         return;
       }
@@ -64,6 +67,25 @@ function LoginForm() {
     }
   };
 
+  const handleResend = async () => {
+    if (!showResend) return;
+    setResending(true);
+    try {
+      const res = await fetch("/api/auth/resend-verification", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: showResend }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error);
+      setError("Verification email sent! Check your inbox and spam folder.");
+      setShowResend(null);
+    } catch {
+      setError("Failed to send verification email. Try again later.");
+    }
+    setResending(false);
+  };
+
   return (
     <div className="min-h-[80vh] flex items-center justify-center px-4 py-12">
       <Card className="w-full max-w-md p-8">
@@ -82,7 +104,14 @@ function LoginForm() {
         {error && (
           <div className="mb-6 p-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-700 flex items-start gap-2">
             <AlertCircle className="h-4 w-4 flex-shrink-0 mt-0.5" />
-            {error}
+            <div>
+              <p>{error}</p>
+              {showResend && (
+                <button onClick={handleResend} disabled={resending} className="mt-2 underline hover:text-red-800 text-xs">
+                  {resending ? "Sending..." : "Resend verification email"}
+                </button>
+              )}
+            </div>
           </div>
         )}
 
