@@ -52,7 +52,7 @@ export default function HomePage() {
                 </Button>
               </Link>
               <Link href="/auth/register">
-                <Button size="lg" variant="outline" className="border-gray-400 text-white hover:bg-gray-800 text-base px-8">
+                <Button size="lg" variant="outline" className="border-white text-white hover:bg-white hover:text-gray-900 bg-transparent text-base px-8">
                   Start Selling
                 </Button>
               </Link>
