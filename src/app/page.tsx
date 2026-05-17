@@ -136,30 +136,30 @@ export default function HomePage() {
             </div>
 
             {/* Right: rotating category icons */}
-            <div className="hidden md:flex flex-col items-center justify-center min-h-[360px]">
-              <div className="relative w-64 h-64">
+            <div className="hidden md:flex flex-col items-center justify-center min-h-[400px]">
+              <div className="relative w-72 h-72">
                 <AnimatePresence mode="wait">
                   <motion.div
                     key={rotIndex}
-                    initial={{ opacity: 0, y: 30 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -30 }}
-                    transition={{ duration: 0.5, ease: [0.25, 0.46, 0.45, 0.94] }}
+                    initial={{ opacity: 0, scale: 0.85 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.85 }}
+                    transition={{ duration: 0.45, ease: "easeInOut" }}
                     className="absolute inset-0 flex flex-col items-center justify-center"
                   >
-                    <current.icon className={`w-32 h-32 ${current.color} drop-shadow-lg`} strokeWidth={1.2} />
+                    <current.icon className={`w-44 h-44 ${current.color} drop-shadow-lg`} strokeWidth={1.1} />
                     <span className={`mt-5 text-xl font-semibold tracking-wide ${current.color}`}>{current.label}</span>
                   </motion.div>
                 </AnimatePresence>
               </div>
               {/* Dots indicator */}
-              <div className="flex gap-2 mt-8">
+              <div className="flex gap-3 mt-8">
                 {rotatingItems.map((_, i) => (
                   <button
                     key={i}
                     onClick={() => setRotIndex(i)}
-                    className={`w-2 h-2 rounded-full transition-all duration-300 ${
-                      i === rotIndex ? "bg-white w-6" : "bg-white/30 hover:bg-white/50"
+                    className={`rounded-full transition-all duration-300 ${
+                      i === rotIndex ? "bg-white w-8 h-2.5" : "bg-white/30 hover:bg-white/50 w-2.5 h-2.5"
                     }`}
                   />
                 ))}
