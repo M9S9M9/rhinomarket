@@ -3,7 +3,8 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { ArrowRight, Star, Shield, Users, FileText, Search, Gem, Building2, Heart, Cog, Package, TrendingUp, DollarSign, Globe, BadgeCheck, Quote } from "lucide-react";
+import { ArrowRight, Star, Shield, Users, FileText, Search, Gem, Building2, Heart, Cog, Package, TrendingUp, DollarSign, Globe, BadgeCheck, Quote, Footprints } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { AnimatedSection, StaggerContainer, StaggerItem } from "@/components/ui/animated-section";
@@ -70,6 +71,22 @@ export default function HomePage() {
     }).catch(() => {});
   }, []);
 
+  const rotatingItems = [
+    { icon: Footprints, label: "Footwear", color: "text-blue-400" },
+    { icon: Gem, label: "Jewelry", color: "text-purple-400" },
+    { icon: Building2, label: "Architecture", color: "text-emerald-400" },
+    { icon: Heart, label: "Prosthetics", color: "text-red-400" },
+    { icon: Cog, label: "Industrial", color: "text-amber-400" },
+  ];
+  const [rotIndex, setRotIndex] = useState(0);
+
+  useEffect(() => {
+    const timer = setInterval(() => setRotIndex(i => (i + 1) % rotatingItems.length), 2800);
+    return () => clearInterval(timer);
+  }, []);
+
+  const current = rotatingItems[rotIndex];
+
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     if (searchQuery.trim()) router.push(`/marketplace?search=${encodeURIComponent(searchQuery.trim())}`);
@@ -118,33 +135,35 @@ export default function HomePage() {
               </div>
             </div>
 
-            {/* Right: 3D wireframe illustration */}
-            <div className="hidden md:flex items-center justify-center">
-              <svg viewBox="0 0 400 400" className="w-full max-w-sm" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <g opacity="0.15">
-                  <path d="M200 60 L320 140 L320 260 L200 340 L80 260 L80 140 Z" stroke="white" strokeWidth="1.5" />
-                </g>
-                <g opacity="0.3">
-                  <path d="M200 60 L320 140 L200 220 L80 140 Z" stroke="white" strokeWidth="1.5" />
-                </g>
-                <g opacity="0.5">
-                  <path d="M320 140 L320 260 L200 340 L200 220 Z" stroke="white" strokeWidth="1.5" />
-                  <path d="M200 220 L200 340 L80 260 L80 140 Z" stroke="white" strokeWidth="1.5" />
-                </g>
-                <g opacity="0.15">
-                  <path d="M200 100 L280 160 L280 240 L200 300 L120 240 L120 160 Z" stroke="white" strokeWidth="1" />
-                </g>
-                <circle cx="200" cy="200" r="100" stroke="white" strokeWidth="0.8" opacity="0.1" fill="none" />
-                <circle cx="200" cy="200" r="140" stroke="white" strokeWidth="0.5" opacity="0.08" fill="none" />
-                {/* Dots on vertices */}
-                <circle cx="200" cy="60" r="3" fill="white" opacity="0.6" />
-                <circle cx="320" cy="140" r="3" fill="white" opacity="0.6" />
-                <circle cx="320" cy="260" r="3" fill="white" opacity="0.6" />
-                <circle cx="200" cy="340" r="3" fill="white" opacity="0.6" />
-                <circle cx="80" cy="260" r="3" fill="white" opacity="0.6" />
-                <circle cx="80" cy="140" r="3" fill="white" opacity="0.6" />
-                <circle cx="200" cy="200" r="3" fill="white" opacity="0.8" />
-              </svg>
+            {/* Right: rotating category icons */}
+            <div className="hidden md:flex flex-col items-center justify-center min-h-[320px]">
+              <div className="relative w-48 h-48">
+                <AnimatePresence mode="wait">
+                  <motion.div
+                    key={rotIndex}
+                    initial={{ opacity: 0, scale: 0.6, rotate: -10 }}
+                    animate={{ opacity: 1, scale: 1, rotate: 0 }}
+                    exit={{ opacity: 0, scale: 0.6, rotate: 10 }}
+                    transition={{ duration: 0.4, ease: "easeOut" }}
+                    className="absolute inset-0 flex flex-col items-center justify-center"
+                  >
+                    <current.icon className={`w-24 h-24 ${current.color} drop-shadow-lg`} strokeWidth={1.2} />
+                    <span className={`mt-4 text-lg font-medium ${current.color}`}>{current.label}</span>
+                  </motion.div>
+                </AnimatePresence>
+              </div>
+              {/* Dots indicator */}
+              <div className="flex gap-2 mt-6">
+                {rotatingItems.map((_, i) => (
+                  <button
+                    key={i}
+                    onClick={() => setRotIndex(i)}
+                    className={`w-2 h-2 rounded-full transition-all duration-300 ${
+                      i === rotIndex ? "bg-white w-6" : "bg-white/30 hover:bg-white/50"
+                    }`}
+                  />
+                ))}
+              </div>
             </div>
           </div>
         </div>
