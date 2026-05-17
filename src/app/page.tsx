@@ -136,24 +136,24 @@ export default function HomePage() {
             </div>
 
             {/* Right: rotating category icons */}
-            <div className="hidden md:flex flex-col items-center justify-center min-h-[320px]">
-              <div className="relative w-48 h-48">
+            <div className="hidden md:flex flex-col items-center justify-center min-h-[360px]">
+              <div className="relative w-64 h-64">
                 <AnimatePresence mode="wait">
                   <motion.div
                     key={rotIndex}
-                    initial={{ opacity: 0, scale: 0.6, rotate: -10 }}
-                    animate={{ opacity: 1, scale: 1, rotate: 0 }}
-                    exit={{ opacity: 0, scale: 0.6, rotate: 10 }}
-                    transition={{ duration: 0.4, ease: "easeOut" }}
+                    initial={{ opacity: 0, y: 30 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -30 }}
+                    transition={{ duration: 0.5, ease: [0.25, 0.46, 0.45, 0.94] }}
                     className="absolute inset-0 flex flex-col items-center justify-center"
                   >
-                    <current.icon className={`w-24 h-24 ${current.color} drop-shadow-lg`} strokeWidth={1.2} />
-                    <span className={`mt-4 text-lg font-medium ${current.color}`}>{current.label}</span>
+                    <current.icon className={`w-32 h-32 ${current.color} drop-shadow-lg`} strokeWidth={1.2} />
+                    <span className={`mt-5 text-xl font-semibold tracking-wide ${current.color}`}>{current.label}</span>
                   </motion.div>
                 </AnimatePresence>
               </div>
               {/* Dots indicator */}
-              <div className="flex gap-2 mt-6">
+              <div className="flex gap-2 mt-8">
                 {rotatingItems.map((_, i) => (
                   <button
                     key={i}
