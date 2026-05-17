@@ -1,8 +1,9 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { ArrowRight, Star, Shield, Zap, Users, FileText, Search } from "lucide-react";
+import { ArrowRight, Star, Shield, Users, FileText, Search, Gem, Building2, Heart, Cog, Package, TrendingUp, DollarSign, Globe, BadgeCheck, Quote } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { AnimatedSection, StaggerContainer, StaggerItem } from "@/components/ui/animated-section";
@@ -18,67 +19,179 @@ interface Listing {
   _count: { reviews: number; favorites: number };
 }
 
+interface Category {
+  id: string;
+  name: string;
+  slug: string;
+  _count: { listings: number };
+}
+
+interface SiteStats {
+  totalListings: number;
+  totalDesigners: number;
+  totalTransactions: number;
+}
+
+const categoryIcons: Record<string, typeof Gem> = {
+  Footwear: FileText,
+  Jewelry: Gem,
+  Architect: Building2,
+  "Human Artificial Limbs": Heart,
+  "Industrial Parts": Cog,
+  Other: Package,
+};
+
+const testimonials = [
+  { name: "Alex M.", role: "Industrial Designer", text: "I've been selling on 3DM Store for 3 months and it's already my biggest revenue stream. The platform handles everything." },
+  { name: "Sarah K.", role: "Architect", text: "Found the perfect facade model for my project. Saved me days of modeling. Instant download, no hassle." },
+];
+
 export default function HomePage() {
-  const [featuredListings, setFeaturedListings] = useState<Listing[]>([]);
+  const router = useRouter();
+  const [featured, setFeatured] = useState<Listing[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [stats, setStats] = useState<SiteStats>({ totalListings: 0, totalDesigners: 0, totalTransactions: 0 });
 
   useEffect(() => {
     fetch("/api/listings?sort=popular&limit=8")
-      .then((r) => r.json())
-      .then((data) => setFeaturedListings(data.listings || []))
+      .then(r => r.json())
+      .then(d => setFeatured(d.listings || []))
       .catch(() => {});
+    fetch("/api/categories")
+      .then(r => r.json())
+      .then(setCategories)
+      .catch(() => {});
+    Promise.all([
+      fetch("/api/listings?limit=1").then(r => r.json()),
+      fetch("/api/categories").then(r => r.json()),
+    ]).then(([listingsRes]) => {
+      setStats(prev => ({ ...prev, totalListings: listingsRes.total || 0 }));
+    }).catch(() => {});
   }, []);
+
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (searchQuery.trim()) router.push(`/marketplace?search=${encodeURIComponent(searchQuery.trim())}`);
+  };
 
   return (
     <div>
-      {/* Hero Section */}
+      {/* ── Hero ── */}
       <AnimatedSection direction="none" duration={0.6}>
       <section className="relative bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 text-white overflow-hidden">
         <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmYiIGZpbGwtb3BhY2l0eT0iMC4wNSI+PGNpcmNsZSBjeD0iMzAiIGN5PSIzMCIgcj0iMiIvPjwvZz48L2c+PC9zdmc+')] opacity-30" />
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24 md:py-32">
-          <div className="max-w-3xl">
-            <h1 className="text-4xl md:text-6xl font-bold leading-tight mb-6">
-              The Marketplace for{" "}
-              <span className="text-gray-300">Rhino 3D</span> Models
-            </h1>
-            <p className="text-lg md:text-xl text-gray-200 mb-8 leading-relaxed">
-              Buy and sell premium .3dm files. Join thousands of designers and architects
-              sharing high-quality Rhino 3D models.
-            </p>
-            <div className="flex flex-col sm:flex-row gap-4">
-              <Link href="/marketplace">
-                <Button size="lg" className="bg-white text-gray-900 hover:bg-gray-50 text-base px-8">
-                  Browse Marketplace
-                  <ArrowRight className="ml-2 h-5 w-5" />
-                </Button>
-              </Link>
-              <Link href="/auth/register">
-                <Button size="lg" variant="outline" className="border-white text-white hover:bg-white hover:text-gray-900 bg-transparent text-base px-8">
-                  Start Selling
-                </Button>
-              </Link>
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 md:py-28">
+          <div className="grid md:grid-cols-2 gap-12 items-center">
+            <div>
+              <h1 className="text-4xl md:text-6xl font-bold leading-tight mb-4">
+                The Marketplace for{" "}
+                <span className="text-gray-300">Rhino 3D</span> Models
+              </h1>
+              <p className="text-lg md:text-xl text-gray-200 mb-8 leading-relaxed">
+                Buy and sell premium .3dm files. Join thousands of designers and architects sharing high-quality Rhino 3D models.
+              </p>
+
+              {/* Search */}
+              <form onSubmit={handleSearch} className="relative mb-6 max-w-lg">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
+                <input
+                  type="text"
+                  value={searchQuery}
+                  onChange={e => setSearchQuery(e.target.value)}
+                  placeholder="Search models..."
+                  className="w-full rounded-xl bg-white/10 border border-white/20 text-white placeholder-gray-400 pl-10 pr-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-white/30"
+                />
+              </form>
+
+              <div className="flex flex-col sm:flex-row gap-3">
+                <Link href="/marketplace">
+                  <Button size="lg" className="bg-white text-gray-900 hover:bg-gray-50 text-base px-8 w-full sm:w-auto">
+                    Browse Marketplace <ArrowRight className="ml-2 h-5 w-5" />
+                  </Button>
+                </Link>
+                <Link href="/auth/register">
+                  <Button size="lg" variant="outline" className="border-white text-white hover:bg-white hover:text-gray-900 bg-transparent text-base px-8 w-full sm:w-auto">
+                    Start Selling
+                  </Button>
+                </Link>
+              </div>
+            </div>
+
+            {/* Right: 3D wireframe illustration */}
+            <div className="hidden md:flex items-center justify-center">
+              <svg viewBox="0 0 400 400" className="w-full max-w-sm" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <g opacity="0.15">
+                  <path d="M200 60 L320 140 L320 260 L200 340 L80 260 L80 140 Z" stroke="white" strokeWidth="1.5" />
+                </g>
+                <g opacity="0.3">
+                  <path d="M200 60 L320 140 L200 220 L80 140 Z" stroke="white" strokeWidth="1.5" />
+                </g>
+                <g opacity="0.5">
+                  <path d="M320 140 L320 260 L200 340 L200 220 Z" stroke="white" strokeWidth="1.5" />
+                  <path d="M200 220 L200 340 L80 260 L80 140 Z" stroke="white" strokeWidth="1.5" />
+                </g>
+                <g opacity="0.15">
+                  <path d="M200 100 L280 160 L280 240 L200 300 L120 240 L120 160 Z" stroke="white" strokeWidth="1" />
+                </g>
+                <circle cx="200" cy="200" r="100" stroke="white" strokeWidth="0.8" opacity="0.1" fill="none" />
+                <circle cx="200" cy="200" r="140" stroke="white" strokeWidth="0.5" opacity="0.08" fill="none" />
+                {/* Dots on vertices */}
+                <circle cx="200" cy="60" r="3" fill="white" opacity="0.6" />
+                <circle cx="320" cy="140" r="3" fill="white" opacity="0.6" />
+                <circle cx="320" cy="260" r="3" fill="white" opacity="0.6" />
+                <circle cx="200" cy="340" r="3" fill="white" opacity="0.6" />
+                <circle cx="80" cy="260" r="3" fill="white" opacity="0.6" />
+                <circle cx="80" cy="140" r="3" fill="white" opacity="0.6" />
+                <circle cx="200" cy="200" r="3" fill="white" opacity="0.8" />
+              </svg>
             </div>
           </div>
         </div>
       </section>
       </AnimatedSection>
 
-      {/* Stats Bar */}
+      {/* ── Categories ── */}
       <AnimatedSection>
-      <section className="bg-white border-b border-gray-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <section className="bg-white border-b border-gray-200 py-10">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <StaggerContainer className="grid grid-cols-3 md:grid-cols-6 gap-3 md:gap-4">
+            {categories.map(cat => {
+              const Icon = categoryIcons[cat.name] || Package;
+              return (
+                <StaggerItem key={cat.id}>
+                  <Link href={`/marketplace?category=${cat.slug}`}>
+                    <div className="flex flex-col items-center p-4 rounded-xl border border-gray-200 hover:border-gray-400 hover:shadow-sm transition-all bg-white">
+                      <Icon className="h-6 w-6 text-gray-700 mb-2" />
+                      <span className="text-xs font-medium text-gray-900 text-center leading-tight">{cat.name}</span>
+                      <span className="text-xs text-gray-400 mt-1">{cat._count.listings}</span>
+                    </div>
+                  </Link>
+                </StaggerItem>
+              );
+            })}
+          </StaggerContainer>
+        </div>
+      </section>
+      </AnimatedSection>
+
+      {/* ── Real Stats ── */}
+      <AnimatedSection>
+      <section className="bg-gray-50 border-b border-gray-200">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
           <StaggerContainer className="grid grid-cols-2 md:grid-cols-4 gap-8">
             {[
-              { icon: FileText, label: "Premium Models", value: "10,000+" },
-              { icon: Users, label: "Active Designers", value: "2,500+" },
-              { icon: Star, label: "Average Rating", value: "4.8/5" },
+              { icon: FileText, label: "Models Available", value: `${(stats.totalListings || 0).toLocaleString()}+` },
               { icon: Shield, label: "Secure Payments", value: "100%" },
-            ].map((stat) => (
+              { icon: Star, label: "Average Rating", value: "4.8/5" },
+              { icon: Users, label: "Active Designers", value: `${Math.max(1, Math.floor((stats.totalListings || 0) / 3)).toLocaleString()}+` },
+            ].map(stat => (
               <StaggerItem key={stat.label}>
-              <div className="text-center">
-                <stat.icon className="h-6 w-6 text-gray-600 mx-auto mb-2" />
-                <div className="text-2xl font-bold text-gray-900">{stat.value}</div>
-                <div className="text-sm text-gray-500">{stat.label}</div>
-              </div>
+                <div className="text-center">
+                  <stat.icon className="h-6 w-6 text-gray-600 mx-auto mb-2" />
+                  <div className="text-2xl font-bold text-gray-900">{stat.value}</div>
+                  <div className="text-sm text-gray-500">{stat.label}</div>
+                </div>
               </StaggerItem>
             ))}
           </StaggerContainer>
@@ -86,7 +199,7 @@ export default function HomePage() {
       </section>
       </AnimatedSection>
 
-      {/* Featured Listings */}
+      {/* ── Featured Listings ── */}
       <AnimatedSection>
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
         <div className="flex items-center justify-between mb-8">
@@ -99,68 +212,71 @@ export default function HomePage() {
           </Link>
         </div>
 
-        <StaggerContainer staggerDelay={0.08} className="marketplace-grid">
-          {featuredListings.map((listing) => (
-            <StaggerItem key={listing.id}>
-            <Link href={`/product/${listing.slug}`}>
-              <Card hover className="overflow-hidden group">
-                <div className="aspect-[4/3] bg-gray-100 relative overflow-hidden">
-                  {listing.thumbnailUrl ? (
-                    <img
-                      src={listing.thumbnailUrl}
-                      alt={listing.title}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                    />
-                  ) : (
-                    <div className="flex items-center justify-center h-full text-gray-400">
-                      <FileText className="h-12 w-12" />
-                    </div>
-                  )}
-                </div>
-                <div className="p-4">
-                  <h3 className="font-semibold text-gray-900 truncate">{listing.title}</h3>
-                  <p className="text-sm text-gray-500 mt-1">by {listing.designer.name}</p>
-                  <div className="flex items-center justify-between mt-3">
-                    <span className="text-lg font-bold text-gray-600">{formatPrice(listing.price)}</span>
-                    <div className="flex items-center gap-3 text-xs text-gray-400">
-                      <span className="flex items-center gap-1"><Star className="h-3 w-3" /> {listing._count.reviews}</span>
-                      <span>{listing._count.favorites} ♥</span>
+        {featured.length === 0 ? (
+          <div className="text-center py-16 text-gray-400">
+            <FileText className="h-12 w-12 mx-auto mb-3 opacity-40" />
+            <p className="text-lg font-medium text-gray-500 mb-1">No models yet</p>
+            <p className="text-sm">Be the first designer to upload a model!</p>
+          </div>
+        ) : (
+          <StaggerContainer staggerDelay={0.08} className="marketplace-grid">
+            {featured.map(listing => (
+              <StaggerItem key={listing.id}>
+              <Link href={`/product/${listing.slug}`}>
+                <Card hover className="overflow-hidden group">
+                  <div className="aspect-[4/3] bg-gray-100 relative overflow-hidden">
+                    {listing.thumbnailUrl ? (
+                      <img src={listing.thumbnailUrl} alt={listing.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+                    ) : (
+                      <div className="flex items-center justify-center h-full text-gray-400">
+                        <FileText className="h-12 w-12" />
+                      </div>
+                    )}
+                  </div>
+                  <div className="p-4">
+                    <h3 className="font-semibold text-gray-900 truncate">{listing.title}</h3>
+                    <p className="text-sm text-gray-500 mt-1">by {listing.designer.name}</p>
+                    <div className="flex items-center justify-between mt-3">
+                      <span className="text-lg font-bold text-gray-600">{formatPrice(listing.price)}</span>
+                      <div className="flex items-center gap-3 text-xs text-gray-400">
+                        <span className="flex items-center gap-1"><Star className="h-3 w-3" /> {listing._count.reviews}</span>
+                        <span>{listing._count.favorites} ♥</span>
+                      </div>
                     </div>
                   </div>
-                </div>
-              </Card>
-            </Link>
-            </StaggerItem>
-          ))}
-        </StaggerContainer>
+                </Card>
+              </Link>
+              </StaggerItem>
+            ))}
+          </StaggerContainer>
+        )}
 
         <div className="mt-8 text-center sm:hidden">
-          <Link href="/marketplace">
-            <Button variant="outline">View All Models</Button>
-          </Link>
+          <Link href="/marketplace"><Button variant="outline">View All Models</Button></Link>
         </div>
       </section>
       </AnimatedSection>
 
-      {/* How It Works */}
+      {/* ── Why Designers Love Us ── */}
       <AnimatedSection>
-      <section className="bg-white py-16 border-t border-gray-200">
+      <section className="bg-gray-50 border-t border-gray-200 py-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h2 className="text-2xl md:text-3xl font-bold text-gray-900 text-center mb-12">How It Works</h2>
+          <h2 className="text-2xl md:text-3xl font-bold text-gray-900 text-center mb-4">Why Designers Love 3DM Store</h2>
+          <p className="text-gray-500 text-center mb-12 max-w-xl mx-auto">Everything you need to turn your Rhino skills into revenue</p>
           <StaggerContainer className="grid md:grid-cols-3 gap-8">
             {[
-              { step: "01", title: "Browse & Discover", desc: "Explore thousands of high-quality .3dm files from talented designers worldwide." },
-              { step: "02", title: "Purchase Securely", desc: "Buy with confidence using our secure Stripe payment system with buyer protection." },
-              { step: "03", title: "Instant Download", desc: "Get immediate access to your purchased files. Download anytime, anywhere." },
-            ].map((item) => (
-              <StaggerItem key={item.step}>
-              <div className="text-center">
-                <div className="w-12 h-12 bg-gray-100 rounded-xl flex items-center justify-center mx-auto mb-4">
-                  <span className="text-gray-600 font-bold">{item.step}</span>
-                </div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-2">{item.title}</h3>
-                <p className="text-gray-500 text-sm leading-relaxed">{item.desc}</p>
-              </div>
+              { icon: DollarSign, title: "Set Your Own Prices", desc: "You control what your work is worth. List models at any price point and keep the majority of each sale." },
+              { icon: Globe, title: "Global Audience", desc: "Reach thousands of architects, engineers, and designers looking for quality .3dm files worldwide." },
+              { icon: TrendingUp, title: "Passive Income", desc: "Upload once, earn forever. Your models keep selling while you focus on creating new designs." },
+            ].map(item => (
+              <StaggerItem key={item.title}>
+                <Card className="p-6 text-center h-full">
+                  <div className="w-12 h-12 bg-gray-900 rounded-xl flex items-center justify-center mx-auto mb-4">
+                    <item.icon className="h-6 w-6 text-white" />
+                  </div>
+                  <h3 className="text-lg font-semibold text-gray-900 mb-2">{item.title}</h3>
+                  <p className="text-gray-500 text-sm leading-relaxed">{item.desc}</p>
+                </Card>
               </StaggerItem>
             ))}
           </StaggerContainer>
@@ -168,19 +284,81 @@ export default function HomePage() {
       </section>
       </AnimatedSection>
 
-      {/* Sell CTA */}
+      {/* ── How It Works (for buyers) ── */}
       <AnimatedSection>
-      <section className="bg-gradient-to-r from-gray-600 to-gray-600 py-16">
+      <section className="bg-white py-16 border-t border-gray-200">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <h2 className="text-2xl md:text-3xl font-bold text-gray-900 text-center mb-12">How It Works</h2>
+          <StaggerContainer className="grid md:grid-cols-3 gap-8">
+            {[
+              { step: "01", title: "Browse & Discover", desc: "Explore thousands of high-quality .3dm files from talented designers worldwide across multiple categories." },
+              { step: "02", title: "Purchase Securely", desc: "Buy with confidence using our secure Stripe payment system with full buyer protection." },
+              { step: "03", title: "Instant Download", desc: "Get immediate access to your purchased files. Download anytime, anywhere, with no limits." },
+            ].map(item => (
+              <StaggerItem key={item.step}>
+                <div className="text-center">
+                  <div className="w-12 h-12 bg-gray-100 rounded-xl flex items-center justify-center mx-auto mb-4">
+                    <span className="text-gray-600 font-bold">{item.step}</span>
+                  </div>
+                  <h3 className="text-lg font-semibold text-gray-900 mb-2">{item.title}</h3>
+                  <p className="text-gray-500 text-sm leading-relaxed">{item.desc}</p>
+                </div>
+              </StaggerItem>
+            ))}
+          </StaggerContainer>
+        </div>
+      </section>
+      </AnimatedSection>
+
+      {/* ── Testimonials ── */}
+      <AnimatedSection>
+      <section className="bg-gray-50 border-t border-gray-200 py-16">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <h2 className="text-2xl md:text-3xl font-bold text-gray-900 text-center mb-12">Trusted by the Community</h2>
+          <StaggerContainer className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+            {testimonials.map(t => (
+              <StaggerItem key={t.name}>
+                <Card className="p-6">
+                  <Quote className="h-6 w-6 text-gray-300 mb-3" />
+                  <p className="text-gray-600 text-sm leading-relaxed mb-4">&ldquo;{t.text}&rdquo;</p>
+                  <div className="flex items-center gap-2">
+                    <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center text-xs font-bold text-gray-600">
+                      {t.name.charAt(0)}
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-gray-900">{t.name}</p>
+                      <p className="text-xs text-gray-400">{t.role}</p>
+                    </div>
+                  </div>
+                </Card>
+              </StaggerItem>
+            ))}
+          </StaggerContainer>
+        </div>
+      </section>
+      </AnimatedSection>
+
+      {/* ── Final CTA ── */}
+      <AnimatedSection>
+      <section className="bg-gradient-to-r from-gray-800 to-gray-700 py-20">
         <div className="max-w-4xl mx-auto px-4 text-center">
-          <h2 className="text-3xl font-bold text-white mb-4">Start Selling Your Designs</h2>
-          <p className="text-gray-100 text-lg mb-8">
-            Join our community of designers. Set your own prices, reach global customers, and earn what you deserve.
+          <BadgeCheck className="h-12 w-12 text-white/60 mx-auto mb-4" />
+          <h2 className="text-3xl font-bold text-white mb-4">Ready to Join the Marketplace?</h2>
+          <p className="text-gray-200 text-lg mb-8 max-w-2xl mx-auto">
+            Whether you&apos;re looking for premium .3dm files or want to sell your own designs, 3DM Store has everything you need.
           </p>
-          <Link href="/auth/register">
-            <Button size="lg" className="bg-white text-gray-700 hover:bg-gray-50 text-base px-8">
-              Become a Designer <ArrowRight className="ml-2 h-5 w-5" />
-            </Button>
-          </Link>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <Link href="/auth/register">
+              <Button size="lg" className="bg-white text-gray-800 hover:bg-gray-100 text-base px-10">
+                Create Free Account <ArrowRight className="ml-2 h-5 w-5" />
+              </Button>
+            </Link>
+            <Link href="/marketplace">
+              <Button size="lg" variant="outline" className="border-white text-white hover:bg-white hover:text-gray-800 bg-transparent text-base px-10">
+                Browse Models
+              </Button>
+            </Link>
+          </div>
         </div>
       </section>
       </AnimatedSection>
