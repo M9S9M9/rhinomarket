@@ -16,6 +16,7 @@ async function main() {
       name: "Admin",
       passwordHash: adminPassword,
       role: "ADMIN",
+      uploadLimit: 9999,
       emailVerified: new Date(),
     },
   });

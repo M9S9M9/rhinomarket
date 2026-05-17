@@ -18,6 +18,14 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Account restricted. Contact support." }, { status: 403 });
   }
 
+  // Enforce upload limit
+  const listingCount = await prisma.listing.count({ where: { designerId: user.id } });
+  if (listingCount >= user.uploadLimit) {
+    return NextResponse.json({
+      error: `Upload limit reached (${user.uploadLimit}). Contact an admin to increase your limit.`,
+    }, { status: 403 });
+  }
+
   try {
     const formData = await req.formData();
     const file = formData.get("file") as File;

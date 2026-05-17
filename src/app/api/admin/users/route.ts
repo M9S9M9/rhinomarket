@@ -13,7 +13,7 @@ export async function GET() {
     orderBy: { createdAt: "desc" },
     select: {
       id: true, name: true, email: true, role: true,
-      isActive: true, emailVerified: true, createdAt: true,
+      isActive: true, uploadLimit: true, emailVerified: true, createdAt: true,
       stripeOnboarding: true,
       _count: { select: { listings: true, purchases: true } },
     },
@@ -49,6 +49,7 @@ export async function POST(req: Request) {
       name: body.name || body.email.split("@")[0],
       passwordHash: await hash(body.password, 12),
       role,
+      uploadLimit: body.uploadLimit ?? 10,
     },
     select: { id: true, name: true, email: true, role: true, isActive: true, createdAt: true },
   });

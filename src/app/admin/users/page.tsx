@@ -12,7 +12,7 @@ import toast from "react-hot-toast";
 
 interface User {
   id: string; name: string | null; email: string;
-  role: string; isActive: boolean; emailVerified: string | null;
+  role: string; isActive: boolean; uploadLimit: number; emailVerified: string | null;
   createdAt: string; stripeOnboarding: boolean;
   _count: { listings: number; purchases: number };
 }
@@ -25,8 +25,8 @@ export default function AdminUsersPage() {
   const [users, setUsers] = useState<User[]>([]);
   const [showAdd, setShowAdd] = useState(false);
   const [editId, setEditId] = useState<string | null>(null);
-  const [form, setForm] = useState({ email: "", name: "", password: "", role: "BUYER" });
-  const [editForm, setEditForm] = useState({ name: "", role: "BUYER", password: "" });
+  const [form, setForm] = useState({ email: "", name: "", password: "", role: "BUYER", uploadLimit: 10 });
+  const [editForm, setEditForm] = useState({ name: "", role: "BUYER", password: "", uploadLimit: 10 });
   const user = session?.user as any;
 
   const fetchUsers = () => fetch("/api/admin/users").then(r => r.json()).then(setUsers).catch(() => {});
@@ -47,7 +47,7 @@ export default function AdminUsersPage() {
       if (res.ok) {
         toast.success("User created");
         setShowAdd(false);
-        setForm({ email: "", name: "", password: "", role: "BUYER" });
+        setForm({ email: "", name: "", password: "", role: "BUYER", uploadLimit: 10 });
         fetchUsers();
       } else {
         const d = await res.json();
@@ -61,6 +61,7 @@ export default function AdminUsersPage() {
       const body: any = {};
       if (editForm.name) body.name = editForm.name;
       if (editForm.role) body.role = editForm.role;
+      if (editForm.uploadLimit) body.uploadLimit = Number(editForm.uploadLimit);
       if (editForm.password) body.password = editForm.password;
       const res = await fetch(`/api/admin/users/${id}`, {
         method: "PATCH", headers: { "Content-Type": "application/json" },
@@ -69,7 +70,7 @@ export default function AdminUsersPage() {
       if (res.ok) {
         toast.success("User updated");
         setEditId(null);
-        setEditForm({ name: "", role: "BUYER", password: "" });
+        setEditForm({ name: "", role: "BUYER", password: "", uploadLimit: 10 });
         fetchUsers();
       } else {
         const d = await res.json();
@@ -147,6 +148,10 @@ export default function AdminUsersPage() {
               <select value={form.role} onChange={e => setForm({...form, role: e.target.value})} className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-gray-500 focus:outline-none">
                 {roles.map(r => <option key={r} value={r}>{r}</option>)}
               </select>
+              <div>
+                <label className="block text-xs text-gray-500 mb-1">Upload Limit</label>
+                <input type="number" min="0" value={form.uploadLimit} onChange={e => setForm({...form, uploadLimit: Number(e.target.value)})} className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-gray-500 focus:outline-none" />
+              </div>
             </div>
             <div className="flex gap-3 mt-4">
               <Button variant="outline" className="flex-1" onClick={() => setShowAdd(false)}>Cancel</Button>
@@ -166,6 +171,10 @@ export default function AdminUsersPage() {
               <select value={editForm.role} onChange={e => setEditForm({...editForm, role: e.target.value})} className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-gray-500 focus:outline-none">
                 {roles.map(r => <option key={r} value={r}>{r}</option>)}
               </select>
+              <div>
+                <label className="block text-xs text-gray-500 mb-1">Upload Limit</label>
+                <input type="number" min="0" value={editForm.uploadLimit} onChange={e => setEditForm({...editForm, uploadLimit: Number(e.target.value)})} className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-gray-500 focus:outline-none" />
+              </div>
               <input type="password" placeholder="New password (leave blank to keep current)" value={editForm.password} onChange={e => setEditForm({...editForm, password: e.target.value})} className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-gray-500 focus:outline-none" />
             </div>
             <div className="flex gap-3 mt-4">
@@ -184,7 +193,7 @@ export default function AdminUsersPage() {
               <th className="text-left py-3 px-4 font-medium text-gray-500">Role</th>
               <th className="text-left py-3 px-4 font-medium text-gray-500">Status</th>
               <th className="text-left py-3 px-4 font-medium text-gray-500">Stripe</th>
-              <th className="text-left py-3 px-4 font-medium text-gray-500">Listings</th>
+              <th className="text-left py-3 px-4 font-medium text-gray-500">Uploads / Limit</th>
               <th className="text-left py-3 px-4 font-medium text-gray-500">Purchases</th>
               <th className="text-left py-3 px-4 font-medium text-gray-500">Joined</th>
               <th className="text-left py-3 px-4 font-medium text-gray-500">Actions</th>
@@ -210,12 +219,16 @@ export default function AdminUsersPage() {
                   <Badge variant={u.isActive ? "success" : "danger"}>{u.isActive ? "Active" : "Inactive"}</Badge>
                 </td>
                 <td className="py-3 px-4">{u.stripeOnboarding ? "✓" : "—"}</td>
-                <td className="py-3 px-4">{u._count.listings}</td>
+                <td className="py-3 px-4">
+                  <span className={u._count.listings >= u.uploadLimit ? "text-red-600 font-semibold" : ""}>
+                    {u._count.listings} / {u.uploadLimit}
+                  </span>
+                </td>
                 <td className="py-3 px-4">{u._count.purchases}</td>
                 <td className="py-3 px-4 text-gray-500">{formatDate(u.createdAt)}</td>
                 <td className="py-3 px-4">
                   <div className="flex items-center gap-1">
-                    <button onClick={() => { setEditId(u.id); setEditForm({ name: u.name || "", role: u.role, password: "" }); }} className="p-1.5 rounded hover:bg-gray-100 text-gray-500 hover:text-gray-600" title="Edit">
+                    <button onClick={() => { setEditId(u.id); setEditForm({ name: u.name || "", role: u.role, password: "", uploadLimit: u.uploadLimit }); }} className="p-1.5 rounded hover:bg-gray-100 text-gray-500 hover:text-gray-600" title="Edit">
                       <Shield className="h-4 w-4" />
                     </button>
                     <button onClick={() => handleResetPassword(u.id)} className="p-1.5 rounded hover:bg-gray-100 text-gray-500 hover:text-amber-600" title="Reset password">
