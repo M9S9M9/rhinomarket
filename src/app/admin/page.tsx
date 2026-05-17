@@ -7,7 +7,7 @@ import Link from "next/link";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Users, FileText, DollarSign, AlertTriangle, ArrowRight } from "lucide-react";
+import { Users, FileText, DollarSign, AlertTriangle, Sliders, ArrowRight } from "lucide-react";
 import { formatPrice, formatDate } from "@/lib/utils";
 
 interface AdminStats {
@@ -129,7 +129,7 @@ export default function AdminPage() {
       </div>
 
       {/* Admin Navigation */}
-      <div className="grid md:grid-cols-3 gap-4 mt-8">
+      <div className="grid md:grid-cols-4 gap-4 mt-8">
         <Link href="/admin/listings">
           <Card hover className="p-6"><FileText className="h-6 w-6 text-gray-600 mb-2" /><h3 className="font-semibold">Manage Listings</h3><p className="text-sm text-gray-500">Approve, reject, or manage models</p></Card>
         </Link>
@@ -138,6 +138,9 @@ export default function AdminPage() {
         </Link>
         <Link href="/admin/dmca">
           <Card hover className="p-6"><AlertTriangle className="h-6 w-6 text-gray-600 mb-2" /><h3 className="font-semibold">DMCA Reports</h3><p className="text-sm text-gray-500">Review copyright and policy reports</p></Card>
+        </Link>
+        <Link href="/admin/commission">
+          <Card hover className="p-6"><Sliders className="h-6 w-6 text-gray-600 mb-2" /><h3 className="font-semibold">Commission</h3><p className="text-sm text-gray-500">Set platform commission rate</p></Card>
         </Link>
       </div>
     </div>

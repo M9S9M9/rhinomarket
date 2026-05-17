@@ -8,15 +8,11 @@ export const stripe = isStripeDevMode
   ? (null as unknown as Stripe)
   : new Stripe(stripeKey, { apiVersion: "2025-02-24.acacia" as any });
 
-export const PLATFORM_COMMISSION_PERCENT = parseInt(
-  process.env.PLATFORM_COMMISSION_PERCENT || "15"
-);
-
-export function calculateCommission(amount: number): {
-  commission: number;
-  designerEarning: number;
-} {
-  const commission = (amount * PLATFORM_COMMISSION_PERCENT) / 100;
+export function calculateCommission(
+  amount: number,
+  commissionPercent: number = 15
+): { commission: number; designerEarning: number } {
+  const commission = (amount * commissionPercent) / 100;
   const designerEarning = amount - commission;
   return {
     commission: Math.round(commission * 100) / 100,
@@ -98,9 +94,10 @@ export async function createPaymentIntent(
   designerStripeAccountId: string,
   listingId: string,
   buyerId: string,
-  designerId: string
+  designerId: string,
+  commissionPercent?: number
 ) {
-  const { commission, designerEarning } = calculateCommission(amount);
+  const { commission, designerEarning } = calculateCommission(amount, commissionPercent);
 
   if (isStripeDevMode) {
     const pi = devCreatePaymentIntent(amount, designerStripeAccountId);
@@ -133,9 +130,10 @@ export async function createCheckoutSession(
   listingId: string,
   buyerId: string,
   designerId: string,
-  listingTitle: string
+  listingTitle: string,
+  commissionPercent?: number
 ) {
-  const { commission, designerEarning } = calculateCommission(amount);
+  const { commission, designerEarning } = calculateCommission(amount, commissionPercent);
 
   if (isStripeDevMode) {
     const pi = devCreatePaymentIntent(amount, designerStripeAccountId);

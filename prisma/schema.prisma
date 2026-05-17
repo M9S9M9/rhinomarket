@@ -340,6 +340,13 @@ model DMCAReport {
   @@map("dmca_reports")
 }
 
+model AppSettings {
+  id               Int @id @default(1)
+  commissionPercent Int @default(15)
+
+  @@map("app_settings")
+}
+
 // Next Auth Models
 model Account {
   id                String  @id @default(cuid())

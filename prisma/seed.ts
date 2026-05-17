@@ -73,6 +73,14 @@ async function main() {
   }
   console.log("Categories created");
 
+  // Create default app settings
+  await prisma.appSettings.upsert({
+    where: { id: 1 },
+    update: {},
+    create: { id: 1, commissionPercent: 15 },
+  });
+  console.log("App settings created");
+
   console.log("\nSeed completed!");
   console.log("\nTest accounts:");
   console.log("  Admin:    admin@3dmstore.com / admin123456");

@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
+import { getCommissionPercent, setCommissionPercent } from "@/lib/settings";
 
 export async function GET() {
   const session = await auth();
@@ -7,9 +8,9 @@ export async function GET() {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  return NextResponse.json({
-    commissionPercent: parseInt(process.env.PLATFORM_COMMISSION_PERCENT || "15"),
-  });
+  const commissionPercent = await getCommissionPercent();
+
+  return NextResponse.json({ commissionPercent });
 }
 
 export async function POST(req: Request) {
@@ -18,10 +19,17 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  // In production, this would update a DB settings table
-  // For now, return the current config
+  const body = await req.json();
+  const percent = parseInt(body.commissionPercent);
+
+  if (isNaN(percent) || percent < 0 || percent > 100) {
+    return NextResponse.json({ error: "Commission must be 0–100" }, { status: 400 });
+  }
+
+  await setCommissionPercent(percent);
+
   return NextResponse.json({
     message: "Commission rate updated",
-    commissionPercent: parseInt(process.env.PLATFORM_COMMISSION_PERCENT || "15"),
+    commissionPercent: percent,
   });
 }
