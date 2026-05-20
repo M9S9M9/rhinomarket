@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
@@ -7,12 +8,12 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { formatDate } from "@/lib/utils";
-import { Plus, Trash2, Shield, Key, Ban, CheckCircle, XCircle } from "lucide-react";
+import { Plus, Trash2, Shield, Key, Ban, CheckCircle, XCircle, FileText } from "lucide-react";
 import toast from "react-hot-toast";
 
 interface User {
   id: string; name: string | null; email: string;
-  role: string; isActive: boolean; uploadLimit: number; emailVerified: string | null;
+  role: string; isActive: boolean; uploadLimit: number; commissionOverride: number | null; emailVerified: string | null;
   createdAt: string; stripeOnboarding: boolean;
   _count: { listings: number; purchases: number };
 }
@@ -26,7 +27,7 @@ export default function AdminUsersPage() {
   const [showAdd, setShowAdd] = useState(false);
   const [editId, setEditId] = useState<string | null>(null);
   const [form, setForm] = useState({ email: "", name: "", password: "", role: "BUYER", uploadLimit: 10 });
-  const [editForm, setEditForm] = useState({ name: "", role: "BUYER", password: "", uploadLimit: 10 });
+  const [editForm, setEditForm] = useState({ name: "", role: "BUYER", password: "", uploadLimit: 10, commissionOverride: "" });
   const user = session?.user as any;
 
   const fetchUsers = () => fetch("/api/admin/users").then(r => r.json()).then(setUsers).catch(() => {});
@@ -62,6 +63,7 @@ export default function AdminUsersPage() {
       if (editForm.name) body.name = editForm.name;
       if (editForm.role) body.role = editForm.role;
       if (editForm.uploadLimit) body.uploadLimit = Number(editForm.uploadLimit);
+      body.commissionOverride = editForm.commissionOverride === "" || editForm.commissionOverride === null ? null : Number(editForm.commissionOverride);
       if (editForm.password) body.password = editForm.password;
       const res = await fetch(`/api/admin/users/${id}`, {
         method: "PATCH", headers: { "Content-Type": "application/json" },
@@ -70,7 +72,7 @@ export default function AdminUsersPage() {
       if (res.ok) {
         toast.success("User updated");
         setEditId(null);
-        setEditForm({ name: "", role: "BUYER", password: "", uploadLimit: 10 });
+        setEditForm({ name: "", role: "BUYER", password: "", uploadLimit: 10, commissionOverride: "" });
         fetchUsers();
       } else {
         const d = await res.json();
@@ -175,6 +177,10 @@ export default function AdminUsersPage() {
                 <label className="block text-xs text-gray-500 mb-1">Upload Limit</label>
                 <input type="number" min="0" value={editForm.uploadLimit} onChange={e => setEditForm({...editForm, uploadLimit: Number(e.target.value)})} className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-gray-500 focus:outline-none" />
               </div>
+              <div>
+                <label className="block text-xs text-gray-500 mb-1">Commission Override % (leave empty for global default)</label>
+                <input type="number" min="0" max="100" value={editForm.commissionOverride} onChange={e => setEditForm({...editForm, commissionOverride: e.target.value})} className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-gray-500 focus:outline-none" />
+              </div>
               <input type="password" placeholder="New password (leave blank to keep current)" value={editForm.password} onChange={e => setEditForm({...editForm, password: e.target.value})} className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-gray-500 focus:outline-none" />
             </div>
             <div className="flex gap-3 mt-4">
@@ -194,6 +200,7 @@ export default function AdminUsersPage() {
               <th className="text-left py-3 px-4 font-medium text-gray-500">Status</th>
               <th className="text-left py-3 px-4 font-medium text-gray-500">Stripe</th>
               <th className="text-left py-3 px-4 font-medium text-gray-500">Uploads / Limit</th>
+              <th className="text-left py-3 px-4 font-medium text-gray-500">Commission</th>
               <th className="text-left py-3 px-4 font-medium text-gray-500">Purchases</th>
               <th className="text-left py-3 px-4 font-medium text-gray-500">Joined</th>
               <th className="text-left py-3 px-4 font-medium text-gray-500">Actions</th>
@@ -224,11 +231,12 @@ export default function AdminUsersPage() {
                     {u._count.listings} / {u.uploadLimit}
                   </span>
                 </td>
+                <td className="py-3 px-4">{u.commissionOverride != null ? `${u.commissionOverride}%` : "Default"}</td>
                 <td className="py-3 px-4">{u._count.purchases}</td>
                 <td className="py-3 px-4 text-gray-500">{formatDate(u.createdAt)}</td>
                 <td className="py-3 px-4">
                   <div className="flex items-center gap-1">
-                    <button onClick={() => { setEditId(u.id); setEditForm({ name: u.name || "", role: u.role, password: "", uploadLimit: u.uploadLimit }); }} className="p-1.5 rounded hover:bg-gray-100 text-gray-500 hover:text-gray-600" title="Edit">
+                    <button onClick={() => { setEditId(u.id); setEditForm({ name: u.name || "", role: u.role, password: "", uploadLimit: u.uploadLimit, commissionOverride: u.commissionOverride != null ? String(u.commissionOverride) : "" }); }} className="p-1.5 rounded hover:bg-gray-100 text-gray-500 hover:text-gray-600" title="Edit">
                       <Shield className="h-4 w-4" />
                     </button>
                     <button onClick={() => handleResetPassword(u.id)} className="p-1.5 rounded hover:bg-gray-100 text-gray-500 hover:text-amber-600" title="Reset password">
@@ -237,6 +245,11 @@ export default function AdminUsersPage() {
                     <button onClick={() => handleToggleActive(u)} className="p-1.5 rounded hover:bg-gray-100 text-gray-500 hover:text-orange-600" title={u.isActive ? "Restrict" : "Activate"}>
                       {u.isActive ? <Ban className="h-4 w-4" /> : <CheckCircle className="h-4 w-4" />}
                     </button>
+                    <Link href={`/admin/listings?designerId=${u.id}`}>
+                      <button className="p-1.5 rounded hover:bg-gray-100 text-gray-500 hover:text-blue-600" title="View Listings">
+                        <FileText className="h-4 w-4" />
+                      </button>
+                    </Link>
                     <button onClick={() => handleDelete(u.id, u.email)} className="p-1.5 rounded hover:bg-gray-100 text-gray-500 hover:text-red-600" title="Delete">
                       <Trash2 className="h-4 w-4" />
                     </button>

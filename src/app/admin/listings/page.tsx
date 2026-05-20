@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -17,9 +17,11 @@ interface Listing {
   category?: { name: string } | null;
 }
 
-export default function AdminListingsPage() {
+function AdminListingsInner() {
   const { data: session, status } = useSession();
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const designerId = searchParams.get("designerId");
   const [listings, setListings] = useState<Listing[]>([]);
   const [filter, setFilter] = useState("ALL");
   const user = session?.user as any;
@@ -28,9 +30,10 @@ export default function AdminListingsPage() {
     if (status === "unauthenticated") { router.push("/auth/login"); return; }
     if (status === "authenticated" && user?.role !== "ADMIN") { router.push("/dashboard"); return; }
     if (status === "authenticated") {
-      fetch("/api/admin/listings").then(r => r.json()).then(setListings).catch(() => {});
+      const url = designerId ? `/api/admin/listings?designerId=${designerId}` : "/api/admin/listings";
+      fetch(url).then(r => r.json()).then(setListings).catch(() => {});
     }
-  }, [status, router, user?.role]);
+  }, [status, router, user?.role, designerId]);
 
   const handleAction = async (id: string, action: string, rejectionReason?: string) => {
     try {
@@ -60,8 +63,13 @@ export default function AdminListingsPage() {
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <div className="mb-8">
-        <h1 className="text-2xl font-bold text-gray-900">Manage Listings</h1>
-        <p className="text-gray-500 mt-1">Review and manage all marketplace listings</p>
+        <div className="flex items-center gap-3">
+          <h1 className="text-2xl font-bold text-gray-900">Manage Listings</h1>
+          {designerId && (
+            <Link href="/admin/listings" className="text-sm text-gray-500 hover:text-gray-700 underline">Clear filter</Link>
+          )}
+        </div>
+        <p className="text-gray-500 mt-1">{designerId ? "Listings by this user" : "Review and manage all marketplace listings"}</p>
       </div>
 
       <div className="flex gap-2 mb-6">
@@ -105,5 +113,13 @@ export default function AdminListingsPage() {
         ))}
       </div>
     </div>
+  );
+}
+
+export default function AdminListingsPage() {
+  return (
+    <Suspense fallback={<div className="p-8 text-center text-gray-500">Loading...</div>}>
+      <AdminListingsInner />
+    </Suspense>
   );
 }

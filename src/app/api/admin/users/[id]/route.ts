@@ -21,6 +21,7 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
     data.role = body.role;
   }
   if (body.uploadLimit !== undefined) data.uploadLimit = body.uploadLimit;
+  if (body.commissionOverride !== undefined) data.commissionOverride = body.commissionOverride;
   if (body.isActive !== undefined) data.isActive = body.isActive;
   if (body.name !== undefined) data.name = body.name;
   if (body.password) {

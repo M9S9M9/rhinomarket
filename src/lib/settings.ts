@@ -12,3 +12,12 @@ export async function setCommissionPercent(value: number): Promise<void> {
     update: { commissionPercent: value },
   });
 }
+
+export async function getCommissionPercentForDesigner(designerId: string): Promise<number> {
+  const user = await prisma.user.findUnique({
+    where: { id: designerId },
+    select: { commissionOverride: true },
+  });
+  if (user?.commissionOverride != null) return user.commissionOverride;
+  return getCommissionPercent();
+}

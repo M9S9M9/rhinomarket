@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { createCheckoutSession, calculateCommission } from "@/lib/stripe";
-import { getCommissionPercent } from "@/lib/settings";
+import { getCommissionPercentForDesigner } from "@/lib/settings";
 
 export async function POST(req: Request) {
   const session = await auth();
@@ -33,7 +33,7 @@ export async function POST(req: Request) {
 
     const amount = Number(listing.price);
 
-    const commissionPercent = await getCommissionPercent();
+    const commissionPercent = await getCommissionPercentForDesigner(listing.designerId);
 
     if (amount === 0) {
       const { commission, designerEarning } = calculateCommission(amount, commissionPercent);
