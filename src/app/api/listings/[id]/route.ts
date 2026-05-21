@@ -66,7 +66,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
   const data: any = {};
   if (title !== undefined) data.title = title;
   if (description !== undefined) data.description = description;
-  if (tags !== undefined) data.tags = JSON.stringify(tags);
+  if (tags !== undefined) data.tags = tags;
   if (categoryId !== undefined) data.categoryId = categoryId;
   if (price !== undefined) data.price = parseFloat(price);
   if (licenseType !== undefined) data.licenseType = licenseType;
@@ -101,7 +101,11 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ i
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
-  await prisma.listing.update({ where: { id }, data: { status: "ARCHIVED" } });
+  if (user?.role === "ADMIN") {
+    await prisma.listing.delete({ where: { id } });
+    return NextResponse.json({ message: "Listing permanently deleted" });
+  }
 
+  await prisma.listing.update({ where: { id }, data: { status: "ARCHIVED" } });
   return NextResponse.json({ message: "Listing archived" });
 }

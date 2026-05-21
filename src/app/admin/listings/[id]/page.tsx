@@ -8,7 +8,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { formatPrice, formatDate } from "@/lib/utils";
-import { ArrowLeft, Download, FileText, Eye, Star, Tag } from "lucide-react";
+import { ArrowLeft, Download, FileText, Eye, Star, Tag, Trash2 } from "lucide-react";
 import toast from "react-hot-toast";
 
 interface ListingDetail {
@@ -218,6 +218,24 @@ export default function AdminListingDetailPage() {
               <p className="text-sm text-red-600">{listing.rejectionReason}</p>
             </CardContent></Card>
           )}
+
+          {/* Delete */}
+          <Card>
+            <CardContent className="p-4">
+              <h2 className="font-semibold text-red-600 mb-2">Danger Zone</h2>
+              <p className="text-sm text-gray-500 mb-3">Permanently delete this listing and all associated data.</p>
+              <Button variant="danger" className="w-full" onClick={async () => {
+                if (!confirm(`Delete "${listing.title}"? This cannot be undone.`)) return;
+                try {
+                  const res = await fetch(`/api/listings/${id}`, { method: "DELETE" });
+                  if (res.ok) { toast.success("Listing deleted"); router.push("/admin/listings"); }
+                  else { const d = await res.json(); toast.error(d.error); }
+                } catch { toast.error("Failed to delete"); }
+              }}>
+                <Trash2 className="h-4 w-4 mr-1" /> Delete Listing
+              </Button>
+            </CardContent>
+          </Card>
         </div>
       </div>
     </div>
