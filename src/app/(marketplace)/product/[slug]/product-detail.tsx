@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useSession } from "next-auth/react";
-import { Heart, Download, Eye, FileText, Shield, Star, Flag } from "lucide-react";
+import { Heart, Download, Eye, FileText, Shield, Star, Flag, Share2, Twitter, Facebook, Linkedin, Link as LinkIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
@@ -258,7 +258,45 @@ export function ProductDetailClient({ initialData, slug }: { initialData: Listin
         </div>
       </div>
 
-      <div className="mt-16">
+      {/* Share */}
+      <div className="mt-12 border-t border-gray-200 pt-8">
+        <div className="flex items-center gap-2 text-sm text-gray-500 mb-4">
+          <Share2 className="h-4 w-4" />
+          <span>Share this model</span>
+        </div>
+        <div className="flex gap-3">
+          <button
+            onClick={() => window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(`Check out "${listing.title}" on 3DM Store`)}&url=${encodeURIComponent(window.location.href)}`, '_blank', 'noopener')}
+            className="p-2.5 rounded-lg bg-gray-100 text-gray-600 hover:bg-[#1da1f2] hover:text-white transition-colors"
+            title="Share on X"
+          >
+            <Twitter className="h-5 w-5" />
+          </button>
+          <button
+            onClick={() => window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(window.location.href)}`, '_blank', 'noopener')}
+            className="p-2.5 rounded-lg bg-gray-100 text-gray-600 hover:bg-[#1877f2] hover:text-white transition-colors"
+            title="Share on Facebook"
+          >
+            <Facebook className="h-5 w-5" />
+          </button>
+          <button
+            onClick={() => window.open(`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(window.location.href)}`, '_blank', 'noopener')}
+            className="p-2.5 rounded-lg bg-gray-100 text-gray-600 hover:bg-[#0a66c2] hover:text-white transition-colors"
+            title="Share on LinkedIn"
+          >
+            <Linkedin className="h-5 w-5" />
+          </button>
+          <button
+            onClick={() => { navigator.clipboard.writeText(window.location.href); toast.success("Link copied to clipboard"); }}
+            className="p-2.5 rounded-lg bg-gray-100 text-gray-600 hover:bg-gray-700 hover:text-white transition-colors"
+            title="Copy link"
+          >
+            <LinkIcon className="h-5 w-5" />
+          </button>
+        </div>
+      </div>
+
+      <div className="mt-12">
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-xl font-bold text-gray-900">Reviews ({listing.reviews.length})</h2>
           {purchased && !alreadyReviewed && (
