@@ -122,6 +122,50 @@ export async function savePreviewImage(
   return `/uploads/previews/${uniqueName}`;
 }
 
+const AVATARS_DIR = path.join(UPLOAD_DIR, "avatars");
+
+export async function saveAvatarImage(
+  buffer: Buffer,
+  ext: string
+): Promise<string> {
+  const uniqueName = `${randomUUID()}${ext}`;
+
+  if (useBlob) {
+    const { put } = await import("@vercel/blob");
+    const blob = await put(`avatars/${uniqueName}`, buffer, {
+      access: "public",
+      contentType: "image/webp",
+    });
+    return blob.url;
+  }
+
+  if (useS3) {
+    const { S3Client, PutObjectCommand } = await import("@aws-sdk/client-s3");
+    const s3 = new S3Client({
+      endpoint: process.env.S3_ENDPOINT,
+      region: process.env.S3_REGION || "auto",
+      credentials: {
+        accessKeyId: process.env.S3_ACCESS_KEY_ID!,
+        secretAccessKey: process.env.S3_SECRET_ACCESS_KEY!,
+      },
+      forcePathStyle: true,
+    });
+    const bucket = process.env.S3_BUCKET || "3dmstore";
+    await s3.send(new PutObjectCommand({
+      Bucket: bucket,
+      Key: `avatars/${uniqueName}`,
+      Body: buffer,
+      ContentType: "image/webp",
+    }));
+    return `${process.env.S3_PUBLIC_URL || `https://${bucket}.${process.env.S3_ENDPOINT}`}/avatars/${uniqueName}`;
+  }
+
+  await ensureDir(AVATARS_DIR);
+  const filePath = path.join(AVATARS_DIR, uniqueName);
+  await writeFile(filePath, buffer);
+  return `/uploads/avatars/${uniqueName}`;
+}
+
 export function getModelPath(relativeUrl: string): string {
   if (relativeUrl.startsWith("http")) return relativeUrl;
   return path.join(UPLOAD_DIR, relativeUrl.replace("/uploads/", ""));
