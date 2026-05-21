@@ -3,7 +3,8 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { ArrowRight, Star, Shield, Users, FileText, Search, Gem, Building2, Heart, Cog, Package, TrendingUp, DollarSign, Globe, BadgeCheck, Quote, Footprints } from "lucide-react";
+import { useSession } from "next-auth/react";
+import { ArrowRight, Star, Shield, Users, FileText, Search, Gem, Building2, Heart, Cog, Package, TrendingUp, DollarSign, Globe, BadgeCheck, Quote, Footprints, UserCheck, Sparkles, Award } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -33,6 +34,11 @@ interface SiteStats {
   totalTransactions: number;
 }
 
+interface Designer {
+  id: string; name: string | null; avatarUrl: string | null;
+  username: string | null; _count: { sales: number };
+}
+
 const categoryIcons: Record<string, typeof Gem> = {
   Footwear: FileText,
   Jewelry: Gem,
@@ -48,11 +54,15 @@ const testimonials = [
 ];
 
 export default function HomePage() {
+  const { data: session } = useSession();
   const router = useRouter();
   const [featured, setFeatured] = useState<Listing[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [stats, setStats] = useState<SiteStats>({ totalListings: 0, totalDesigners: 0, totalTransactions: 0 });
+  const [followingListings, setFollowingListings] = useState<Listing[]>([]);
+  const [newListings, setNewListings] = useState<Listing[]>([]);
+  const [topDesigners, setTopDesigners] = useState<Designer[]>([]);
 
   useEffect(() => {
     fetch("/api/listings?sort=popular&limit=8")
@@ -69,7 +79,26 @@ export default function HomePage() {
     ]).then(([listingsRes]) => {
       setStats(prev => ({ ...prev, totalListings: listingsRes.total || 0 }));
     }).catch(() => {});
+    fetch("/api/listings?sort=newest&limit=8")
+      .then(r => r.json())
+      .then(d => setNewListings(d.listings || []))
+      .catch(() => {});
+    fetch("/api/designer/top")
+      .then(r => r.json())
+      .then(d => setTopDesigners(d.designers || []))
+      .catch(() => {});
   }, []);
+
+  useEffect(() => {
+    if (session) {
+      fetch("/api/listings/following")
+        .then(r => r.json())
+        .then(d => setFollowingListings(d.listings || []))
+        .catch(() => {});
+    } else {
+      setFollowingListings([]);
+    }
+  }, [session]);
 
   const rotatingItems = [
     { icon: Footprints, label: "Footwear", color: "text-blue-400" },
@@ -273,6 +302,144 @@ export default function HomePage() {
         <div className="mt-8 text-center sm:hidden">
           <Link href="/marketplace"><Button variant="outline">View All Models</Button></Link>
         </div>
+      </section>
+      </AnimatedSection>
+
+      {/* ── From Designers You Follow ── */}
+      {session && followingListings.length > 0 && (
+        <AnimatedSection>
+        <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 border-t border-gray-200">
+          <div className="flex items-center gap-2 mb-8">
+            <UserCheck className="h-5 w-5 text-gray-600" />
+            <h2 className="text-2xl md:text-3xl font-bold text-gray-900">From Designers You Follow</h2>
+          </div>
+          <StaggerContainer staggerDelay={0.08} className="marketplace-grid">
+            {followingListings.map(listing => (
+              <StaggerItem key={listing.id}>
+              <Link href={`/product/${listing.slug}`}>
+                <Card hover className="overflow-hidden group">
+                  <div className="aspect-[4/3] bg-gray-100 relative overflow-hidden">
+                    {listing.thumbnailUrl ? (
+                      <img src={listing.thumbnailUrl} alt={listing.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+                    ) : (
+                      <div className="flex items-center justify-center h-full text-gray-400">
+                        <FileText className="h-12 w-12" />
+                      </div>
+                    )}
+                  </div>
+                  <div className="p-4">
+                    <h3 className="font-semibold text-gray-900 truncate">{listing.title}</h3>
+                    <p className="text-sm text-gray-500 mt-1">by {listing.designer.name}</p>
+                    <div className="flex items-center justify-between mt-3">
+                      <span className="text-lg font-bold text-gray-600">{formatPrice(listing.price)}</span>
+                      <div className="flex items-center gap-3 text-xs text-gray-400">
+                        <span className="flex items-center gap-1"><Star className="h-3 w-3" /> {listing._count.reviews}</span>
+                        <span>{listing._count.favorites} ♥</span>
+                      </div>
+                    </div>
+                  </div>
+                </Card>
+              </Link>
+              </StaggerItem>
+            ))}
+          </StaggerContainer>
+        </section>
+        </AnimatedSection>
+      )}
+
+      {/* ── New Designs ── */}
+      <AnimatedSection>
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 border-t border-gray-200">
+        <div className="flex items-center gap-2 mb-8">
+          <Sparkles className="h-5 w-5 text-gray-600" />
+          <h2 className="text-2xl md:text-3xl font-bold text-gray-900">New Designs</h2>
+          <Link href="/marketplace?sort=newest" className="ml-auto text-sm text-gray-500 hover:text-gray-700 flex items-center gap-1">
+            View All <ArrowRight className="h-4 w-4" />
+          </Link>
+        </div>
+        {newListings.length === 0 ? (
+          <div className="text-center py-16 text-gray-400">
+            <FileText className="h-12 w-12 mx-auto mb-3 opacity-40" />
+            <p className="text-lg font-medium text-gray-500 mb-1">No models yet</p>
+            <p className="text-sm">New designs will appear here.</p>
+          </div>
+        ) : (
+          <StaggerContainer staggerDelay={0.08} className="marketplace-grid">
+            {newListings.map(listing => (
+              <StaggerItem key={listing.id}>
+              <Link href={`/product/${listing.slug}`}>
+                <Card hover className="overflow-hidden group">
+                  <div className="aspect-[4/3] bg-gray-100 relative overflow-hidden">
+                    {listing.thumbnailUrl ? (
+                      <img src={listing.thumbnailUrl} alt={listing.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+                    ) : (
+                      <div className="flex items-center justify-center h-full text-gray-400">
+                        <FileText className="h-12 w-12" />
+                      </div>
+                    )}
+                  </div>
+                  <div className="p-4">
+                    <h3 className="font-semibold text-gray-900 truncate">{listing.title}</h3>
+                    <p className="text-sm text-gray-500 mt-1">by {listing.designer.name}</p>
+                    <div className="flex items-center justify-between mt-3">
+                      <span className="text-lg font-bold text-gray-600">{formatPrice(listing.price)}</span>
+                      <div className="flex items-center gap-3 text-xs text-gray-400">
+                        <span className="flex items-center gap-1"><Star className="h-3 w-3" /> {listing._count.reviews}</span>
+                        <span>{listing._count.favorites} ♥</span>
+                      </div>
+                    </div>
+                  </div>
+                </Card>
+              </Link>
+              </StaggerItem>
+            ))}
+          </StaggerContainer>
+        )}
+      </section>
+      </AnimatedSection>
+
+      {/* ── Top Designers ── */}
+      <AnimatedSection>
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 border-t border-gray-200">
+        <div className="flex items-center gap-2 mb-8">
+          <Award className="h-5 w-5 text-gray-600" />
+          <h2 className="text-2xl md:text-3xl font-bold text-gray-900">Top Designers</h2>
+        </div>
+        {topDesigners.length === 0 ? (
+          <div className="text-center py-16 text-gray-400">
+            <Users className="h-12 w-12 mx-auto mb-3 opacity-40" />
+            <p className="text-lg font-medium text-gray-500 mb-1">No designers yet</p>
+            <p className="text-sm">Top designers will appear once they start selling.</p>
+          </div>
+        ) : (
+          <StaggerContainer className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            {topDesigners.map((designer, i) => (
+              <StaggerItem key={designer.id}>
+                <Link href={`/designer/${designer.id}`}>
+                  <Card hover className="p-5 flex items-center gap-4">
+                    <div className="shrink-0">
+                      {designer.avatarUrl ? (
+                        <img src={designer.avatarUrl} alt="" className="w-14 h-14 rounded-full object-cover" />
+                      ) : (
+                        <div className="w-14 h-14 rounded-full bg-gray-100 flex items-center justify-center text-gray-400">
+                          <span className="text-lg font-medium">{designer.name?.charAt(0) || "?"}</span>
+                        </div>
+                      )}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2">
+                        <span className="font-semibold text-gray-900 truncate">{designer.name || "Unnamed"}</span>
+                        {i === 0 && <Award className="h-4 w-4 text-amber-400 shrink-0" />}
+                      </div>
+                      {designer.username && <p className="text-sm text-gray-400 truncate">@{designer.username}</p>}
+                      <p className="text-xs text-gray-500 mt-1">{designer._count.sales} sale{designer._count.sales !== 1 ? "s" : ""}</p>
+                    </div>
+                  </Card>
+                </Link>
+              </StaggerItem>
+            ))}
+          </StaggerContainer>
+        )}
       </section>
       </AnimatedSection>
 
