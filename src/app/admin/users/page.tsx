@@ -28,6 +28,7 @@ export default function AdminUsersPage() {
   const [editId, setEditId] = useState<string | null>(null);
   const [form, setForm] = useState({ email: "", name: "", password: "", role: "BUYER", uploadLimit: 10 });
   const [editForm, setEditForm] = useState({ name: "", role: "BUYER", password: "", uploadLimit: 10, commissionOverride: "" });
+  const [defaultCommission, setDefaultCommission] = useState(15);
   const user = session?.user as any;
 
   const fetchUsers = () => fetch("/api/admin/users").then(r => r.json()).then(setUsers).catch(() => {});
@@ -35,7 +36,10 @@ export default function AdminUsersPage() {
   useEffect(() => {
     if (status === "unauthenticated") { router.push("/auth/login"); return; }
     if (status === "authenticated" && user?.role !== "ADMIN") { router.push("/dashboard"); return; }
-    if (status === "authenticated") fetchUsers();
+    if (status === "authenticated") {
+      fetchUsers();
+      fetch("/api/admin/commission").then(r => r.json()).then(d => setDefaultCommission(d.commissionPercent)).catch(() => {});
+    }
   }, [status, router, user?.role]);
 
   const handleAdd = async () => {
@@ -136,6 +140,34 @@ export default function AdminUsersPage() {
           <p className="text-gray-500 mt-1">Add, edit, restrict, and manage platform users</p>
         </div>
         <Button onClick={() => setShowAdd(true)}><Plus className="h-4 w-4 mr-1" /> Add User</Button>
+      </div>
+
+      {/* Default Commission */}
+      <div className="flex items-center gap-3 mb-6 p-3 bg-gray-50 rounded-lg border border-gray-200">
+        <span className="text-sm text-gray-600 whitespace-nowrap">Default Commission:</span>
+        <div className="flex items-center gap-2">
+          <input
+            type="number"
+            min="0"
+            max="100"
+            value={defaultCommission}
+            onChange={e => setDefaultCommission(Number(e.target.value))}
+            className="w-20 rounded-lg border border-gray-300 px-3 py-1.5 text-sm text-center focus:border-gray-500 focus:outline-none"
+          />
+          <span className="text-sm text-gray-500">%</span>
+        </div>
+        <Button size="sm" onClick={async () => {
+          try {
+            const res = await fetch("/api/admin/commission", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ commissionPercent: defaultCommission }),
+            });
+            if (res.ok) toast.success("Default commission updated");
+            else { const d = await res.json(); toast.error(d.error); }
+          } catch { toast.error("Failed"); }
+        }}>Save</Button>
+        <span className="text-xs text-gray-400 ml-2">(Used for users without a custom override)</span>
       </div>
 
       {/* Add User Modal */}
