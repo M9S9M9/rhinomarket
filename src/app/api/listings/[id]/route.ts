@@ -69,7 +69,13 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
   if (description !== undefined) data.description = description;
   if (tags !== undefined) data.tags = tags;
   if (categoryId !== undefined) data.categoryId = categoryId;
-  if (price !== undefined) data.price = parseFloat(price);
+  if (price !== undefined) {
+    const pp = parseFloat(price);
+    if (isNaN(pp) || pp < 0) {
+      return NextResponse.json({ error: "Price must be a positive number" }, { status: 400 });
+    }
+    data.price = pp;
+  }
   if (licenseType !== undefined) data.licenseType = licenseType;
   if (status !== undefined) {
     if (user?.role === "ADMIN") {

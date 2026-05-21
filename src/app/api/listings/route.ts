@@ -88,6 +88,11 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "You must confirm copyright ownership" }, { status: 400 });
     }
 
+    const parsedPrice = parseFloat(price);
+    if (isNaN(parsedPrice) || parsedPrice < 0) {
+      return NextResponse.json({ error: "Price must be a positive number" }, { status: 400 });
+    }
+
     let slug = slugify(title);
     const existing = await prisma.listing.findUnique({ where: { slug } });
     if (existing) slug = `${slug}-${Date.now()}`;
@@ -98,7 +103,7 @@ export async function POST(req: Request) {
         title, slug, description,
         tags: tags || [],
         categoryId: categoryId || null,
-        price: parseFloat(price),
+        price: parsedPrice,
         licenseType: licenseType || "PERSONAL",
         status: "PENDING_REVIEW",
         fileUrl, fileSize: fileSize ? parseInt(fileSize) : null,

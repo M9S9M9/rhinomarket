@@ -178,7 +178,7 @@ export default function UploadPage() {
               />
             </div>
             <div className="grid grid-cols-2 gap-4">
-              <Input id="price" label="Price (USD) *" type="number" step="0.01" min="0" value={form.price} onChange={e => setForm({...form, price: e.target.value})} placeholder="19.99" />
+              <Input id="price" label="Price (USD) *" type="number" step="0.01" min="0" value={form.price} onChange={e => setForm({...form, price: e.target.value === '' ? '' : String(Math.max(0, parseFloat(e.target.value) || 0))})} placeholder="19.99" />
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">License Type</label>
                 <select value={form.licenseType} onChange={e => setForm({...form, licenseType: e.target.value})} className="block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-gray-500 focus:outline-none focus:ring-1 focus:ring-gray-500">
