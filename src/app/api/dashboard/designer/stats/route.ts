@@ -12,7 +12,7 @@ export async function GET() {
 
   const user = await prisma.user.findUnique({
     where: { id: userId },
-    select: { stripeOnboarding: true },
+    select: { stripeOnboarding: true, uploadLimit: true },
   });
 
   const [
@@ -50,6 +50,7 @@ export async function GET() {
 
   return NextResponse.json({
     stripeOnboarding: user?.stripeOnboarding || false,
+    uploadLimit: user?.uploadLimit || 10,
     totalListings,
     activeListings,
     totalSales,

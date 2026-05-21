@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { Upload, BarChart3, DollarSign, Eye, Download, Star, Package, Plus, ArrowRight } from "lucide-react";
+import { Upload, BarChart3, DollarSign, Eye, Download, Star, Package, Plus, ArrowRight, TrendingUp, Gift, Target } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -16,6 +16,7 @@ interface Stats {
   pendingBalance: number; availableBalance: number;
   totalViews: number; totalDownloads: number;
   averageRating: number;
+  uploadLimit: number;
 }
 
 interface Listing {
@@ -92,6 +93,37 @@ export default function DesignerDashboardPage() {
           </div>
         </CardContent></Card>
       </div>
+
+      {/* Earnings summary */}
+      {/* Upload Limit */}
+      <Card className="mb-8">
+        <CardContent className="p-6">
+          <div className="flex items-center justify-between mb-3">
+            <h2 className="font-semibold text-gray-900">Upload Limit</h2>
+            <span className="text-sm text-gray-600 font-medium">{stats?.totalListings || 0} / {stats?.uploadLimit || 10} used</span>
+          </div>
+          <div className="w-full bg-gray-100 rounded-full h-2.5 mb-4">
+            <div
+              className="bg-gray-700 h-2.5 rounded-full transition-all duration-500"
+              style={{ width: `${Math.min(100, ((stats?.totalListings || 0) / (stats?.uploadLimit || 10)) * 100)}%` }}
+            />
+          </div>
+          <div className="grid sm:grid-cols-3 gap-3 text-xs text-gray-500">
+            <div className="flex items-start gap-2 p-3 bg-gray-50 rounded-lg">
+              <TrendingUp className="h-4 w-4 text-gray-600 mt-0.5 shrink-0" />
+              <span>You can upload more models when you have more sales</span>
+            </div>
+            <div className="flex items-start gap-2 p-3 bg-gray-50 rounded-lg">
+              <Gift className="h-4 w-4 text-gray-600 mt-0.5 shrink-0" />
+              <span>The more sales you make, the less commission we take</span>
+            </div>
+            <div className="flex items-start gap-2 p-3 bg-gray-50 rounded-lg">
+              <Target className="h-4 w-4 text-gray-600 mt-0.5 shrink-0" />
+              <span>Start uploading your best models to make more sales and earn more money</span>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Earnings summary */}
       <Card className="mb-8">
