@@ -4,6 +4,7 @@ import { Suspense, useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
+import { Trash2 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -53,6 +54,15 @@ function AdminListingsInner() {
         toast.error(data.error);
       }
     } catch { toast.error("Action failed"); }
+  };
+
+  const handleDelete = async (id: string, title: string) => {
+    if (!confirm(`Permanently delete "${title}"? This cannot be undone.`)) return;
+    try {
+      const res = await fetch(`/api/listings/${id}`, { method: "DELETE" });
+      if (res.ok) { toast.success("Listing deleted"); setListings(prev => prev.filter(l => l.id !== id)); }
+      else { const d = await res.json(); toast.error(d.error); }
+    } catch { toast.error("Failed to delete"); }
   };
 
   const filtered = filter === "ALL" ? listings : listings.filter(l => l.status === filter);
@@ -106,6 +116,9 @@ function AdminListingsInner() {
                       }}>Reject</Button>
                     </>
                   )}
+                  <button onClick={() => handleDelete(listing.id, listing.title)} className="p-1.5 rounded hover:bg-red-50 text-gray-400 hover:text-red-600" title="Delete permanently">
+                    <Trash2 className="h-4 w-4" />
+                  </button>
                 </div>
               </div>
             </CardContent>
