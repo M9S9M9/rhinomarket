@@ -83,5 +83,43 @@ export default async function ProductPage({ params }: PageProps) {
 
   if (!listing) notFound();
 
-  return <ProductDetailClient initialData={listing} slug={slug} />;
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "https://rhinomarket.vercel.app";
+  const productUrl = `${baseUrl}/product/${slug}`;
+
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "Product",
+    name: listing.title,
+    description: listing.description?.slice(0, 300),
+    image: listing.thumbnailUrl || undefined,
+    url: productUrl,
+    offers: {
+      "@type": "Offer",
+      price: listing.price,
+      priceCurrency: "USD",
+      availability: "https://schema.org/InStock",
+      url: productUrl,
+    },
+    creator: {
+      "@type": "Person",
+      name: listing.designer.name || undefined,
+    },
+    ...(listing.reviewCount > 0 ? {
+      aggregateRating: {
+        "@type": "AggregateRating",
+        ratingValue: listing.avgRating,
+        reviewCount: listing.reviewCount,
+      },
+    } : {}),
+  };
+
+  return (
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
+      <ProductDetailClient initialData={listing} slug={slug} />
+    </>
+  );
 }
