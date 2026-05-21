@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { stripe } from "@/lib/stripe";
 import { prisma } from "@/lib/db";
+import { createNotification } from "@/lib/notifications";
 
 export async function POST(req: NextRequest) {
   const body = await req.text();
@@ -48,6 +49,17 @@ export async function POST(req: NextRequest) {
             pendingBalance: { increment: transaction.designerEarning },
           },
         });
+
+        const saleListing = await prisma.listing.findUnique({ where: { id: transaction.listingId }, select: { title: true, slug: true } });
+        if (saleListing) {
+          await createNotification(
+            transaction.designerId,
+            "sale",
+            "You made a sale!",
+            `Your model "${saleListing.title}" was purchased.`,
+            `/dashboard/designer/earnings`
+          );
+        }
       }
       break;
     }

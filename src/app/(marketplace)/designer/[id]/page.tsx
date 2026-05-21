@@ -3,10 +3,12 @@
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
-import { Star, Calendar, Package, FileText } from "lucide-react";
+import { useSession } from "next-auth/react";
+import { Star, Calendar, Package, FileText, UserPlus, UserCheck } from "lucide-react";
 import { formatPrice, formatDate } from "@/lib/utils";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import toast from "react-hot-toast";
 
 interface DesignerProfile {
   id: string; name: string | null; username: string | null;
@@ -22,9 +24,11 @@ interface DesignerListing {
 
 export default function DesignerPage() {
   const { id } = useParams<{ id: string }>();
+  const { data: session } = useSession();
   const [designer, setDesigner] = useState<DesignerProfile | null>(null);
   const [listings, setListings] = useState<DesignerListing[]>([]);
   const [loading, setLoading] = useState(true);
+  const [following, setFollowing] = useState(false);
 
   useEffect(() => {
     fetch(`/api/designer/${id}`)
@@ -38,6 +42,29 @@ export default function DesignerPage() {
       })
       .catch(() => setLoading(false));
   }, [id]);
+
+  useEffect(() => {
+    if (session && id) {
+      fetch(`/api/follow/check?designerId=${id}`)
+        .then(r => r.json())
+        .then(data => setFollowing(data.following))
+        .catch(() => {});
+    }
+  }, [session, id]);
+
+  const toggleFollow = async () => {
+    if (!session) { return; }
+    try {
+      const res = await fetch("/api/follow", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ designerId: id }),
+      });
+      const data = await res.json();
+      setFollowing(data.following);
+      toast.success(data.following ? "Following designer" : "Unfollowed designer");
+    } catch { toast.error("Failed to update follow"); }
+  };
 
   if (loading) return (
     <div className="max-w-5xl mx-auto px-4 py-12 animate-pulse">
@@ -74,8 +101,16 @@ export default function DesignerPage() {
             </div>
           )}
         </div>
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">{designer.name || "Unnamed Designer"}</h1>
+        <div className="flex-1">
+          <div className="flex items-center gap-3">
+            <h1 className="text-2xl font-bold text-gray-900">{designer.name || "Unnamed Designer"}</h1>
+            {session && (session.user as any)?.id !== id && (
+              <Button size="sm" variant={following ? "outline" : "primary"} onClick={toggleFollow}>
+                {following ? <UserCheck className="h-4 w-4 mr-1.5" /> : <UserPlus className="h-4 w-4 mr-1.5" />}
+                {following ? "Following" : "Follow"}
+              </Button>
+            )}
+          </div>
           {designer.username && <p className="text-sm text-gray-500">@{designer.username}</p>}
           <div className="flex items-center gap-4 mt-2 text-sm text-gray-500">
             <span className="flex items-center gap-1"><Package className="h-4 w-4" />{designer._count.listings} models</span>

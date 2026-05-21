@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { normalizeListing } from "@/lib/utils";
+import { createNotification, notifyFollowers } from "@/lib/notifications";
 
 export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -79,6 +80,34 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
   }
 
   const updated = await prisma.listing.update({ where: { id }, data });
+
+  if (status === "APPROVED") {
+    await createNotification(
+      listing.designerId,
+      "listing_approved",
+      "Your listing was approved!",
+      `"${listing.title}" is now live on the marketplace.`,
+      `/product/${listing.slug}`
+    );
+
+    await notifyFollowers(
+      listing.designerId,
+      "new_listing",
+      "New model available",
+      `A designer you follow just published "${listing.title}".`,
+      `/product/${listing.slug}`
+    );
+  }
+
+  if (status === "REJECTED") {
+    await createNotification(
+      listing.designerId,
+      "listing_rejected",
+      "Your listing was not approved",
+      rejectionReason || `"${listing.title}" was rejected. Please check the reason and resubmit.`,
+      `/dashboard/designer/listings`
+    );
+  }
 
   return NextResponse.json(updated);
 }

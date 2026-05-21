@@ -100,6 +100,13 @@ model User {
   downloads Download[]
   earnings  Earnings?
 
+  // Follows
+  followers  Follow[] @relation("Followers")
+  following  Follow[] @relation("Following")
+
+  // Notifications
+  notifications Notification[]
+
   @@map("users")
 }
 
@@ -403,4 +410,32 @@ model PasswordReset {
   @@index([email])
   @@index([token])
   @@map("password_resets")
+}
+
+model Follow {
+  id          String   @id @default(cuid())
+  followerId  String
+  follower    User     @relation("Followers", fields: [followerId], references: [id], onDelete: Cascade)
+  followingId String
+  following   User     @relation("Following", fields: [followingId], references: [id], onDelete: Cascade)
+  createdAt   DateTime @default(now())
+
+  @@unique([followerId, followingId])
+  @@map("follows")
+}
+
+model Notification {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type      String
+  title     String
+  message   String?
+  link      String?
+  read      Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  @@index([userId, read])
+  @@index([createdAt])
+  @@map("notifications")
 }
