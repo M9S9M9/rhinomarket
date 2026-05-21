@@ -107,6 +107,10 @@ model User {
   // Notifications
   notifications Notification[]
 
+  // Support tickets
+  supportTickets  SupportTicket[]
+  supportMessages SupportMessage[]
+
   @@map("users")
 }
 
@@ -422,6 +426,35 @@ model Follow {
 
   @@unique([followerId, followingId])
   @@map("follows")
+}
+
+model SupportTicket {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  subject   String
+  status    String   @default("OPEN")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  messages SupportMessage[]
+
+  @@index([userId])
+  @@index([status])
+  @@map("support_tickets")
+}
+
+model SupportMessage {
+  id        String   @id @default(cuid())
+  ticketId  String
+  ticket    SupportTicket @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  senderId  String
+  sender    User     @relation(fields: [senderId], references: [id])
+  message   String
+  createdAt DateTime @default(now())
+
+  @@index([ticketId])
+  @@map("support_messages")
 }
 
 model Notification {

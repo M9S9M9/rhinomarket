@@ -4,7 +4,7 @@ import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 import Link from "next/link";
-import { ShoppingBag, Heart, User, ArrowRight } from "lucide-react";
+import { ShoppingBag, Heart, User, MessageSquare, ArrowRight } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 
 export default function DashboardPage() {
@@ -72,6 +72,16 @@ export default function DashboardPage() {
             </div>
             <h3 className="font-semibold text-gray-900">Profile Settings</h3>
             <p className="text-sm text-gray-500 mt-1">Update your profile and account settings</p>
+          </Card>
+        </Link>
+
+        <Link href="/dashboard/support">
+          <Card hover className="p-6">
+            <div className="w-10 h-10 bg-blue-100 rounded-xl flex items-center justify-center mb-4">
+              <MessageSquare className="h-5 w-5 text-blue-600" />
+            </div>
+            <h3 className="font-semibold text-gray-900">Connect to Support</h3>
+            <p className="text-sm text-gray-500 mt-1">Contact us for help with any issues</p>
           </Card>
         </Link>
 
