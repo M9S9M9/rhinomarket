@@ -4,7 +4,7 @@ import { Suspense, useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
-import { Trash2 } from "lucide-react";
+import { Search, Trash2 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -25,6 +25,7 @@ function AdminListingsInner() {
   const designerId = searchParams.get("designerId");
   const [listings, setListings] = useState<Listing[]>([]);
   const [filter, setFilter] = useState("ALL");
+  const [searchQuery, setSearchQuery] = useState("");
   const user = session?.user as any;
 
   useEffect(() => {
@@ -65,7 +66,9 @@ function AdminListingsInner() {
     } catch { toast.error("Failed to delete"); }
   };
 
-  const filtered = filter === "ALL" ? listings : listings.filter(l => l.status === filter);
+  const q = searchQuery.toLowerCase();
+  const filtered = (filter === "ALL" ? listings : listings.filter(l => l.status === filter))
+    .filter(l => !q || l.title.toLowerCase().includes(q) || l.designer.name.toLowerCase().includes(q));
 
   if (status === "loading") return <div className="p-8 text-center text-gray-500">Loading...</div>;
   if (!session || user?.role !== "ADMIN") return null;
@@ -82,6 +85,11 @@ function AdminListingsInner() {
         <p className="text-gray-500 mt-1">{designerId ? "Listings by this user" : "Review and manage all marketplace listings"}</p>
       </div>
 
+      <div className="relative mb-4 max-w-md">
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+        <input type="text" value={searchQuery} onChange={e => setSearchQuery(e.target.value)} placeholder="Search by title or designer..." className="w-full rounded-lg border border-gray-300 pl-9 pr-3 py-2 text-sm focus:border-gray-500 focus:outline-none" />
+      </div>
+
       <div className="flex gap-2 mb-6">
         {["ALL", "PENDING_REVIEW", "APPROVED", "REJECTED", "DRAFT", "ARCHIVED"].map(f => (
           <button key={f} onClick={() => setFilter(f)}
@@ -90,6 +98,7 @@ function AdminListingsInner() {
         ))}
       </div>
 
+      <p className="text-sm text-gray-400 mb-3">{filtered.length} listing{filtered.length !== 1 ? "s" : ""}</p>
       <div className="space-y-3">
         {filtered.map((listing) => (
           <Card key={listing.id}>
