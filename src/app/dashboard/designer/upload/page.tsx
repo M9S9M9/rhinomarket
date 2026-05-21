@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
-import { Upload, FileText, X, AlertTriangle } from "lucide-react";
+import { Upload, FileText, X, AlertTriangle, TrendingUp, Gift, Target } from "lucide-react";
 import toast from "react-hot-toast";
 
 export default function UploadPage() {
@@ -247,6 +247,22 @@ export default function UploadPage() {
           </CardContent>
         </Card>
       )}
+
+      {/* Tips */}
+      <div className="grid sm:grid-cols-3 gap-3 mt-8 text-xs text-gray-500">
+        <div className="flex items-start gap-2 p-3 bg-gray-50 rounded-lg">
+          <TrendingUp className="h-4 w-4 text-gray-600 mt-0.5 shrink-0" />
+          <span>You can upload more models when you have more sales</span>
+        </div>
+        <div className="flex items-start gap-2 p-3 bg-gray-50 rounded-lg">
+          <Gift className="h-4 w-4 text-gray-600 mt-0.5 shrink-0" />
+          <span>The more sales you make, the less commission we take</span>
+        </div>
+        <div className="flex items-start gap-2 p-3 bg-gray-50 rounded-lg">
+          <Target className="h-4 w-4 text-gray-600 mt-0.5 shrink-0" />
+          <span>Start uploading your best models to make more sales and earn more money</span>
+        </div>
+      </div>
     </div>
   );
 }
