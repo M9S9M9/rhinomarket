@@ -126,6 +126,7 @@ export function ProductDetailClient({ initialData, slug }: { initialData: Listin
   const previews = [listing.thumbnailUrl, ...listing.previewUrls].filter(Boolean) as string[];
   const user = session?.user as any;
   const alreadyReviewed = listing.reviews.some(r => r.reviewer.id === user?.id);
+  const shareText = `${listing.title} - Buy this model now on 3DM Store`;
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -266,14 +267,14 @@ export function ProductDetailClient({ initialData, slug }: { initialData: Listin
         </div>
         <div className="flex gap-3">
           <button
-            onClick={() => window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(`Check out "${listing.title}" on 3DM Store`)}&url=${encodeURIComponent(window.location.href)}`, '_blank', 'noopener')}
+            onClick={() => window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(`${shareText} ${window.location.href}`)}`, '_blank', 'noopener')}
             className="p-2.5 rounded-lg bg-gray-100 text-gray-600 hover:bg-[#1da1f2] hover:text-white transition-colors"
             title="Share on X"
           >
             <Twitter className="h-5 w-5" />
           </button>
           <button
-            onClick={() => window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(window.location.href)}`, '_blank', 'noopener')}
+            onClick={() => window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(window.location.href)}&quote=${encodeURIComponent(shareText)}`, '_blank', 'noopener')}
             className="p-2.5 rounded-lg bg-gray-100 text-gray-600 hover:bg-[#1877f2] hover:text-white transition-colors"
             title="Share on Facebook"
           >
@@ -287,7 +288,7 @@ export function ProductDetailClient({ initialData, slug }: { initialData: Listin
             <Linkedin className="h-5 w-5" />
           </button>
           <button
-            onClick={() => window.open(`https://wa.me/?text=${encodeURIComponent(`"${listing.title}" - 3DM Store\n${window.location.href}`)}`, '_blank', 'noopener')}
+            onClick={() => window.open(`https://wa.me/?text=${encodeURIComponent(`${shareText} ${window.location.href}`)}`, '_blank', 'noopener')}
             className="p-2.5 rounded-lg bg-gray-100 text-gray-600 hover:bg-[#25d366] hover:text-white transition-colors"
             title="Share on WhatsApp"
           >
