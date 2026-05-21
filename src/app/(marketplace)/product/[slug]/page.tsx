@@ -207,9 +207,13 @@ export default function ProductDetailPage() {
               <h1 className="text-2xl md:text-3xl font-bold text-gray-900">{listing.title}</h1>
               <div className="flex items-center gap-4 mt-2">
                 <Link href={`/designer/${listing.designer.id}`} className="flex items-center gap-2 text-sm text-gray-500 hover:text-gray-700">
-                  <div className="w-6 h-6 rounded-full bg-gray-100 flex items-center justify-center">
-                    <span className="text-xs font-medium text-gray-600">{listing.designer.name?.charAt(0)}</span>
-                  </div>
+                  {listing.designer.avatarUrl ? (
+                    <img src={listing.designer.avatarUrl} alt="" className="w-6 h-6 rounded-full object-cover" />
+                  ) : (
+                    <div className="w-6 h-6 rounded-full bg-gray-100 flex items-center justify-center">
+                      <span className="text-xs font-medium text-gray-600">{listing.designer.name?.charAt(0)}</span>
+                    </div>
+                  )}
                   {listing.designer.name}
                 </Link>
                 <div className="flex items-center gap-1 text-sm text-gray-500">
