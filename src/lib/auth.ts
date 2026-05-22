@@ -3,6 +3,7 @@ import Credentials from "next-auth/providers/credentials";
 import { PrismaAdapter } from "@auth/prisma-adapter";
 import { prisma } from "@/lib/db";
 import { compare } from "bcryptjs";
+import { isLockedOut, recordAttempt, clearAttempts } from "@/lib/lockout";
 import type { Adapter } from "next-auth/adapters";
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
@@ -23,8 +24,14 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       async authorize(credentials) {
         if (!credentials?.email || !credentials?.password) return null;
 
+        const email = credentials.email as string;
+
+        if (await isLockedOut(email)) {
+          throw new Error("ACCOUNT_LOCKED");
+        }
+
         const user = await prisma.user.findUnique({
-          where: { email: credentials.email as string },
+          where: { email },
         });
 
         if (!user || !user.passwordHash) return null;
@@ -34,7 +41,12 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           credentials.password as string,
           user.passwordHash
         );
-        if (!isValid) return null;
+        if (!isValid) {
+          await recordAttempt(email);
+          return null;
+        }
+
+        await clearAttempts(email);
 
         return {
           id: user.id,

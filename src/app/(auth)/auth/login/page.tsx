@@ -25,7 +25,7 @@ function LoginForm() {
 
     try {
       const check = await fetch(`/api/auth/check-email?email=${encodeURIComponent(email)}`);
-      const { exists, isActive } = await check.json();
+      const { exists, isActive, locked } = await check.json();
 
       if (!exists) {
         setError("No account found with this email");
@@ -39,6 +39,12 @@ function LoginForm() {
         return;
       }
 
+      if (locked) {
+        setError("Account temporarily locked due to too many failed attempts. Try again in 15 minutes.");
+        setLoading(false);
+        return;
+      }
+
       const result = await signIn("credentials", {
         redirect: false,
         email,
@@ -46,7 +52,11 @@ function LoginForm() {
       });
 
       if (result?.error) {
-        setError("Invalid email or password");
+        if (result.error === "ACCOUNT_LOCKED") {
+          setError("Account temporarily locked due to too many failed attempts. Try again in 15 minutes.");
+        } else {
+          setError("Invalid email or password");
+        }
         setLoading(false);
         return;
       }

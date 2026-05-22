@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
+import { isLockedOut } from "@/lib/lockout";
 
 export async function GET(req: NextRequest) {
   const email = req.nextUrl.searchParams.get("email");
@@ -16,5 +17,7 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ exists: false });
   }
 
-  return NextResponse.json({ exists: true, isActive: user.isActive, emailVerified: user.emailVerified });
+  const locked = await isLockedOut(email);
+
+  return NextResponse.json({ exists: true, isActive: user.isActive, emailVerified: user.emailVerified, locked });
 }
