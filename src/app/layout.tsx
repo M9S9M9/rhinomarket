@@ -14,6 +14,9 @@ export const metadata: Metadata = {
   },
   description: "Buy and sell premium Rhino 3D (.3dm) models. The premier marketplace for 3D designers and architects.",
   keywords: ["rhino 3d", "3dm files", "3d models", "rhinoceros", "marketplace", "3d design"],
+  verification: {
+    google: process.env.NEXT_PUBLIC_GOOGLE_VERIFICATION || "",
+  },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
