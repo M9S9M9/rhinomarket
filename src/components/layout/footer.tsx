@@ -45,6 +45,7 @@ export function Footer() {
               <li><Link href="/terms" className="text-sm hover:text-white transition-colors">Terms of Service</Link></li>
               <li><Link href="/privacy" className="text-sm hover:text-white transition-colors">Privacy Policy</Link></li>
               <li><Link href="/cookie-policy" className="text-sm hover:text-white transition-colors">Cookie Policy</Link></li>
+              <li><Link href="/disclaimer" className="text-sm hover:text-white transition-colors">Warranty Disclaimer</Link></li>
               <li><Link href="/dmca" className="text-sm hover:text-white transition-colors">DMCA Notice</Link></li>
             </ul>
           </div>
