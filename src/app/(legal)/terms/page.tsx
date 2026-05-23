@@ -32,7 +32,8 @@ export default function TermsPage() {
         </ul>
 
         <h2 className="text-lg font-semibold text-gray-900 mt-8">6. Commission and Fees</h2>
-        <p>The Platform charges a commission of {process.env.PLATFORM_COMMISSION_PERCENT || "15"}% on each transaction. This commission is deducted before the designer receives payment.</p>
+        <p>3DM Store charges a <strong>15% commission</strong> on each transaction (the "Platform Fee"). This commission is calculated on the sale price before payment processing fees are deducted. The commission may be adjusted for specific designers under special arrangements, and any changes will be communicated in writing.</p>
+        <p className="mt-2">Payment processing fees are borne by the designer and deducted from their earnings. Buyers pay the listed price plus any applicable taxes.</p>
 
         <h2 className="text-lg font-semibold text-gray-900 mt-8">7. Refund Policy</h2>
         <p>Refunds are handled on a case-by-case basis. If a file is corrupted or significantly different from its description, the buyer may request a refund within 14 days of purchase.</p>

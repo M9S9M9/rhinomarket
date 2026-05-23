@@ -1,8 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { isLockedOut } from "@/lib/lockout";
+import { checkRateLimit } from "@/lib/rate-limit";
 
 export async function GET(req: NextRequest) {
+  const rlKey = `check-email:${req.nextUrl.searchParams.get("email") || "unknown"}`;
+  if (!(await checkRateLimit(rlKey, "auth"))) {
+    return NextResponse.json({ error: "Too many requests" }, { status: 429 });
+  }
+
   const email = req.nextUrl.searchParams.get("email");
   if (!email) {
     return NextResponse.json({ exists: false });

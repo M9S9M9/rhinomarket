@@ -2,8 +2,18 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { randomUUID } from "crypto";
 import { sendEmail, getPasswordResetEmailHtml } from "@/lib/email";
+import { checkRateLimit, getRateLimitKey } from "@/lib/rate-limit";
+import { validateApiRequest } from "@/lib/validate-request";
 
 export async function POST(req: Request) {
+  const validation = await validateApiRequest(req);
+  if (!validation.ok) return validation.response;
+
+  const rlKey = await getRateLimitKey(req);
+  if (!(await checkRateLimit(rlKey, "auth"))) {
+    return NextResponse.json({ error: "Too many requests. Try again later." }, { status: 429 });
+  }
+
   try {
     const { email } = await req.json();
 

@@ -12,6 +12,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${baseUrl}/privacy`, lastModified: new Date(), changeFrequency: "monthly" as const, priority: 0.3 },
     { url: `${baseUrl}/dmca`, lastModified: new Date(), changeFrequency: "monthly" as const, priority: 0.3 },
     { url: `${baseUrl}/designer-agreement`, lastModified: new Date(), changeFrequency: "monthly" as const, priority: 0.3 },
+    { url: `${baseUrl}/licenses`, lastModified: new Date(), changeFrequency: "monthly" as const, priority: 0.3 },
+    { url: `${baseUrl}/cookie-policy`, lastModified: new Date(), changeFrequency: "monthly" as const, priority: 0.3 },
   ];
 
   try {

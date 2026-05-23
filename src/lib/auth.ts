@@ -9,7 +9,7 @@ import type { Adapter } from "next-auth/adapters";
 export const { handlers, signIn, signOut, auth } = NextAuth({
   trustHost: true,
   adapter: PrismaAdapter(prisma) as Adapter,
-  session: { strategy: "jwt" },
+  session: { strategy: "jwt", maxAge: 8 * 60 * 60 },
   pages: {
     signIn: "/auth/login",
     error: "/auth/error",

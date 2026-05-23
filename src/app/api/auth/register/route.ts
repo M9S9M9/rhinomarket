@@ -4,14 +4,28 @@ import { prisma } from "@/lib/db";
 import { randomUUID } from "crypto";
 import { sendEmail, getVerificationEmailHtml } from "@/lib/email";
 import { z } from "zod";
+import { checkRateLimit, getRateLimitKey } from "@/lib/rate-limit";
+import { validateApiRequest } from "@/lib/validate-request";
 
 const registerSchema = z.object({
   name: z.string().min(2).max(50),
   email: z.string().email(),
   password: z.string().min(8).max(100),
+  legalConsent: z.object({
+    age: z.literal(true, { errorMap: () => ({ message: "You must be 18 or older" }) }),
+    tos: z.literal(true, { errorMap: () => ({ message: "You must accept the Terms of Service" }) }),
+  }),
 });
 
 export async function POST(req: Request) {
+  const validation = await validateApiRequest(req);
+  if (!validation.ok) return validation.response;
+
+  const rlKey = await getRateLimitKey(req);
+  if (!(await checkRateLimit(rlKey, "auth"))) {
+    return NextResponse.json({ error: "Too many requests. Try again later." }, { status: 429 });
+  }
+
   try {
     const body = await req.json();
     const { name, email, password } = registerSchema.parse(body);
@@ -24,7 +38,7 @@ export async function POST(req: Request) {
     const passwordHash = await hash(password, 12);
 
     const user = await prisma.user.create({
-      data: { name, email, passwordHash, role: "BUYER", emailVerified: new Date() },
+      data: { name, email, passwordHash, role: "BUYER", emailVerified: new Date(), tosAcceptedAt: new Date() },
     });
 
     // Try to send verification email (Resend requires a custom domain to deliver to any recipient)

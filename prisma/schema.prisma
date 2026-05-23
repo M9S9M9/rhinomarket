@@ -100,6 +100,9 @@ model User {
   downloads Download[]
   earnings  Earnings?
 
+  // Legal
+  tosAcceptedAt DateTime?
+
   // Follows
   followers  Follow[] @relation("Followers")
   following  Follow[] @relation("Following")
@@ -464,6 +467,18 @@ model LoginAttempt {
 
   @@index([email, createdAt])
   @@map("login_attempts")
+}
+
+model RateLimit {
+  id        String   @id @default(cuid())
+  key       String
+  count     Int      @default(1)
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  @@unique([key])
+  @@index([key, expiresAt])
+  @@map("rate_limits")
 }
 
 model Notification {

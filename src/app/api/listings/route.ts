@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { slugify, normalizeListing } from "@/lib/utils";
+import { checkRateLimit, getRateLimitKey } from "@/lib/rate-limit";
+import { validateApiRequest } from "@/lib/validate-request";
 
 export async function GET(req: NextRequest) {
   const { searchParams } = req.nextUrl;
@@ -63,6 +65,14 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: Request) {
+  const validation = await validateApiRequest(req);
+  if (!validation.ok) return validation.response;
+
+  const rlKey = await getRateLimitKey(req);
+  if (!(await checkRateLimit(rlKey, "upload"))) {
+    return NextResponse.json({ error: "Too many requests. Try again later." }, { status: 429 });
+  }
+
   const session = await auth();
   if (!session?.user?.id) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });

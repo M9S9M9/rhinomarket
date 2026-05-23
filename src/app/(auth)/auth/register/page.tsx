@@ -12,6 +12,7 @@ export default function RegisterPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [form, setForm] = useState({ name: "", email: "", password: "", confirmPassword: "" });
+  const [legalConsent, setLegalConsent] = useState({ age: false, tos: false });
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   const validate = () => {
@@ -20,6 +21,8 @@ export default function RegisterPage() {
     if (!form.email.includes("@")) errs.email = "Invalid email address";
     if (form.password.length < 8) errs.password = "Password must be at least 8 characters";
     if (form.password !== form.confirmPassword) errs.confirmPassword = "Passwords do not match";
+    if (!legalConsent.age) errs.age = "You must be 18 or older to register";
+    if (!legalConsent.tos) errs.tos = "You must accept the Terms of Service";
     setErrors(errs);
     return Object.keys(errs).length === 0;
   };
@@ -33,7 +36,7 @@ export default function RegisterPage() {
       const res = await fetch("/api/auth/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name: form.name, email: form.email, password: form.password }),
+        body: JSON.stringify({ ...form, legalConsent }),
       });
 
       const data = await res.json();
@@ -81,6 +84,38 @@ export default function RegisterPage() {
             value={form.confirmPassword} onChange={(e) => setForm({ ...form, confirmPassword: e.target.value })}
             error={errors.confirmPassword} required
           />
+
+          <div className="space-y-3 pt-2 border-t">
+            <label className="flex items-start gap-2 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={legalConsent.age}
+                onChange={(e) => setLegalConsent({ ...legalConsent, age: e.target.checked })}
+                className="mt-0.5 h-4 w-4 rounded border-gray-300 text-gray-600 focus:ring-gray-500"
+              />
+              <span className="text-sm text-gray-600">
+                I confirm I am at least 18 years old
+              </span>
+            </label>
+            {errors.age && <p className="text-xs text-red-600 ml-6">{errors.age}</p>}
+
+            <label className="flex items-start gap-2 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={legalConsent.tos}
+                onChange={(e) => setLegalConsent({ ...legalConsent, tos: e.target.checked })}
+                className="mt-0.5 h-4 w-4 rounded border-gray-300 text-gray-600 focus:ring-gray-500"
+              />
+              <span className="text-sm text-gray-600">
+                I accept the{" "}
+                <Link href="/terms" target="_blank" className="text-gray-600 underline hover:text-gray-800">Terms of Service</Link>{" "}
+                and{" "}
+                <Link href="/privacy" target="_blank" className="text-gray-600 underline hover:text-gray-800">Privacy Policy</Link>
+              </span>
+            </label>
+            {errors.tos && <p className="text-xs text-red-600 ml-6">{errors.tos}</p>}
+          </div>
+
           <Button type="submit" loading={loading} className="w-full">
             Create Account
           </Button>

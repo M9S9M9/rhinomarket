@@ -23,6 +23,7 @@ export function Footer() {
               <li><Link href="/marketplace?sort=popular" className="text-sm hover:text-white transition-colors">Popular Models</Link></li>
               <li><Link href="/categories" className="text-sm hover:text-white transition-colors">Categories</Link></li>
               <li><Link href="/marketplace?license=commercial" className="text-sm hover:text-white transition-colors">Commercial License</Link></li>
+              <li><Link href="/licenses" className="text-sm hover:text-white transition-colors">License Types</Link></li>
             </ul>
           </div>
 
@@ -43,6 +44,7 @@ export function Footer() {
               <li><Link href="/help" className="text-sm hover:text-white transition-colors">Help Center</Link></li>
               <li><Link href="/terms" className="text-sm hover:text-white transition-colors">Terms of Service</Link></li>
               <li><Link href="/privacy" className="text-sm hover:text-white transition-colors">Privacy Policy</Link></li>
+              <li><Link href="/cookie-policy" className="text-sm hover:text-white transition-colors">Cookie Policy</Link></li>
               <li><Link href="/dmca" className="text-sm hover:text-white transition-colors">DMCA Notice</Link></li>
             </ul>
           </div>

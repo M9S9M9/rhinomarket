@@ -4,6 +4,8 @@ import { Providers } from "@/components/layout/providers";
 import { Header } from "@/components/layout/header";
 import { Footer } from "@/components/layout/footer";
 import { PageTransition } from "@/components/ui/page-transition";
+import { SessionTimeout } from "@/components/ui/session-timeout";
+import { CookieConsent } from "@/components/ui/cookie-consent";
 
 export const metadata: Metadata = {
   title: {
@@ -54,6 +56,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             <main className="flex-1"><PageTransition>{children}</PageTransition></main>
             <Footer />
           </div>
+          <SessionTimeout />
+          <CookieConsent />
         </Providers>
       </body>
     </html>

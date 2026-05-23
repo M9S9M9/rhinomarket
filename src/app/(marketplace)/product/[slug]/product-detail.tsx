@@ -394,7 +394,7 @@ export function ProductDetailClient({ initialData, slug }: { initialData: Listin
             <textarea
               value={reportDesc}
               onChange={e => setReportDesc(e.target.value)}
-              placeholder="Describe the issue (e.g., copyright infringement, inappropriate content)..."
+              placeholder="Describe the issue (e.g., copyright infringement, unauthorized resale, inappropriate content)..."
               rows={4}
               className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-gray-500 focus:outline-none focus:ring-1 focus:ring-gray-500 resize-none"
             />

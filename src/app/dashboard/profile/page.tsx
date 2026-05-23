@@ -1,12 +1,12 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { useSession } from "next-auth/react";
+import { useSession, signOut } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
-import { LogOut, Upload } from "lucide-react";
+import { LogOut, Upload, Trash2, AlertTriangle } from "lucide-react";
 import toast from "react-hot-toast";
 
 export default function ProfilePage() {
@@ -121,6 +121,37 @@ export default function ProfilePage() {
             <p className="text-sm text-gray-500 mb-3">Start selling your .3dm models on 3DM Store</p>
             <Button variant="outline" onClick={() => router.push("/dashboard/designer/apply")}>
               Apply to Become a Designer
+            </Button>
+          </div>
+
+          <div className="border-t pt-5">
+            <h3 className="font-medium text-red-700 mb-2 flex items-center gap-1.5">
+              <AlertTriangle className="h-4 w-4" /> Danger Zone
+            </h3>
+            <p className="text-sm text-gray-500 mb-3">Permanently delete your account and all associated data. This cannot be undone.</p>
+            <Button
+              variant="outline"
+              className="border-red-300 text-red-700 hover:bg-red-50"
+              onClick={async () => {
+                if (!window.confirm("Are you sure you want to delete your account? This action is irreversible and will permanently delete all your data including listings, purchases, and reviews.")) return;
+                if (!window.confirm("This is your final warning. All your data will be permanently lost. Continue?")) return;
+                try {
+                  const res = await fetch("/api/users/account", { method: "DELETE" });
+                  if (res.ok) {
+                    toast.success("Account deleted");
+                    await signOut({ redirect: false });
+                    router.push("/");
+                  } else {
+                    const data = await res.json();
+                    toast.error(data.error || "Failed to delete account");
+                  }
+                } catch {
+                  toast.error("Failed to delete account");
+                }
+              }}
+            >
+              <Trash2 className="h-4 w-4 mr-1.5" />
+              Delete My Account
             </Button>
           </div>
         </CardContent>

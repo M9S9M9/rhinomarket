@@ -14,7 +14,7 @@ export default function DesignerAgreementPage() {
         <p>By uploading a model, you grant 3DM Store a limited license to host, display, and distribute your model through the marketplace. You retain all other rights.</p>
 
         <h2 className="text-lg font-semibold text-gray-900 mt-8">3. Pricing and Commissions</h2>
-        <p>You set your own prices. The platform deducts a commission of {process.env.PLATFORM_COMMISSION_PERCENT || "15"}% from each sale. Commissions are non-negotiable.</p>
+        <p>You set your own prices. 3DM Store deducts a <strong>15% commission</strong> from each sale. This is the standard Platform Fee applied to all transactions. Per-designer commission adjustments may be made by agreement and will be documented in your account settings. Commissions are deducted before payout is credited to your available balance.</p>
 
         <h2 className="text-lg font-semibold text-gray-900 mt-8">4. Payment Terms</h2>
         <p>Payouts are processed through Stripe Connect. Funds become available for withdrawal after a holding period. Minimum payout amounts may apply.</p>

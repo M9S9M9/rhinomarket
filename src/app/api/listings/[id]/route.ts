@@ -3,6 +3,8 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { normalizeListing } from "@/lib/utils";
 import { createNotification, notifyFollowers } from "@/lib/notifications";
+import { checkRateLimit, getRateLimitKey } from "@/lib/rate-limit";
+import { validateApiRequest } from "@/lib/validate-request";
 
 export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -44,6 +46,14 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
 }
 
 export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const validation = await validateApiRequest(req);
+  if (!validation.ok) return validation.response;
+
+  const rlKey = await getRateLimitKey(req);
+  if (!(await checkRateLimit(rlKey, "api"))) {
+    return NextResponse.json({ error: "Too many requests. Try again later." }, { status: 429 });
+  }
+
   const session = await auth();
   if (!session?.user?.id) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -119,6 +129,11 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
 }
 
 export async function DELETE(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const rlKey = await getRateLimitKey(req);
+  if (!(await checkRateLimit(rlKey, "api"))) {
+    return NextResponse.json({ error: "Too many requests. Try again later." }, { status: 429 });
+  }
+
   const session = await auth();
   if (!session?.user?.id) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
