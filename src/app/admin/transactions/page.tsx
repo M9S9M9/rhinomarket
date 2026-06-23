@@ -9,7 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { formatPrice, formatDate } from "@/lib/utils";
-import { toast } from "sonner";
+import toast from "react-hot-toast";
 
 interface Transaction {
   id: string; amount: string; commission: string; designerEarning: string;
