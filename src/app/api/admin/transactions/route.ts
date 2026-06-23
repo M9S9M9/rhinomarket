@@ -13,7 +13,7 @@ export async function GET() {
     include: {
       listing: { select: { title: true, slug: true } },
       buyer: { select: { name: true, email: true } },
-      designer: { select: { name: true } },
+      designer: { select: { name: true, payoutWalletAddress: true } },
     },
   });
 

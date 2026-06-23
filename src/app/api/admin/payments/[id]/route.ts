@@ -27,9 +27,13 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
       return NextResponse.json({ error: "Transaction already processed" }, { status: 400 });
     }
 
+    const { txHash: confirmTxHash } = body;
+    const updateData: any = { status: "COMPLETED", completedAt: new Date() };
+    if (confirmTxHash) updateData.txHash = confirmTxHash;
+
     await prisma.transaction.update({
       where: { id },
-      data: { status: "COMPLETED", completedAt: new Date() },
+      data: updateData,
     });
 
     await prisma.earnings.upsert({
