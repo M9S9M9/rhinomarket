@@ -47,6 +47,7 @@ function CheckoutForm() {
       if (data.free) { router.push("/dashboard/purchases"); return; }
 
       setPayment(data);
+      setLoading(false);
     } catch {
       toast.error("Failed to create payment");
       setLoading(false);
