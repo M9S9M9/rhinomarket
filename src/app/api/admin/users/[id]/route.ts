@@ -49,6 +49,13 @@ export async function DELETE(req: Request, { params }: { params: Promise<{ id: s
     return NextResponse.json({ error: "Cannot delete yourself" }, { status: 400 });
   }
 
-  await prisma.user.delete({ where: { id } });
-  return NextResponse.json({ message: "User deleted" });
+  try {
+    await prisma.user.delete({ where: { id } });
+    return NextResponse.json({ message: "User deleted" });
+  } catch (err: any) {
+    if (err?.code === "P2003") {
+      return NextResponse.json({ error: "Cannot delete user with existing orders, listings, or other records. Restrict them instead." }, { status: 409 });
+    }
+    return NextResponse.json({ error: "Failed to delete user" }, { status: 500 });
+  }
 }
