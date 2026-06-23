@@ -152,8 +152,15 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ i
   }
 
   if (user?.role === "ADMIN") {
-    await prisma.listing.delete({ where: { id } });
-    return NextResponse.json({ message: "Listing permanently deleted" });
+    try {
+      await prisma.listing.delete({ where: { id } });
+      return NextResponse.json({ message: "Listing permanently deleted" });
+    } catch (err: any) {
+      if (err?.code === "P2003") {
+        return NextResponse.json({ error: "Cannot delete listing with existing orders. Archive it instead." }, { status: 409 });
+      }
+      throw err;
+    }
   }
 
   await prisma.listing.update({ where: { id }, data: { status: "ARCHIVED" } });
