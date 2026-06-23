@@ -90,6 +90,24 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
     return NextResponse.json({ success: true });
   }
 
+  if (action === "delete") {
+    if (transaction.status !== "PENDING" && transaction.status !== "SUBMITTED") {
+      return NextResponse.json({ error: "Can only delete pending transactions" }, { status: 400 });
+    }
+    try {
+      await prisma.transaction.delete({ where: { id } });
+    } catch {
+      const downloads = await prisma.download.findFirst({ where: { transactionId: id } });
+      if (downloads) {
+        await prisma.download.deleteMany({ where: { transactionId: id } });
+        await prisma.transaction.delete({ where: { id } });
+      } else {
+        return NextResponse.json({ error: "Cannot delete transaction due to related records" }, { status: 400 });
+      }
+    }
+    return NextResponse.json({ success: true, message: "Transaction deleted" });
+  }
+
   if (action === "pay-designer") {
     if (transaction.status !== "COMPLETED") {
       return NextResponse.json({ error: "Payment must be confirmed first" }, { status: 400 });

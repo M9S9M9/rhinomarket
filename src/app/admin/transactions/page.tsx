@@ -139,6 +139,17 @@ export default function AdminTransactionsPage() {
                           >
                             Reject
                           </Button>
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            onClick={() => {
+                              if (confirm("Delete this transaction?")) handleAction(tx.id, "delete");
+                            }}
+                            disabled={actionTxId === tx.id}
+                            className="text-red-500 hover:text-red-700"
+                          >
+                            Delete
+                          </Button>
                         </div>
                       </div>
                     ) : null}
