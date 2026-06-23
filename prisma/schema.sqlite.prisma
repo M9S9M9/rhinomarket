@@ -29,6 +29,7 @@ enum LicenseType {
 
 enum PaymentStatus {
   PENDING
+  SUBMITTED
   COMPLETED
   REFUNDED
   PARTIALLY_REFUNDED
@@ -73,11 +74,13 @@ model User {
   avatarUrl         String?
   bio               String?
   role              UserRole  @default(BUYER)
-  stripeAccountId   String?
-  stripeOnboarding  Boolean   @default(false)
   isActive          Boolean   @default(true)
   createdAt         DateTime  @default(now())
   updatedAt         DateTime  @updatedAt
+
+  // Crypto payouts (USDT TRC20)
+  payoutWalletAddress  String?
+  payoutWalletCurrency String  @default("USDT")
 
   designerApplication DesignerApplication?
   listings             Listing[]
@@ -205,10 +208,15 @@ model Transaction {
   commission      Float
   designerEarning Float
   status          PaymentStatus @default(PENDING)
-  stripePaymentIntentId String?
-  stripeTransferId       String?
+  paymentMethod   String?       // "usdt"
+  txHash          String?       // buyer's blockchain transaction hash
+  cryptoAmount    Float?        // crypto amount in USDT
+  cryptoCurrency  String?       // USDT
   refundAmount    Float?
   refundReason    String?
+  // Admin payout to designer
+  designerPaidAt   DateTime?
+  adminPayoutTxHash String?     // admin's outgoing USDT tx hash to designer
   createdAt       DateTime      @default(now())
   completedAt     DateTime?
   refundedAt      DateTime?
@@ -253,12 +261,11 @@ model PayoutMethod {
   id              String   @id @default(cuid())
   userId          String
   user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  type            String
+  type            String   // bank_account
   accountHolderName String
   accountNumber   String?
   routingNumber   String?
   bankName        String?
-  stripeAccountId String?
   isDefault       Boolean  @default(false)
   withdrawals     Withdrawal[]
   createdAt       DateTime @default(now())
@@ -277,7 +284,8 @@ model Withdrawal {
   status          WithdrawalStatus @default(PENDING)
   payoutMethodId  String?
   payoutMethod    PayoutMethod?    @relation(fields: [payoutMethodId], references: [id])
-  stripeTransferId String?
+  cryptoAddress   String?       // destination crypto address for payout
+  cryptoTxHash    String?       // outgoing blockchain tx hash
   notes           String?
   processedAt     DateTime?
   createdAt       DateTime         @default(now())

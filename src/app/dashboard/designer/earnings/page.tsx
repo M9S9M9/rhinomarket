@@ -8,7 +8,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { formatPrice, formatDate } from "@/lib/utils";
-import { DollarSign, ArrowRight, CreditCard, CheckCircle, XCircle } from "lucide-react";
+import { DollarSign, Wallet, CheckCircle, XCircle, ExternalLink } from "lucide-react";
 import toast from "react-hot-toast";
 
 interface Transaction {
@@ -19,7 +19,7 @@ interface Transaction {
 }
 
 interface Stats {
-  stripeOnboarding: boolean;
+  payoutWalletAddress: string | null;
   totalListings: number;
   activeListings: number;
   totalSales: number;
@@ -37,6 +37,8 @@ export default function EarningsPage() {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [stats, setStats] = useState<Stats | null>(null);
   const [loading, setLoading] = useState(true);
+  const [showWalletForm, setShowWalletForm] = useState(false);
+  const [walletAddress, setWalletAddress] = useState("");
 
   useEffect(() => {
     if (status === "unauthenticated") { router.push("/auth/login"); return; }
@@ -44,18 +46,28 @@ export default function EarningsPage() {
       Promise.all([
         fetch("/api/dashboard/designer/stats").then(r => r.json()),
         fetch("/api/dashboard/designer/sales").then(r => r.json()),
-      ]).then(([s, t]) => { setStats(s); setTransactions(t); setLoading(false); })
+      ]).then(([s, t]) => { setStats(s); setTransactions(t); setWalletAddress(s.payoutWalletAddress || ""); setLoading(false); })
       .catch(() => setLoading(false));
     }
   }, [status, router]);
 
-  const handleStripeConnect = async () => {
+  const handleSaveWallet = async () => {
+    if (!walletAddress.trim()) { toast.error("Wallet address required"); return; }
     try {
-      const res = await fetch("/api/payments/stripe-connect", { method: "POST" });
-      const data = await res.json();
-      if (data.url) window.location.href = data.url;
-      else toast.error(data.error || "Failed to connect Stripe");
-    } catch { toast.error("Failed to connect Stripe"); }
+      const res = await fetch("/api/users/profile", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ payoutWalletAddress: walletAddress.trim() }),
+      });
+      if (res.ok) {
+        toast.success("Wallet address saved");
+        setShowWalletForm(false);
+        setStats(prev => prev ? { ...prev, payoutWalletAddress: walletAddress.trim() } : prev);
+      } else {
+        const d = await res.json();
+        toast.error(d.error || "Failed to save");
+      }
+    } catch { toast.error("Failed to save wallet address"); }
   };
 
   if (loading) return <div className="p-8 text-center text-gray-500">Loading...</div>;
@@ -82,33 +94,57 @@ export default function EarningsPage() {
         </CardContent></Card>
       </div>
 
-      {/* Stripe Connect */}
+      {/* Payout Wallet */}
       <Card className="mb-8">
         <CardContent className="p-6 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            {stats?.stripeOnboarding ? (
+            {stats?.payoutWalletAddress ? (
               <CheckCircle className="h-6 w-6 text-emerald-500" />
             ) : (
-              <CreditCard className="h-6 w-6 text-gray-600" />
+              <Wallet className="h-6 w-6 text-gray-600" />
             )}
             <div>
-              <p className="font-medium text-gray-900">Stripe Connect</p>
+              <p className="font-medium text-gray-900">Payout Wallet</p>
               <p className="text-sm text-gray-500">
-                {stats?.stripeOnboarding
-                  ? "Your Stripe account is connected and ready to receive payouts"
-                  : "Connect your Stripe account to receive payouts"}
+                {stats?.payoutWalletAddress
+                  ? `${stats.payoutWalletAddress.slice(0, 12)}...${stats.payoutWalletAddress.slice(-4)}`
+                  : "Set your USDT (TRC20) wallet address to receive payouts"}
               </p>
             </div>
           </div>
-          {stats?.stripeOnboarding ? (
-            <Badge variant="success" className="px-3 py-1">Connected</Badge>
+          {stats?.payoutWalletAddress ? (
+            <div className="flex items-center gap-2">
+              <Badge variant="success" className="px-3 py-1">Connected</Badge>
+              <Button variant="outline" size="sm" onClick={() => setShowWalletForm(true)}>Update</Button>
+            </div>
           ) : (
-            <Button onClick={handleStripeConnect}>
-              Connect Stripe <ArrowRight className="ml-2 h-4 w-4" />
+            <Button onClick={() => setShowWalletForm(true)}>
+              Set Wallet <ExternalLink className="ml-2 h-4 w-4" />
             </Button>
           )}
         </CardContent>
       </Card>
+
+      {/* Wallet Form Modal */}
+      {showWalletForm && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50" onClick={() => setShowWalletForm(false)}>
+          <div className="bg-white rounded-2xl p-6 max-w-md w-full mx-4 shadow-xl" onClick={e => e.stopPropagation()}>
+            <h2 className="text-lg font-bold text-gray-900 mb-2">Set Payout Wallet</h2>
+            <p className="text-sm text-gray-500 mb-4">Enter your USDT (TRC20) wallet address to receive payouts.</p>
+            <input
+              type="text"
+              value={walletAddress}
+              onChange={e => setWalletAddress(e.target.value)}
+              placeholder="0x... or wallet address"
+              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-gray-500 focus:outline-none mb-4"
+            />
+            <div className="flex gap-3">
+              <Button variant="outline" className="flex-1" onClick={() => setShowWalletForm(false)}>Cancel</Button>
+              <Button className="flex-1" onClick={handleSaveWallet}>Save</Button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Sales History */}
       <h2 className="font-semibold text-gray-900 mb-4">Sales History</h2>

@@ -139,6 +139,9 @@ export default function AdminPage() {
         <Link href="/admin/dmca">
           <Card hover className="p-6"><AlertTriangle className="h-6 w-6 text-gray-600 mb-2" /><h3 className="font-semibold">DMCA Reports</h3><p className="text-sm text-gray-500">Review copyright and policy reports</p></Card>
         </Link>
+        <Link href="/admin/payments">
+          <Card hover className="p-6"><DollarSign className="h-6 w-6 text-gray-600 mb-2" /><h3 className="font-semibold">Payments</h3><p className="text-sm text-gray-500">Verify & confirm USDT payments</p></Card>
+        </Link>
         <Link href="/admin/support">
           <Card hover className="p-6"><MessageSquare className="h-6 w-6 text-gray-600 mb-2" /><h3 className="font-semibold">Support Tickets</h3><p className="text-sm text-gray-500">Respond to user support requests</p></Card>
         </Link>

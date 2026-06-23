@@ -14,7 +14,7 @@ import toast from "react-hot-toast";
 interface User {
   id: string; name: string | null; email: string;
   role: string; isActive: boolean; uploadLimit: number; commissionOverride: number | null; emailVerified: string | null;
-  createdAt: string; stripeOnboarding: boolean;
+  createdAt: string; payoutWalletAddress: string | null; payoutWalletCurrency: string;
   _count: { listings: number; purchases: number };
 }
 
@@ -149,7 +149,7 @@ export default function AdminUsersPage() {
       <td className="py-3 px-4">
         <Badge variant={u.isActive ? "success" : "danger"}>{u.isActive ? "Active" : "Inactive"}</Badge>
       </td>
-      <td className="py-3 px-4">{u.stripeOnboarding ? "✓" : "—"}</td>
+      <td className="py-3 px-4">{u.payoutWalletAddress ? `${u.payoutWalletAddress.slice(0, 8)}...` : "—"}</td>
       <td className="py-3 px-4">
         <span className={u._count.listings >= u.uploadLimit ? "text-red-600 font-semibold" : ""}>
           {u._count.listings} / {u.uploadLimit}
@@ -292,7 +292,7 @@ export default function AdminUsersPage() {
               <th className="text-left py-3 px-4 font-medium text-gray-500">User</th>
               <th className="text-left py-3 px-4 font-medium text-gray-500">Role</th>
               <th className="text-left py-3 px-4 font-medium text-gray-500">Status</th>
-              <th className="text-left py-3 px-4 font-medium text-gray-500">Stripe</th>
+              <th className="text-left py-3 px-4 font-medium text-gray-500">Wallet</th>
               <th className="text-left py-3 px-4 font-medium text-gray-500">Uploads / Limit</th>
               <th className="text-left py-3 px-4 font-medium text-gray-500">Commission</th>
               <th className="text-left py-3 px-4 font-medium text-gray-500">Purchases</th>

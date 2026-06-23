@@ -74,7 +74,7 @@ export function ProductDetailClient({ initialData, slug }: { initialData: Listin
         router.push("/dashboard/purchases");
         return;
       }
-      router.push(`/checkout?paymentIntentId=${data.paymentIntentId}&listingId=${listing!.id}`);
+      router.push(`/checkout?listingId=${listing!.id}`);
     } catch { toast.error("Purchase failed"); }
   };
 
@@ -253,7 +253,7 @@ export function ProductDetailClient({ initialData, slug }: { initialData: Listin
               </Button>
             )}
             <p className="text-xs text-gray-400 text-center flex items-center justify-center gap-1">
-              <Shield className="h-3 w-3" /> Secure checkout via Stripe · Instant download
+              <Shield className="h-3 w-3" /> Pay with USDT (TRC20) · Manual verification
             </p>
           </div>
         </div>

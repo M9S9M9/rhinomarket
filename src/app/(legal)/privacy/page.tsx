@@ -20,7 +20,7 @@ export default function PrivacyPage() {
         </ul>
 
         <h2 className="text-lg font-semibold text-gray-900 mt-8">Data Sharing</h2>
-        <p>We share data with Stripe for payment processing. We do not sell your personal data to third parties.</p>
+        <p>We accept payments in USDT (TRC20). Payment transactions are verified manually. We do not sell your personal data to third parties.</p>
 
         <h2 className="text-lg font-semibold text-gray-900 mt-8">Data Security</h2>
         <p>We implement industry-standard security measures including encryption at rest and in transit, regular security audits, and access controls.</p>

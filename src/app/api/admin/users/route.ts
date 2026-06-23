@@ -14,7 +14,7 @@ export async function GET() {
     select: {
       id: true, name: true, email: true, role: true,
       isActive: true, uploadLimit: true, commissionOverride: true, emailVerified: true, createdAt: true,
-      stripeOnboarding: true,
+      payoutWalletAddress: true, payoutWalletCurrency: true,
       _count: { select: { listings: true, purchases: true } },
     },
   });

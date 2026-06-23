@@ -17,7 +17,7 @@ export default function DesignerAgreementPage() {
         <p>You set your own prices. 3DM Store deducts a <strong>15% commission</strong> from each sale. This is the standard Platform Fee applied to all transactions. Per-designer commission adjustments may be made by agreement and will be documented in your account settings. Commissions are deducted before payout is credited to your available balance.</p>
 
         <h2 className="text-lg font-semibold text-gray-900 mt-8">4. Payment Terms</h2>
-        <p>Payouts are processed through Stripe Connect. Funds become available for withdrawal after a holding period. Minimum payout amounts may apply.</p>
+        <p>Payouts are processed in cryptocurrency (USDC) to your designated wallet address. Earnings are credited to your account balance after each sale.</p>
 
         <h2 className="text-lg font-semibold text-gray-900 mt-8">5. Content Standards</h2>
         <ul className="list-disc pl-6 space-y-2">

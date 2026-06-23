@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
-import { createCheckoutSession, calculateCommission } from "@/lib/stripe";
+import { calculateCommission } from "@/lib/commission";
 import { getCommissionPercentForDesigner } from "@/lib/settings";
 import { checkRateLimit, getRateLimitKey } from "@/lib/rate-limit";
 import { validateApiRequest } from "@/lib/validate-request";
@@ -42,7 +42,6 @@ export async function POST(req: Request) {
     }
 
     const amount = Number(listing.price);
-
     const commissionPercent = await getCommissionPercentForDesigner(listing.designerId);
 
     if (amount === 0) {
@@ -57,6 +56,7 @@ export async function POST(req: Request) {
           designerEarning,
           status: "COMPLETED",
           completedAt: new Date(),
+          paymentMethod: "usdt",
         },
       });
       await prisma.earnings.upsert({
@@ -67,27 +67,12 @@ export async function POST(req: Request) {
       return NextResponse.json({ free: true });
     }
 
-    if (!listing.designer.stripeAccountId || !listing.designer.stripeOnboarding) {
-      return NextResponse.json({ error: "Designer is not set up to receive payments" }, { status: 400 });
-    }
-
-    if (listing.designer.stripeAccountId.startsWith("acct_dev_")) {
-      return NextResponse.json({ error: "Designer needs to reconnect Stripe" }, { status: 400 });
-    }
-
-    const { url, paymentIntentId } = await createCheckoutSession(
-      amount,
-      listing.designer.stripeAccountId,
-      listing.id,
-      session.user.id,
-      listing.designerId,
-      listing.title,
-      commissionPercent
-    );
-
     const { commission, designerEarning } = calculateCommission(amount, commissionPercent);
 
-    await prisma.transaction.create({
+    const settings = await prisma.appSettings.findUnique({ where: { id: 1 } });
+    const walletAddress = settings?.adminWalletAddress || "THX3u6iGWmY6affAgTV8okMgFSBNcDuu6L";
+
+    const transaction = await prisma.transaction.create({
       data: {
         listingId: listing.id,
         buyerId: session.user.id,
@@ -96,13 +81,21 @@ export async function POST(req: Request) {
         commission,
         designerEarning,
         status: "PENDING",
-        stripePaymentIntentId: paymentIntentId,
+        paymentMethod: "usdt",
+        cryptoCurrency: "USDT",
       },
     });
 
-    return NextResponse.json({ url, paymentIntentId });
+    return NextResponse.json({
+      transactionId: transaction.id,
+      walletAddress,
+      amount: amount.toFixed(2),
+      cryptoAmount: amount.toFixed(2),
+      cryptoCurrency: "USDT",
+      network: "TRC20",
+    });
   } catch (error) {
-    console.error("Checkout session error:", error);
-    return NextResponse.json({ error: "Failed to create checkout session" }, { status: 500 });
+    console.error("Payment creation error:", error);
+    return NextResponse.json({ error: "Failed to create payment" }, { status: 500 });
   }
 }

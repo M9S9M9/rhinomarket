@@ -13,7 +13,7 @@ export async function GET() {
     select: {
       id: true, name: true, email: true, username: true,
       avatarUrl: true, bio: true, role: true, createdAt: true,
-      stripeOnboarding: true,
+      payoutWalletAddress: true, payoutWalletCurrency: true,
       _count: { select: { listings: true, purchases: true } },
     },
   });
@@ -28,11 +28,11 @@ export async function PATCH(req: Request) {
   }
 
   const body = await req.json();
-  const { name, username, bio, avatarUrl } = body;
+  const { name, username, bio, avatarUrl, payoutWalletAddress, payoutWalletCurrency } = body;
 
   const user = await prisma.user.update({
     where: { id: session.user.id },
-    data: { name, username, bio, avatarUrl },
+    data: { name, username, bio, avatarUrl, payoutWalletAddress, payoutWalletCurrency },
   });
 
   return NextResponse.json(user);

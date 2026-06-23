@@ -1,6 +1,6 @@
 # 3DM Store — Multi-Vendor .3DM Marketplace
 
-A production-ready marketplace for buying and selling Rhino 3D (.3dm) files. Built with Next.js 16, React 19, TypeScript, Tailwind CSS v4, Prisma ORM, and Stripe Connect.
+A production-ready marketplace for buying and selling Rhino 3D (.3dm) files. Built with Next.js 16, React 19, TypeScript, Tailwind CSS v4, Prisma ORM, and Coinbase Commerce (crypto payments).
 
 ## Quick Start (SQLite — no Docker needed)
 
@@ -31,9 +31,9 @@ Visit **http://localhost:3000**
 - **Roles** — Buyer, Designer, Admin with full RBAC
 - **Marketplace** — Browse, search, filter, paginate, categories
 - **Listings** — Upload .3dm files with preview images, license selection
-- **Payments** — Stripe Connect with configurable platform commission (15%)
+- **Payments** — Coinbase Commerce (USDC/BTC/ETH) with configurable platform commission (15%)
 - **Downloads** — Secure file access only after payment
-- **Designer Studio** — Dashboard, analytics, earnings, Stripe onboarding
+- **Designer Studio** — Dashboard, analytics, earnings, wallet setup
 - **Admin Panel** — Manage users, listings, disputes, applications
 - **Legal** — Terms of Service, Privacy Policy, DMCA, Designer Agreement
 
@@ -45,7 +45,7 @@ Visit **http://localhost:3000**
 | Backend  | Next.js API Routes (Route Handlers) |
 | Database | Prisma ORM + SQLite (dev) / PostgreSQL (prod) |
 | Auth     | NextAuth.js v5 (Auth.js) with JWT |
-| Payments | Stripe Connect Express |
+| Payments | Coinbase Commerce (crypto) |
 | Storage  | Local filesystem (swappable to AWS S3 / Cloudflare R2) |
 
 ## Project Structure
@@ -61,7 +61,7 @@ Visit **http://localhost:3000**
 │   │   ├── api/               # 33 REST API endpoints
 │   │   └── dashboard/         # User & designer dashboards
 │   ├── components/            # Reusable UI components
-│   ├── lib/                   # Auth, DB, Stripe, upload, email utilities
+│   ├── lib/                   # Auth, DB, Coinbase, upload, email utilities
 │   └── types/                 # TypeScript type definitions
 ├── uploads/                   # Local file storage
 ├── docker-compose.yml         # PostgreSQL (optional)
@@ -94,7 +94,7 @@ Visit **http://localhost:3000**
 - `GET /api/listings?query=&category=&sort=&page=` — Browse marketplace
 - `POST /api/listings` — Create listing (designer)
 - `POST /api/payments/create-payment-intent` — Purchase
-- `POST /api/payments/stripe-connect` — Designer Stripe onboarding
+- `POST /api/payments/webhook` — Coinbase Commerce webhook
 - `GET /api/purchases` — Purchase history
 - `GET /api/downloads/:transactionId` — Secure file download
 - `GET /api/admin/stats` — Platform analytics
@@ -103,7 +103,7 @@ Full API documentation in `AGENTS.md`.
 
 ## Architecture
 
-No separate backend server — all logic runs in Next.js API routes (Route Handlers). This makes deployment trivial on Vercel. The Prisma ORM abstracts the database layer, Stripe Connect handles marketplace payments, and local file storage is architected for easy S3/R2 migration.
+No separate backend server — all logic runs in Next.js API routes (Route Handlers). This makes deployment trivial on Vercel. The Prisma ORM abstracts the database layer, Coinbase Commerce handles crypto payments, and local file storage is architected for easy S3/R2 migration.
 
 ## License
 

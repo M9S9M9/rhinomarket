@@ -1,13 +1,12 @@
 # 3DM Store - Multi-Vendor .3DM Marketplace
 
-A production-ready marketplace for buying and selling Rhino 3D (.3dm) files, built with Next.js, TypeScript, Tailwind CSS, PostgreSQL, and Stripe Connect.
+A production-ready marketplace for buying and selling Rhino 3D (.3dm) files, built with Next.js, TypeScript, Tailwind CSS, PostgreSQL, and USDT TRC20 crypto payments.
 
 ## Quick Start
 
 ### Prerequisites
 - Node.js 18+ 
 - Docker Desktop (for PostgreSQL)
-- Stripe account (for payments)
 
 ### 1. Install Dependencies
 ```bash
@@ -22,7 +21,7 @@ docker compose up -d
 ### 3. Configure Environment
 ```bash
 cp .env.example .env
-# Edit .env with your Stripe test keys
+# Edit .env with your settings
 ```
 
 ### 4. Setup Database
@@ -53,7 +52,8 @@ Visit `http://localhost:3000`
 - **Backend:** Next.js API Routes (Route Handlers)
 - **Database:** PostgreSQL + Prisma ORM
 - **Auth:** NextAuth.js v5 (Auth.js) with JWT + Credentials
-- **Payments:** Stripe Connect (Express accounts)
+- **Payments:** USDT (TRC20) — Buyer sends USDT to platform wallet
+- **Payouts:** Manual admin payout to designer USDT (TRC20) wallets
 - **File Storage:** Local filesystem (swappable to S3/R2)
 
 ### Key Architecture Decisions
@@ -61,7 +61,7 @@ Visit `http://localhost:3000`
 - **API Routes** for all backend logic (no separate Express server needed)
 - **Prisma** for type-safe database access and migrations
 - **NextAuth.js** with JWT strategy (no database sessions needed)
-- **Stripe Connect Express** for marketplace payment flows
+- **USDT (TRC20)** for crypto payment processing
 - **Middleware** for route protection
 - **Local uploads** for development, architected for S3/R2 migration
 
@@ -81,7 +81,7 @@ Visit `http://localhost:3000`
 │   │   │   ├── admin/         # Admin API (users, listings, stats)
 │   │   │   ├── auth/          # Auth API (register, verify, reset)
 │   │   │   ├── listings/      # Marketplace CRUD API
-│   │   │   ├── payments/      # Stripe payment & webhook API
+│   │   │   ├── payments/      # USDT TRC20 payment API
 │   │   │   └── ...            # Reviews, favorites, uploads, etc.
 │   │   ├── dashboard/         # User dashboards
 │   │   │   ├── designer/      # Designer studio, upload, earnings
@@ -94,7 +94,7 @@ Visit `http://localhost:3000`
 │   ├── lib/
 │   │   ├── auth.ts            # NextAuth configuration
 │   │   ├── db.ts              # Prisma client singleton
-│   │   ├── stripe.ts          # Stripe helpers & commission logic
+│   │   ├── commission.ts      # Commission calculation helpers
 │   │   ├── upload.ts          # File upload utilities
 │   │   ├── email.ts           # Email service abstraction
 │   │   └── utils.ts           # Shared utilities
@@ -148,10 +148,11 @@ Core entities:
 - `GET /api/categories` - All categories with counts
 - `GET /api/uploads/:path*` - Serve uploaded files
 
-### Payments (Stripe Connect)
-- `POST /api/payments/create-payment-intent` - Create payment
-- `POST /api/payments/stripe-connect` - Designer Stripe onboarding
-- `POST /api/payments/webhook` - Stripe webhook handler
+### Payments (USDT TRC20)
+- `POST /api/payments/create-payment-intent` - Create USDT payment
+- `POST /api/payments/submit-tx` - Submit buyer's transaction hash
+- `GET /api/admin/payments` - List payments for admin
+- `PATCH /api/admin/payments/:id` - Confirm/reject payment or pay designer
 
 ### User
 - `GET/PATCH /api/users/profile` - Profile management
@@ -186,18 +187,21 @@ Core entities:
 
 ## Payment Flow
 
-1. **Buyer clicks "Buy Now"** → Creates Stripe PaymentIntent with platform fee
-2. **Stripe Checkout / Elements** → Buyer enters payment
-3. **Stripe Webhook** → `payment_intent.succeeded` updates transaction status
-4. **Earnings credited** → Designer's available balance increases
-5. **Download access** → Buyer can download file immediately
-6. **Payout** → Designer requests withdrawal → Stripe transfer
+1. **Buyer clicks "Buy Now"** → Creates pending USDT transaction with platform wallet address
+2. **Buyer sends USDT** → Buyer sends exact amount to platform's TRC20 wallet address
+3. **Buyer submits TX hash** → Buyer pastes the transaction hash into the checkout page
+4. **Admin verifies** → Admin confirms/rejects payment in `/admin/payments`
+5. **Download access** → On confirmation, buyer can download the file
+6. **Admin pays designer** → Admin manually sends USDT to designer's TRC20 wallet and records the payout TX hash
 
 ### Commission Logic
 - Platform takes configurable % (default 15%) from each sale
 - Commission is calculated server-side via `calculateCommission()`
-- Stripe Connect `application_fee_amount` handles automatic deduction
-- Designer receives `amount - commission` directly via Stripe
+- Full payment goes to platform wallet; designer share is tracked and paid out manually
+
+### Platform Wallet
+- **USDT TRC20 Address:** `THX3u6iGWmY6affAgTV8okMgFSBNcDuu6L`
+- Configurable via `AppSettings.adminWalletAddress`
 
 ## Security Features
 
@@ -208,7 +212,6 @@ Core entities:
 - **Download authentication** - Protected download endpoints
 - **Role-based access** - Admin/Designer/Buyer authorization checks
 - **API validation** - Zod schemas for all inputs
-- **Stripe webhook verification** - Signature validation
 - **CORS headers** on upload routes
 - **SQL injection prevention** via Prisma parameterized queries
 
@@ -238,24 +241,13 @@ npx prisma migrate dev     # For development
 3. Update `/api/uploads/[...path]` route to generate signed URLs
 4. Add S3 bucket configuration to `.env`
 
-## Stripe Setup
-
-1. Create Stripe account and get API keys
-2. Enable Stripe Connect in Dashboard
-3. Set up webhook endpoint pointing to `/api/payments/webhook`
-4. Configure Connect platform settings (branding, etc.)
-5. Add Stripe keys to `.env`
-
 ## Key Environment Variables
 
 ```
 DATABASE_URL="postgresql://..."
 AUTH_SECRET="your-secret-32-chars-min"
-STRIPE_SECRET_KEY="sk_test_..."
-STRIPE_PUBLISHABLE_KEY="pk_test_..."
-STRIPE_WEBHOOK_SECRET="whsec_..."
-NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY="pk_test_..."
 PLATFORM_COMMISSION_PERCENT=15
+NEXT_PUBLIC_APP_URL="https://yourdomain.com"
 ```
 
 ## Scripts Reference

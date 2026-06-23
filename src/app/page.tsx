@@ -478,7 +478,7 @@ export default function HomePage() {
           <StaggerContainer className="grid md:grid-cols-3 gap-8">
             {[
               { step: "01", title: "Browse & Discover", desc: "Explore thousands of high-quality .3dm files from talented designers worldwide across multiple categories." },
-              { step: "02", title: "Purchase Securely", desc: "Buy with confidence using our secure Stripe payment system with full buyer protection." },
+              { step: "02", title: "Purchase Securely", desc: "Buy with confidence using our secure crypto payment system with instant delivery." },
               { step: "03", title: "Instant Download", desc: "Get immediate access to your purchased files. Download anytime, anywhere, with no limits." },
             ].map(item => (
               <StaggerItem key={item.step}>

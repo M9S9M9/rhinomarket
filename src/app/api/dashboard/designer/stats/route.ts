@@ -12,7 +12,7 @@ export async function GET() {
 
   const user = await prisma.user.findUnique({
     where: { id: userId },
-    select: { stripeOnboarding: true, uploadLimit: true },
+    select: { payoutWalletAddress: true, uploadLimit: true },
   });
 
   const [
@@ -49,7 +49,7 @@ export async function GET() {
   const totalRevenue = transactions.reduce((sum, t) => sum + Number(t.designerEarning), 0);
 
   return NextResponse.json({
-    stripeOnboarding: user?.stripeOnboarding || false,
+    payoutWalletAddress: user?.payoutWalletAddress || null,
     uploadLimit: user?.uploadLimit || 10,
     totalListings,
     activeListings,
