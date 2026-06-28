@@ -18,6 +18,7 @@ function CheckoutForm() {
   const [payment, setPayment] = useState<any>(null);
   const [txHash, setTxHash] = useState("");
   const [submitted, setSubmitted] = useState(false);
+  const [autoVerified, setAutoVerified] = useState(false);
   const [copied, setCopied] = useState(false);
 
   const listingId = searchParams.get("listingId");
@@ -64,8 +65,14 @@ function CheckoutForm() {
         body: JSON.stringify({ transactionId: payment.transactionId, txHash: txHash.trim() }),
       });
       if (res.ok) {
+        const data = await res.json();
         setSubmitted(true);
-        toast.success("Payment submitted! You'll get download access once confirmed.");
+        if (data.autoVerified) {
+          setAutoVerified(true);
+          toast.success("Payment confirmed! Download is now available.");
+        } else {
+          toast.success(data.message || "Payment submitted! Will auto-confirm shortly.");
+        }
       } else {
         const d = await res.json();
         toast.error(d.error || "Failed to submit");
@@ -89,9 +96,18 @@ function CheckoutForm() {
     return (
       <div className="max-w-lg mx-auto px-4 py-16 text-center">
         <CheckCircle className="h-16 w-16 text-emerald-500 mx-auto mb-4" />
-        <h1 className="text-2xl font-bold text-gray-900 mb-2">Payment Submitted!</h1>
-        <p className="text-gray-500 mb-6">Your payment is pending verification. You'll get download access once confirmed.</p>
-        <Button onClick={() => router.push("/dashboard/purchases")}>View Purchases</Button>
+        <h1 className="text-2xl font-bold text-gray-900 mb-2">
+          {autoVerified ? "Payment Confirmed!" : "Payment Submitted!"}
+        </h1>
+        <p className="text-gray-500 mb-6">
+          {autoVerified
+            ? "Your USDT payment has been verified on-chain. Your download is ready!"
+            : "Your payment is being verified on the blockchain. It will auto-confirm within a minute."
+          }
+        </p>
+        <Button onClick={() => router.push(autoVerified ? "/dashboard/purchases" : "/dashboard")}>
+          {autoVerified ? "View Purchases" : "Go to Dashboard"}
+        </Button>
       </div>
     );
   }
@@ -120,7 +136,7 @@ function CheckoutForm() {
               Pay {formatPrice(listing.price)} USDT
             </Button>
             <p className="text-xs text-gray-400 text-center mt-4">
-              Pay with USDT (TRC20) · Manual verification
+              Pay with USDT (TRC20) · Auto-verified on-chain
             </p>
           </CardContent>
         </Card>
@@ -183,7 +199,7 @@ function CheckoutForm() {
           </Button>
 
           <p className="text-xs text-gray-400 text-center mt-4">
-            Your download will be available after admin verification
+            Your download will be available instantly once verified on-chain
           </p>
         </CardContent>
       </Card>
