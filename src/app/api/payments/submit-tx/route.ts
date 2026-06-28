@@ -93,7 +93,7 @@ export async function POST(req: Request) {
 
       // Auto-payout designer
       const pk = process.env.PLATFORM_WALLET_PRIVATE_KEY;
-      if (pk && transaction.designerEarning > 0) {
+      if (pk && Number(transaction.designerEarning) > 0) {
         const designer = await prisma.user.findUnique({
           where: { id: transaction.designerId },
           select: { payoutWalletAddress: true },

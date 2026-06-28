@@ -91,21 +91,33 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
   }
 
   if (action === "delete") {
-    if (transaction.status !== "PENDING" && transaction.status !== "SUBMITTED" && transaction.status !== "FAILED") {
-      return NextResponse.json({ error: "Can only delete pending, submitted, or failed transactions" }, { status: 400 });
-    }
     try {
-      await prisma.transaction.delete({ where: { id } });
-    } catch {
-      const downloads = await prisma.download.findFirst({ where: { transactionId: id } });
-      if (downloads) {
-        await prisma.download.deleteMany({ where: { transactionId: id } });
-        await prisma.transaction.delete({ where: { id } });
-      } else {
-        return NextResponse.json({ error: "Cannot delete transaction due to related records" }, { status: 400 });
-      }
+      await prisma.$transaction(async (tx) => {
+        await tx.download.deleteMany({ where: { transactionId: id } });
+        await tx.dispute.deleteMany({ where: { transactionId: id } });
+
+        if (transaction.status === "COMPLETED") {
+          const earning = Number(transaction.designerEarning) || 0;
+          if (earning > 0) {
+            await tx.earnings.update({
+              where: { userId: transaction.designerId },
+              data: {
+                totalEarned: { decrement: earning },
+                pendingBalance: { decrement: earning },
+              },
+            });
+          }
+        }
+
+        await tx.transaction.delete({ where: { id } });
+      });
+      return NextResponse.json({ success: true, message: "Transaction deleted" });
+    } catch (error: any) {
+      return NextResponse.json(
+        { error: `Cannot delete transaction: ${error.message}` },
+        { status: 400 }
+      );
     }
-    return NextResponse.json({ success: true, message: "Transaction deleted" });
   }
 
   if (action === "pay-designer") {
