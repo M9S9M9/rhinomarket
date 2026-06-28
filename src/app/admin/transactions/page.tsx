@@ -73,8 +73,13 @@ export default function AdminTransactionsPage() {
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <div className="mb-6">
-        <h1 className="text-2xl font-bold text-gray-900">Orders</h1>
-        <p className="text-gray-500 mt-1">Manage all platform transactions</p>
+        <div className="flex items-center gap-3">
+          <h1 className="text-2xl font-bold text-gray-900">Orders</h1>
+          <span className="text-xs bg-emerald-50 text-emerald-700 px-2 py-1 rounded-full font-medium">
+            Auto-verify active
+          </span>
+        </div>
+        <p className="text-gray-500 mt-1">All platform transactions — payments auto-verify on-chain</p>
       </div>
 
       {transactions.length === 0 ? (
@@ -98,7 +103,15 @@ export default function AdminTransactionsPage() {
                       <span>{formatDate(tx.createdAt)}</span>
                     </div>
                     {tx.txHash && (
-                      <code className="text-xs text-gray-400 mt-1 block truncate">{tx.txHash}</code>
+                      <div className="flex items-center gap-2 mt-1">
+                        {tx.status === "COMPLETED" && (
+                          <span className="text-xs text-emerald-600 font-medium">Auto-verified</span>
+                        )}
+                        {tx.status === "SUBMITTED" && (
+                          <span className="text-xs text-amber-600 font-medium">Verifying...</span>
+                        )}
+                        <code className="text-xs text-gray-400 block truncate">{tx.txHash}</code>
+                      </div>
                     )}
                     {tx.adminPayoutTxHash && (
                       <code className="text-xs text-amber-600 mt-1 block truncate">Payout: {tx.adminPayoutTxHash}</code>

@@ -98,8 +98,12 @@ export default function AdminPaymentsPage() {
         <p className="text-gray-500 mt-1">Verify USDT payments and pay designers</p>
       </div>
 
-      {/* Pending Payments */}
-      <h2 className="font-semibold text-gray-900 mb-3">Pending Verification</h2>
+      <div className="flex items-center justify-between mb-3">
+        <h2 className="font-semibold text-gray-900">Payment Queue</h2>
+        <span className="text-xs bg-emerald-50 text-emerald-700 px-2 py-1 rounded-full font-medium">
+          Auto-verify active
+        </span>
+      </div>
       {pendingPayments.length === 0 ? (
         <Card className="mb-8"><CardContent className="py-8 text-center text-gray-500">No pending payments</CardContent></Card>
       ) : (
@@ -123,6 +127,11 @@ export default function AdminPaymentsPage() {
                           <ExternalLink className="h-3 w-3" />
                         </a>
                       </div>
+                    )}
+                    {tx.txHash && (
+                      <p className="text-xs text-emerald-600 mt-1 flex items-center gap-1">
+                        <CheckCircle className="h-3 w-3" /> TX hash submitted — will auto-verify on-chain
+                      </p>
                     )}
                   </div>
                   <div className="flex items-center gap-2 ml-4">
