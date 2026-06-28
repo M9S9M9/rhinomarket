@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, useEffect, useState } from "react";
+import { Suspense, useEffect, useRef, useState } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { Card, CardContent } from "@/components/ui/card";
@@ -20,6 +20,7 @@ function CheckoutForm() {
   const [submitted, setSubmitted] = useState(false);
   const [autoVerified, setAutoVerified] = useState(false);
   const [copied, setCopied] = useState(false);
+  const submitting = useRef(false);
 
   const listingId = searchParams.get("listingId");
 
@@ -56,7 +57,8 @@ function CheckoutForm() {
   };
 
   const handleSubmitTx = async () => {
-    if (!txHash.trim()) { toast.error("Enter your transaction hash"); return; }
+    if (!txHash.trim() || submitting.current) return;
+    submitting.current = true;
     setLoading(true);
     try {
       const res = await fetch("/api/payments/submit-tx", {
@@ -79,6 +81,7 @@ function CheckoutForm() {
       }
     } catch { toast.error("Failed to submit"); }
     setLoading(false);
+    submitting.current = false;
   };
 
   const copyAddress = () => {

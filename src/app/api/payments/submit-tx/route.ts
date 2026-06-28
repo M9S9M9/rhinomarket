@@ -11,6 +11,7 @@ export async function POST(req: Request) {
   if (!session?.user?.id) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
+  const buyerId = session.user.id;
 
   const { listingId, txHash } = await req.json();
   if (!listingId || !txHash) {
@@ -29,36 +30,52 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Cannot purchase your own listing" }, { status: 400 });
   }
 
-  const existing = await prisma.transaction.findFirst({
-    where: { listingId: listing.id, buyerId: session.user.id, status: { in: ["PENDING", "SUBMITTED", "COMPLETED"] } },
-  });
-  if (existing) {
-    return NextResponse.json({ error: "You already have an order for this listing" }, { status: 400 });
+  // Use a serialized transaction with row-level locking to prevent duplicate orders
+  type TxResult = { transaction: any; walletAddress: string; amount: number; designerEarning: number };
+  let txResult: TxResult;
+  try {
+    txResult = await prisma.$transaction(async (tx) => {
+      await tx.$queryRaw`SELECT id FROM "Listing" WHERE id = ${listing.id} FOR UPDATE`;
+
+      const existing = await tx.transaction.findFirst({
+        where: { listingId: listing.id, buyerId: buyerId, status: { in: ["PENDING", "SUBMITTED", "COMPLETED"] } },
+      });
+      if (existing) {
+        throw new Error("ALREADY_EXISTS");
+      }
+
+      const settings = await tx.appSettings.findUnique({ where: { id: 1 } });
+      const walletAddress = (settings?.adminWalletAddress || "THX3u6iGWmY6affAgTV8okMgFSBNcDuu6L").toLowerCase();
+
+      const amount = Number(listing.price);
+      const commissionPercent = await getCommissionPercentForDesigner(listing.designerId);
+      const { commission, designerEarning } = calculateCommission(amount, commissionPercent);
+
+      const transaction = await tx.transaction.create({
+        data: {
+          listingId: listing.id,
+          buyerId: buyerId,
+          designerId: listing.designerId,
+          amount,
+          commission,
+          designerEarning,
+          status: "PENDING",
+          paymentMethod: "usdt",
+          cryptoCurrency: "USDT",
+        },
+        include: { listing: { select: { title: true } } },
+      });
+
+      return { transaction, walletAddress, amount, designerEarning };
+    });
+  } catch (err: any) {
+    if (err.message === "ALREADY_EXISTS") {
+      return NextResponse.json({ error: "You already have an order for this listing" }, { status: 400 });
+    }
+    return NextResponse.json({ error: "Failed to create order" }, { status: 500 });
   }
 
-  const settings = await prisma.appSettings.findUnique({ where: { id: 1 } });
-  const walletAddress = (settings?.adminWalletAddress || "THX3u6iGWmY6affAgTV8okMgFSBNcDuu6L").toLowerCase();
-
-  const amount = Number(listing.price);
-  const commissionPercent = await getCommissionPercentForDesigner(listing.designerId);
-  const { commission, designerEarning } = calculateCommission(amount, commissionPercent);
-
-  const transaction = await prisma.transaction.create({
-    data: {
-      listingId: listing.id,
-      buyerId: session.user.id,
-      designerId: listing.designerId,
-      amount,
-      commission,
-      designerEarning,
-      status: "PENDING",
-      paymentMethod: "usdt",
-      cryptoCurrency: "USDT",
-    },
-    include: { listing: { select: { title: true } } },
-  });
-
-  // Auto-verify TX hash on-chain
+  const { transaction, walletAddress, amount, designerEarning } = txResult;
   let verified = false;
   const transactionId = transaction.id;
   try {
