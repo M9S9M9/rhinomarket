@@ -67,27 +67,11 @@ export async function POST(req: Request) {
       return NextResponse.json({ free: true });
     }
 
-    const { commission, designerEarning } = calculateCommission(amount, commissionPercent);
-
     const settings = await prisma.appSettings.findUnique({ where: { id: 1 } });
     const walletAddress = settings?.adminWalletAddress || "THX3u6iGWmY6affAgTV8okMgFSBNcDuu6L";
 
-    const transaction = await prisma.transaction.create({
-      data: {
-        listingId: listing.id,
-        buyerId: session.user.id,
-        designerId: listing.designerId,
-        amount,
-        commission,
-        designerEarning,
-        status: "PENDING",
-        paymentMethod: "usdt",
-        cryptoCurrency: "USDT",
-      },
-    });
-
     return NextResponse.json({
-      transactionId: transaction.id,
+      listingId: listing.id,
       walletAddress,
       amount: amount.toFixed(2),
       cryptoAmount: amount.toFixed(2),

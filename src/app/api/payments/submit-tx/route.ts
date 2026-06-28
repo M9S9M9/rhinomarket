@@ -12,59 +12,69 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const { transactionId, txHash } = await req.json();
-  if (!transactionId || !txHash) {
-    return NextResponse.json({ error: "Transaction ID and TX hash required" }, { status: 400 });
+  const { listingId, txHash } = await req.json();
+  if (!listingId || !txHash) {
+    return NextResponse.json({ error: "Listing ID and TX hash required" }, { status: 400 });
   }
 
-  const transaction = await prisma.transaction.findUnique({
-    where: { id: transactionId },
+  const listing = await prisma.listing.findUnique({
+    where: { id: listingId, status: "APPROVED" },
+    select: { id: true, title: true, price: true, designerId: true },
+  });
+  if (!listing) {
+    return NextResponse.json({ error: "Listing not found" }, { status: 404 });
+  }
+
+  if (listing.designerId === session.user.id) {
+    return NextResponse.json({ error: "Cannot purchase your own listing" }, { status: 400 });
+  }
+
+  const existing = await prisma.transaction.findFirst({
+    where: { listingId: listing.id, buyerId: session.user.id, status: { in: ["PENDING", "SUBMITTED", "COMPLETED"] } },
+  });
+  if (existing) {
+    return NextResponse.json({ error: "You already have an order for this listing" }, { status: 400 });
+  }
+
+  const settings = await prisma.appSettings.findUnique({ where: { id: 1 } });
+  const walletAddress = (settings?.adminWalletAddress || "THX3u6iGWmY6affAgTV8okMgFSBNcDuu6L").toLowerCase();
+
+  const amount = Number(listing.price);
+  const commissionPercent = await getCommissionPercentForDesigner(listing.designerId);
+  const { commission, designerEarning } = calculateCommission(amount, commissionPercent);
+
+  const transaction = await prisma.transaction.create({
+    data: {
+      listingId: listing.id,
+      buyerId: session.user.id,
+      designerId: listing.designerId,
+      amount,
+      commission,
+      designerEarning,
+      status: "PENDING",
+      paymentMethod: "usdt",
+      cryptoCurrency: "USDT",
+    },
     include: { listing: { select: { title: true } } },
   });
 
-  if (!transaction) {
-    return NextResponse.json({ error: "Transaction not found" }, { status: 404 });
-  }
-
-  if (transaction.buyerId !== session.user.id) {
-    return NextResponse.json({ error: "Not your transaction" }, { status: 403 });
-  }
-
-  if (transaction.status !== "PENDING") {
-    return NextResponse.json({ error: "Transaction already processed" }, { status: 400 });
-  }
-
   // Auto-verify TX hash on-chain
-  const settings = await prisma.appSettings.findUnique({ where: { id: 1 } });
-  const walletAddress = (settings?.adminWalletAddress || "THX3u6iGWmY6affAgTV8okMgFSBNcDuu6L").toLowerCase();
-  const expectedAmount = Number(transaction.amount);
-
   let verified = false;
+  const transactionId = transaction.id;
   try {
-    const result = await verifyTransactionOnChain(txHash, walletAddress, expectedAmount);
+    const result = await verifyTransactionOnChain(txHash, walletAddress, amount);
     const minConfs = parseInt(process.env.MIN_BLOCK_CONFIRMATIONS || "19");
 
     if (result.valid && result.confirmations >= minConfs) {
-      // Fully verified - auto-confirm
-      const commissionPercent = await getCommissionPercentForDesigner(transaction.designerId);
-      const { commission, designerEarning } = calculateCommission(expectedAmount, commissionPercent);
-
       await prisma.transaction.update({
         where: { id: transactionId },
-        data: {
-          status: "COMPLETED",
-          txHash,
-          cryptoCurrency: "USDT",
-          commission,
-          designerEarning,
-          completedAt: new Date(),
-        },
+        data: { status: "COMPLETED", txHash, completedAt: new Date() },
       });
 
       await prisma.earnings.upsert({
-        where: { userId: transaction.designerId },
+        where: { userId: listing.designerId },
         create: {
-          userId: transaction.designerId,
+          userId: listing.designerId,
           totalEarned: designerEarning,
           pendingBalance: designerEarning,
           availableBalance: 0,
@@ -76,55 +86,51 @@ export async function POST(req: Request) {
       });
 
       await createNotification(
-        transaction.buyerId,
+        session.user.id,
         "purchase",
         "Payment confirmed!",
-        `Your USDT payment for "${transaction.listing.title}" has been auto-verified. Download is now available.`,
+        `Your USDT payment for "${listing.title}" has been auto-verified. Download is now available.`,
         "/dashboard/purchases"
       );
 
       await createNotification(
-        transaction.designerId,
+        listing.designerId,
         "sale",
         "You made a sale!",
-        `Your model "${transaction.listing.title}" was purchased.`,
+        `Your model "${listing.title}" was purchased.`,
         "/dashboard/designer/earnings"
       );
 
       // Auto-payout designer
       const pk = process.env.PLATFORM_WALLET_PRIVATE_KEY;
-      if (pk && Number(transaction.designerEarning) > 0) {
+      if (pk && designerEarning > 0) {
         const designer = await prisma.user.findUnique({
-          where: { id: transaction.designerId },
+          where: { id: listing.designerId },
           select: { payoutWalletAddress: true },
         });
         const designerWallet = designer?.payoutWalletAddress;
         if (designerWallet) {
           try {
-            const payoutAmount = Number(transaction.designerEarning);
             const balance = await checkUsdtBalance(walletAddress);
-            if (balance >= payoutAmount) {
-              const payoutTxHash = await sendUsdt(designerWallet, payoutAmount);
+            if (balance >= designerEarning) {
+              const payoutTxHash = await sendUsdt(designerWallet, designerEarning);
               await prisma.transaction.update({
                 where: { id: transactionId },
-                data: {
-                  designerPaidAt: new Date(),
-                  adminPayoutTxHash: payoutTxHash,
-                },
+                data: { designerPaidAt: new Date(), adminPayoutTxHash: payoutTxHash },
               });
               await prisma.earnings.update({
-                where: { userId: transaction.designerId },
+                where: { userId: listing.designerId },
                 data: {
-                  pendingBalance: { decrement: payoutAmount },
-                  availableBalance: { increment: payoutAmount },
-                  totalPaidOut: { increment: payoutAmount },
+                  pendingBalance: { decrement: designerEarning },
+                  availableBalance: { increment: designerEarning },
+                  totalPaidOut: { increment: designerEarning },
                 },
               });
               await createNotification(
-                transaction.designerId,
+                listing.designerId,
                 "payout",
                 "Payout sent!",
-                `Your earnings for "${transaction.listing.title}" have been auto-paid to your USDT wallet.`,
+                `Your earnings for "${listing.title}" have been auto-paid to your USDT wallet.`,
                 "/dashboard/designer/earnings"
               );
             }
@@ -135,19 +141,16 @@ export async function POST(req: Request) {
       }
 
       verified = true;
-
       return NextResponse.json({
         success: true,
         autoVerified: true,
         message: "Payment verified on-chain! Download is now available.",
       });
     } else if (result.valid) {
-      // Valid but not enough confirmations yet
       await prisma.transaction.update({
         where: { id: transactionId },
-        data: { status: "SUBMITTED", txHash, cryptoCurrency: "USDT" },
+        data: { status: "SUBMITTED", txHash },
       });
-
       return NextResponse.json({
         success: true,
         autoVerified: false,
@@ -155,14 +158,13 @@ export async function POST(req: Request) {
       });
     }
   } catch (err) {
-    // Blockchain check failed, fall back to manual
     console.error("On-chain verification error:", err);
   }
 
   if (!verified) {
     await prisma.transaction.update({
       where: { id: transactionId },
-      data: { status: "SUBMITTED", txHash, cryptoCurrency: "USDT" },
+      data: { status: "SUBMITTED", txHash },
     });
 
     const admins = await prisma.user.findMany({ where: { role: "ADMIN" }, select: { id: true } });
@@ -171,7 +173,7 @@ export async function POST(req: Request) {
         admin.id,
         "payment",
         "New payment submitted",
-        `A buyer submitted a USDT payment for "${transaction.listing.title}". Verify on admin panel.`,
+        `A buyer submitted a USDT payment for "${listing.title}". Verify on admin panel.`,
         "/admin/payments"
       );
     }

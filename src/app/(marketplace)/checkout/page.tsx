@@ -62,7 +62,7 @@ function CheckoutForm() {
       const res = await fetch("/api/payments/submit-tx", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ transactionId: payment.transactionId, txHash: txHash.trim() }),
+        body: JSON.stringify({ listingId: payment.listingId, txHash: txHash.trim() }),
       });
       if (res.ok) {
         const data = await res.json();
