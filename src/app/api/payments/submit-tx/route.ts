@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { createNotification } from "@/lib/notifications";
-import { verifyTransactionOnChain } from "@/lib/tron";
+import { verifyTransactionOnChain, sendUsdt, checkUsdtBalance } from "@/lib/tron";
 import { calculateCommission } from "@/lib/commission";
 import { getCommissionPercentForDesigner } from "@/lib/settings";
 
@@ -90,6 +90,49 @@ export async function POST(req: Request) {
         `Your model "${transaction.listing.title}" was purchased.`,
         "/dashboard/designer/earnings"
       );
+
+      // Auto-payout designer
+      const pk = process.env.PLATFORM_WALLET_PRIVATE_KEY;
+      if (pk && transaction.designerEarning > 0) {
+        const designer = await prisma.user.findUnique({
+          where: { id: transaction.designerId },
+          select: { payoutWalletAddress: true },
+        });
+        const designerWallet = designer?.payoutWalletAddress;
+        if (designerWallet) {
+          try {
+            const payoutAmount = Number(transaction.designerEarning);
+            const balance = await checkUsdtBalance(walletAddress);
+            if (balance >= payoutAmount) {
+              const payoutTxHash = await sendUsdt(designerWallet, payoutAmount);
+              await prisma.transaction.update({
+                where: { id: transactionId },
+                data: {
+                  designerPaidAt: new Date(),
+                  adminPayoutTxHash: payoutTxHash,
+                },
+              });
+              await prisma.earnings.update({
+                where: { userId: transaction.designerId },
+                data: {
+                  pendingBalance: { decrement: payoutAmount },
+                  availableBalance: { increment: payoutAmount },
+                  totalPaidOut: { increment: payoutAmount },
+                },
+              });
+              await createNotification(
+                transaction.designerId,
+                "payout",
+                "Payout sent!",
+                `Your earnings for "${transaction.listing.title}" have been auto-paid to your USDT wallet.`,
+                "/dashboard/designer/earnings"
+              );
+            }
+          } catch (err) {
+            console.error(`Auto-payout failed for ${transactionId}:`, err);
+          }
+        }
+      }
 
       verified = true;
 
