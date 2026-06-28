@@ -139,20 +139,21 @@ export default function AdminTransactionsPage() {
                           >
                             Reject
                           </Button>
-                          <Button
-                            size="sm"
-                            variant="ghost"
-                            onClick={() => {
-                              if (confirm("Delete this transaction?")) handleAction(tx.id, "delete");
-                            }}
-                            disabled={actionTxId === tx.id}
-                            className="text-red-500 hover:text-red-700"
-                          >
-                            Delete
-                          </Button>
                         </div>
                       </div>
                     ) : null}
+
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      onClick={() => {
+                        if (confirm("Delete this transaction?")) handleAction(tx.id, "delete");
+                      }}
+                      disabled={actionTxId === tx.id}
+                      className="text-red-500 hover:text-red-700 !mt-2"
+                    >
+                      Delete
+                    </Button>
 
                     {tx.status === "COMPLETED" && !tx.designerPaidAt ? (
                       <div className="flex flex-col items-end gap-2 mt-2 w-72">

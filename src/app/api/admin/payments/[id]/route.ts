@@ -91,8 +91,8 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
   }
 
   if (action === "delete") {
-    if (transaction.status !== "PENDING" && transaction.status !== "SUBMITTED") {
-      return NextResponse.json({ error: "Can only delete pending transactions" }, { status: 400 });
+    if (transaction.status !== "PENDING" && transaction.status !== "SUBMITTED" && transaction.status !== "FAILED") {
+      return NextResponse.json({ error: "Can only delete pending, submitted, or failed transactions" }, { status: 400 });
     }
     try {
       await prisma.transaction.delete({ where: { id } });
