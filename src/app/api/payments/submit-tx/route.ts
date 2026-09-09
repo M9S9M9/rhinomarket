@@ -80,7 +80,7 @@ export async function POST(req: Request) {
   const transactionId = transaction.id;
   try {
     const result = await verifyTransactionOnChain(txHash, walletAddress, amount);
-    const minConfs = parseInt(process.env.MIN_BLOCK_CONFIRMATIONS || "19");
+    const minConfs = parseInt(process.env.MIN_BLOCK_CONFIRMATIONS || "12");
 
     if (result.valid && result.confirmations >= minConfs) {
       await prisma.transaction.update({
