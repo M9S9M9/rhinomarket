@@ -10,7 +10,7 @@ export async function GET() {
 
   const userId = session.user.id;
 
-  const [user, activeListings, listingAgg, transactions, earnings, avgRating] = await Promise.all([
+  const [user, activeListings, listingAgg, salesAgg, earnings, avgRating] = await Promise.all([
     prisma.user.findUnique({
       where: { id: userId },
       select: { payoutWalletAddress: true, uploadLimit: true },
@@ -21,9 +21,10 @@ export async function GET() {
       _count: { _all: true },
       _sum: { viewCount: true, downloadCount: true },
     }),
-    prisma.transaction.findMany({
+    prisma.transaction.aggregate({
       where: { designerId: userId, status: "COMPLETED" },
-      select: { designerEarning: true },
+      _sum: { designerEarning: true },
+      _count: { _all: true },
     }),
     prisma.earnings.findUnique({ where: { userId } }),
     prisma.review.aggregate({
@@ -33,8 +34,8 @@ export async function GET() {
   ]);
 
   const totalListings = listingAgg._count._all;
-  const totalSales = transactions.length;
-  const totalRevenue = transactions.reduce((sum, t) => sum + Number(t.designerEarning), 0);
+  const totalSales = salesAgg._count._all;
+  const totalRevenue = Number(salesAgg._sum.designerEarning || 0);
 
   return NextResponse.json({
     payoutWalletAddress: user?.payoutWalletAddress || null,
