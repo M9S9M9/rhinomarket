@@ -139,7 +139,7 @@ function CheckoutForm() {
               Pay {formatPrice(listing.price)} USDT
             </Button>
             <p className="text-xs text-gray-400 text-center mt-4">
-              Pay with USDT (TRC20) · Auto-verified on-chain
+              Pay with USDT (BSC) · Auto-verified on-chain
             </p>
           </CardContent>
         </Card>
@@ -168,14 +168,14 @@ function CheckoutForm() {
             <div className="flex items-start gap-3">
               <AlertTriangle className="h-5 w-5 text-amber-600 mt-0.5 shrink-0" />
               <div className="text-sm text-amber-800">
-                <p className="font-medium mb-1">Send exactly <strong>{payment.amount} USDT</strong> on <strong>TRC20</strong> network</p>
+                <p className="font-medium mb-1">Send exactly <strong>{payment.amount} USDT</strong> on <strong>BSC</strong> network</p>
                 <p>After sending, paste your transaction hash below to verify.</p>
               </div>
             </div>
           </div>
 
           <div className="mb-6">
-            <label className="block text-sm font-medium text-gray-700 mb-2">Platform Wallet Address (TRC20)</label>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Platform Wallet Address (BSC)</label>
             <div className="flex items-center gap-2 p-3 bg-gray-50 rounded-lg border border-gray-200">
               <code className="text-xs break-all flex-1">{payment.walletAddress}</code>
               <button onClick={copyAddress} className="p-2 rounded hover:bg-gray-200 text-gray-500 shrink-0">
@@ -194,7 +194,7 @@ function CheckoutForm() {
               placeholder="Paste your TXID here after sending..."
               className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-gray-500 focus:outline-none"
             />
-            <p className="text-xs text-gray-400 mt-1">Can be found on Tronscan after sending the payment.</p>
+            <p className="text-xs text-gray-400 mt-1">Can be found on BscScan after sending the payment.</p>
           </div>
 
           <Button className="w-full" size="lg" onClick={handleSubmitTx} loading={loading}>

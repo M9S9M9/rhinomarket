@@ -108,7 +108,7 @@ export default function EarningsPage() {
               <p className="text-sm text-gray-500">
                 {stats?.payoutWalletAddress
                   ? `${stats.payoutWalletAddress.slice(0, 12)}...${stats.payoutWalletAddress.slice(-4)}`
-                  : "Set your USDT (TRC20) wallet address to receive payouts"}
+                  : "Set your USDT (BSC) wallet address to receive payouts"}
               </p>
             </div>
           </div>
@@ -130,7 +130,7 @@ export default function EarningsPage() {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50" onClick={() => setShowWalletForm(false)}>
           <div className="bg-white rounded-2xl p-6 max-w-md w-full mx-4 shadow-xl" onClick={e => e.stopPropagation()}>
             <h2 className="text-lg font-bold text-gray-900 mb-2">Set Payout Wallet</h2>
-            <p className="text-sm text-gray-500 mb-4">Enter your USDT (TRC20) wallet address to receive payouts.</p>
+            <p className="text-sm text-gray-500 mb-4">Enter your USDT (BSC) wallet address to receive payouts.</p>
             <input
               type="text"
               value={walletAddress}

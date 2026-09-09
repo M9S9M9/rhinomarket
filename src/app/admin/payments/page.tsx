@@ -123,7 +123,7 @@ export default function AdminPaymentsPage() {
                     {tx.txHash && (
                       <div className="mt-2 flex items-center gap-2">
                         <code className="text-xs bg-gray-100 px-2 py-1 rounded">{tx.txHash.slice(0, 20)}...{tx.txHash.slice(-6)}</code>
-                        <a href={`https://tronscan.org/#/transaction/${tx.txHash}`} target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-gray-600">
+                        <a href={`https://bscscan.com/tx/${tx.txHash}`} target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-gray-600">
                           <ExternalLink className="h-3 w-3" />
                         </a>
                       </div>
@@ -187,7 +187,7 @@ export default function AdminPaymentsPage() {
                         <div className="mt-1 flex items-center gap-2 text-xs">
                           <span className="text-gray-400">Payout TX:</span>
                           <code className="bg-gray-100 px-2 py-1 rounded">{tx.adminPayoutTxHash.slice(0, 16)}...{tx.adminPayoutTxHash.slice(-6)}</code>
-                          <a href={`https://tronscan.org/#/transaction/${tx.adminPayoutTxHash}`} target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-gray-600">
+                          <a href={`https://bscscan.com/tx/${tx.adminPayoutTxHash}`} target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-gray-600">
                             <ExternalLink className="h-3 w-3" />
                           </a>
                         </div>

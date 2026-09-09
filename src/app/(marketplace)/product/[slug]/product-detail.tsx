@@ -253,7 +253,7 @@ export function ProductDetailClient({ initialData, slug }: { initialData: Listin
               </Button>
             )}
             <p className="text-xs text-gray-400 text-center flex items-center justify-center gap-1">
-              <Shield className="h-3 w-3" /> Pay with USDT (TRC20) · Manual verification
+              <Shield className="h-3 w-3" /> Pay with USDT (BSC) · Manual verification
             </p>
           </div>
         </div>

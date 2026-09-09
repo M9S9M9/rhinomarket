@@ -1,6 +1,6 @@
 # 3DM Store - Multi-Vendor .3DM Marketplace
 
-A production-ready marketplace for buying and selling Rhino 3D (.3dm) files, built with Next.js, TypeScript, Tailwind CSS, PostgreSQL, and USDT TRC20 crypto payments.
+A production-ready marketplace for buying and selling Rhino 3D (.3dm) files, built with Next.js, TypeScript, Tailwind CSS, PostgreSQL, and USDT BSC crypto payments.
 
 ## Quick Start
 
@@ -52,8 +52,8 @@ Visit `http://localhost:3000`
 - **Backend:** Next.js API Routes (Route Handlers)
 - **Database:** PostgreSQL + Prisma ORM
 - **Auth:** NextAuth.js v5 (Auth.js) with JWT + Credentials
-- **Payments:** USDT (TRC20) — Buyer sends USDT to platform wallet
-- **Payouts:** Manual admin payout to designer USDT (TRC20) wallets
+- **Payments:** USDT (BSC) — Buyer sends USDT to platform wallet
+- **Payouts:** Manual admin payout to designer USDT (BSC) wallets
 - **File Storage:** Local filesystem (swappable to S3/R2)
 
 ### Key Architecture Decisions
@@ -61,7 +61,7 @@ Visit `http://localhost:3000`
 - **API Routes** for all backend logic (no separate Express server needed)
 - **Prisma** for type-safe database access and migrations
 - **NextAuth.js** with JWT strategy (no database sessions needed)
-- **USDT (TRC20)** for crypto payment processing
+- **USDT (BSC)** for crypto payment processing
 - **Middleware** for route protection
 - **Local uploads** for development, architected for S3/R2 migration
 
@@ -81,7 +81,7 @@ Visit `http://localhost:3000`
 │   │   │   ├── admin/         # Admin API (users, listings, stats)
 │   │   │   ├── auth/          # Auth API (register, verify, reset)
 │   │   │   ├── listings/      # Marketplace CRUD API
-│   │   │   ├── payments/      # USDT TRC20 payment API
+│   │   │   ├── payments/      # USDT BSC payment API
 │   │   │   └── ...            # Reviews, favorites, uploads, etc.
 │   │   ├── dashboard/         # User dashboards
 │   │   │   ├── designer/      # Designer studio, upload, earnings
@@ -148,7 +148,7 @@ Core entities:
 - `GET /api/categories` - All categories with counts
 - `GET /api/uploads/:path*` - Serve uploaded files
 
-### Payments (USDT TRC20)
+### Payments (USDT BSC)
 - `POST /api/payments/create-payment-intent` - Create USDT payment
 - `POST /api/payments/submit-tx` - Submit buyer's transaction hash
 - `GET /api/admin/payments` - List payments for admin
@@ -188,11 +188,11 @@ Core entities:
 ## Payment Flow
 
 1. **Buyer clicks "Buy Now"** → Creates pending USDT transaction with platform wallet address
-2. **Buyer sends USDT** → Buyer sends exact amount to platform's TRC20 wallet address
+2. **Buyer sends USDT** → Buyer sends exact amount to platform's BSC wallet address
 3. **Buyer submits TX hash** → Buyer pastes the transaction hash into the checkout page
 4. **Admin verifies** → Admin confirms/rejects payment in `/admin/payments`
 5. **Download access** → On confirmation, buyer can download the file
-6. **Admin pays designer** → Admin manually sends USDT to designer's TRC20 wallet and records the payout TX hash
+6. **Admin pays designer** → Admin manually sends USDT to designer's BSC wallet and records the payout TX hash
 
 ### Commission Logic
 - Platform takes configurable % (default 15%) from each sale
@@ -200,7 +200,7 @@ Core entities:
 - Full payment goes to platform wallet; designer share is tracked and paid out manually
 
 ### Platform Wallet
-- **USDT TRC20 Address:** `THX3u6iGWmY6affAgTV8okMgFSBNcDuu6L`
+- **USDT BSC Address:** `0x2EcDD7a31750fAA428970B146f5f7F14D88c734a`
 - Configurable via `AppSettings.adminWalletAddress`
 
 ## Security Features

@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { createNotification } from "@/lib/notifications";
-import { verifyTransactionOnChain, sendUsdt, checkUsdtBalance } from "@/lib/tron";
+import { verifyTransactionOnChain, sendUsdt, checkUsdtBalance } from "@/lib/bsc";
 import { calculateCommission } from "@/lib/commission";
 import { getCommissionPercentForDesigner } from "@/lib/settings";
 
@@ -45,7 +45,7 @@ export async function POST(req: Request) {
       }
 
       const settings = await tx.appSettings.findUnique({ where: { id: 1 } });
-      const walletAddress = (settings?.adminWalletAddress || "THX3u6iGWmY6affAgTV8okMgFSBNcDuu6L").toLowerCase();
+      const walletAddress = (settings?.adminWalletAddress || "0x2EcDD7a31750fAA428970B146f5f7F14D88c734a").toLowerCase();
 
       const amount = Number(listing.price);
       const commissionPercent = await getCommissionPercentForDesigner(listing.designerId);

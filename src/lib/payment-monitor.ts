@@ -1,10 +1,11 @@
 import { prisma } from "@/lib/db";
 import { createNotification } from "@/lib/notifications";
-import { getIncomingUsdtTransactions, getLatestBlock, sendUsdt, checkUsdtBalance } from "@/lib/tron";
+import { getIncomingUsdtTransactions, getLatestBlock, sendUsdt, checkUsdtBalance } from "@/lib/bsc";
 import { calculateCommission } from "@/lib/commission";
 import { getCommissionPercentForDesigner } from "@/lib/settings";
 
-const MIN_CONFIRMATIONS = 19;
+const ADMIN_WALLET = "0x2EcDD7a31750fAA428970B146f5f7F14D88c734a";
+const MIN_CONFIRMATIONS = 12;
 
 interface ProcessResult {
   checked: number;
@@ -17,7 +18,7 @@ export async function checkPendingPayments(): Promise<ProcessResult> {
   const result: ProcessResult = { checked: 0, autoConfirmed: 0, autoPaid: 0, errors: [] };
 
   const settings = await prisma.appSettings.findUnique({ where: { id: 1 } });
-  const walletAddress = settings?.adminWalletAddress || "THX3u6iGWmY6affAgTV8okMgFSBNcDuu6L";
+  const walletAddress = (settings?.adminWalletAddress || ADMIN_WALLET).toLowerCase();
 
   const pendingTxns = await prisma.transaction.findMany({
     where: { status: "PENDING", paymentMethod: "usdt" },
@@ -44,7 +45,7 @@ export async function checkPendingPayments(): Promise<ProcessResult> {
     const expectedAmount = Number(pending.amount);
     const match = incomingTxns.find(
       (tx: any) =>
-        Math.abs(Number(tx.value) / 1_000_000 - expectedAmount) < 0.01 &&
+        Math.abs(Number(tx.value) / 1_000_000_000_000_000_000 - expectedAmount) < 0.01 &&
         (tx.to || "").toLowerCase() === walletAddress.toLowerCase()
     );
 
@@ -157,9 +158,7 @@ async function payoutDesigner(transactionId: string) {
   const payoutAmount = Number(transaction.designerEarning);
   if (payoutAmount <= 0) return;
 
-  const balance = await checkUsdtBalance(
-    (await prisma.appSettings.findUnique({ where: { id: 1 } }))?.adminWalletAddress || "THX3u6iGWmY6affAgTV8okMgFSBNcDuu6L"
-  );
+  const balance = await checkUsdtBalance(ADMIN_WALLET);
   if (balance < payoutAmount) {
     throw new Error(`Insufficient USDT balance: have ${balance}, need ${payoutAmount}`);
   }

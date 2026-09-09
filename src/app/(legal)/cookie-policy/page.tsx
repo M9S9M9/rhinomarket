@@ -58,7 +58,7 @@ export default function CookiePolicyPage() {
 
         <section>
           <h2 className="text-lg font-semibold text-gray-900">Third-Party Cookies</h2>
-          <p>We accept payments in USDT (TRC20) via manual transfer. No third-party payment cookies are set during checkout.</p>
+          <p>We accept payments in USDT (BSC) via manual transfer. No third-party payment cookies are set during checkout.</p>
         </section>
 
         <section>

@@ -80,7 +80,7 @@ model User {
   createdAt         DateTime  @default(now())
   updatedAt         DateTime  @updatedAt
 
-  // Crypto payouts (USDT TRC20)
+  // Crypto payouts (USDT BSC)
   payoutWalletAddress  String?
   payoutWalletCurrency String  @default("USDT")
 

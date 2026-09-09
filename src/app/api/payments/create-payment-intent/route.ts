@@ -68,7 +68,7 @@ export async function POST(req: Request) {
     }
 
     const settings = await prisma.appSettings.findUnique({ where: { id: 1 } });
-    const walletAddress = settings?.adminWalletAddress || "THX3u6iGWmY6affAgTV8okMgFSBNcDuu6L";
+    const walletAddress = settings?.adminWalletAddress || "0x2EcDD7a31750fAA428970B146f5f7F14D88c734a";
 
     return NextResponse.json({
       listingId: listing.id,
@@ -76,7 +76,7 @@ export async function POST(req: Request) {
       amount: amount.toFixed(2),
       cryptoAmount: amount.toFixed(2),
       cryptoCurrency: "USDT",
-      network: "TRC20",
+      network: "BSC",
     });
   } catch (error) {
     console.error("Payment creation error:", error);
