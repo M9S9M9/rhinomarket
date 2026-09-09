@@ -116,13 +116,15 @@ export default function ProfilePage() {
             <Button type="submit" loading={loading}>Save Changes</Button>
           </form>
 
-          <div className="border-t pt-5">
-            <h3 className="font-medium text-gray-900 mb-2">Become a Designer</h3>
-            <p className="text-sm text-gray-500 mb-3">Start selling your .3dm models on 3DM Store</p>
-            <Button variant="outline" onClick={() => router.push("/dashboard/designer/apply")}>
-              Apply to Become a Designer
-            </Button>
-          </div>
+          {(session?.user as any)?.role !== "DESIGNER" && (
+            <div className="border-t pt-5">
+              <h3 className="font-medium text-gray-900 mb-2">Become a Designer</h3>
+              <p className="text-sm text-gray-500 mb-3">Start selling your .3dm models on 3DM Store</p>
+              <Button variant="outline" onClick={() => router.push("/dashboard/designer/apply")}>
+                Apply to Become a Designer
+              </Button>
+            </div>
+          )}
 
           <div className="border-t pt-5">
             <h3 className="font-medium text-red-700 mb-2 flex items-center gap-1.5">
