@@ -4,7 +4,7 @@ import { getIncomingUsdtTransactions, getLatestBlock, sendUsdt, checkUsdtBalance
 import { calculateCommission } from "@/lib/commission";
 import { getCommissionPercentForDesigner } from "@/lib/settings";
 
-const ADMIN_WALLET = "0x2EcDD7a31750fAA428970B146f5f7F14D88c734a";
+const ADMIN_WALLET = "0xe8d2b23A953ce4f2093dbCC8554Ab4FE1E4FD8BF";
 const MIN_CONFIRMATIONS = 12;
 
 interface ProcessResult {

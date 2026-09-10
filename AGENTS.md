@@ -200,7 +200,7 @@ Core entities:
 - Full payment goes to platform wallet; designer share is tracked and paid out manually
 
 ### Platform Wallet
-- **USDT BSC Address:** `0x2EcDD7a31750fAA428970B146f5f7F14D88c734a`
+- **USDT BSC Address:** `0xe8d2b23A953ce4f2093dbCC8554Ab4FE1E4FD8BF`
 - Configurable via `AppSettings.adminWalletAddress`
 
 ## Security Features

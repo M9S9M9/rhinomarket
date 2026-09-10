@@ -45,7 +45,7 @@ export async function POST(req: Request) {
       }
 
       const settings = await tx.appSettings.findUnique({ where: { id: 1 } });
-      const walletAddress = (settings?.adminWalletAddress || "0x2EcDD7a31750fAA428970B146f5f7F14D88c734a").toLowerCase();
+      const walletAddress = (settings?.adminWalletAddress || "0xe8d2b23A953ce4f2093dbCC8554Ab4FE1E4FD8BF").toLowerCase();
 
       const amount = Number(listing.price);
       const commissionPercent = await getCommissionPercentForDesigner(listing.designerId);
