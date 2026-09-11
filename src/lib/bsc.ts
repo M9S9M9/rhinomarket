@@ -4,10 +4,15 @@ import { Interface } from "ethers";
 const BSC_RPC_URLS = [
   "https://bsc-dataseed.binance.org",
   "https://bsc-dataseed1.binance.org",
+  "https://bsc-rpc.publicnode.com",
   "https://bsc-dataseed1.defibit.io",
+  "https://1rpc.io/bnb",
 ];
 
-const BSCSCAN_API = "https://api.bscscan.com/api";
+// Etherscan V2 API (BscScan deprecated its V1 endpoint). Free keys may not cover
+// chainid 56; bscscan() returns null in that case so callers fall back to the RPC log scan.
+const BSCSCAN_API = "https://api.etherscan.io/v2/api";
+const BSCSCAN_CHAIN_ID = "56";
 export const USDT_BEP20_CONTRACT = "0x55d398326f99059fF775485246999027B3197955";
 const USDT_DECIMALS = 18;
 
@@ -40,15 +45,20 @@ function getContract(signer?: Wallet): Contract {
 
 async function bscscan(
   params: Record<string, string>
-): Promise<any> {
+): Promise<any[] | null> {
   const apiKey = process.env.BSCSCAN_API_KEY;
   if (!apiKey) return null;
 
-  const qs = new URLSearchParams({ ...params, apikey: apiKey, tag: "latest" }).toString();
+  const qs = new URLSearchParams({
+    ...params,
+    chainid: BSCSCAN_CHAIN_ID,
+    apikey: apiKey,
+    tag: "latest",
+  }).toString();
   const res = await fetch(`${BSCSCAN_API}?${qs}`);
-  if (!res.ok) throw new Error(`BscScan API error: ${res.status}`);
+  if (!res.ok) throw new Error(`Etherscan V2 API error: ${res.status}`);
   const data = await res.json();
-  if (data.status !== "1" || !Array.isArray(data.result)) return [];
+  if (data.status !== "1" || !Array.isArray(data.result)) return null;
   return data.result.map((tx: any) => ({
     hash: tx.hash,
     value: tx.value,
@@ -85,31 +95,75 @@ export async function getIncomingUsdtTransactions(
     .filter((tx: any) => !sinceTimestamp || tx.timeStamp >= sinceTimestamp);
 }
 
+// RPC fallback for Etherscan V2 (free keys don't cover chain 56).
+// Uses a single eth_getLogs call per run — public BSC nodes rate-limit and
+// penalize bursts. The monitor runs often, so a ~1h window is sufficient.
+const LOG_SCAN_BLOCKS = 1200; // ~1 hour of BSC blocks (3s each)
+
+function getProviderForUrl(url: string): JsonRpcProvider {
+  return new JsonRpcProvider(url);
+}
+
 async function getTransferLogs(address: string, sinceTimestamp?: number): Promise<any[]> {
-  const provider = getProvider();
   const iface = new Interface([
     "event Transfer(address indexed from, address indexed to, uint256 value)",
   ]);
 
-  const logs = await provider.getLogs({
-    address: USDT_BEP20_CONTRACT,
-    topics: [TRANSFER_EVENT_TOPIC, null, address.toLowerCase()],
-    fromBlock: "latest",
-    toBlock: "latest",
-  });
+  let latest: number;
+  try {
+    latest = await getProvider().getBlockNumber();
+  } catch (err) {
+    console.error("BSC getBlockNumber failed:", (err as Error).message);
+    return [];
+  }
 
-  return logs.map((log: any) => {
+  let fromBlock = Math.max(0, latest - LOG_SCAN_BLOCKS);
+  if (sinceTimestamp) {
+    const sinceBlock = latest - Math.ceil((Date.now() - sinceTimestamp) / 1000 / 3);
+    fromBlock = Math.max(fromBlock, sinceBlock);
+  }
+
+  let logs: any[] = [];
+  let success = false;
+  for (const rpcUrl of BSC_RPC_URLS) {
+    if (success) break;
+    try {
+      const provider = getProviderForUrl(rpcUrl);
+      logs = await provider.getLogs({
+        address: USDT_BEP20_CONTRACT,
+        topics: [TRANSFER_EVENT_TOPIC, null, address.toLowerCase()],
+        fromBlock,
+        toBlock: latest,
+      });
+      success = true;
+      break;
+    } catch (err) {
+      console.warn(`BSC getLogs failed on ${rpcUrl}:`, (err as Error).message);
+    }
+  }
+  if (!success) return [];
+
+  const out: any[] = [];
+  for (const log of logs) {
     const parsed = iface.parseLog(log);
     const decoded = parsed?.args;
-    return {
+    let ts = 0;
+    try {
+      const block = await getProvider().getBlock(log.blockNumber);
+      ts = block ? Number(block.timestamp) * 1000 : 0;
+    } catch {
+      // timestamp best-effort
+    }
+    out.push({
       hash: log.transactionHash,
       value: decoded?.value?.toString?.() || "0",
       from: decoded?.from?.toLowerCase?.() || "",
       to: decoded?.to?.toLowerCase?.() || "",
       block_number: log.blockNumber,
-      timeStamp: 0,
-    };
-  });
+      timeStamp: ts,
+    });
+  }
+  return out;
 }
 
 export async function getLatestBlock(): Promise<number> {
