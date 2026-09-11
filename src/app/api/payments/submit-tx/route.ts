@@ -34,6 +34,9 @@ export async function POST(req: Request) {
   type TxResult = { transaction: any; walletAddress: string; amount: number; designerEarning: number };
   let txResult: TxResult;
   try {
+    // Fetch commission BEFORE the interactive transaction: the helper uses the global
+    // Prisma client, which must not run nested inside prisma.$transaction.
+    const commissionPercent = await getCommissionPercentForDesigner(listing.designerId);
     txResult = await prisma.$transaction(async (tx) => {
       await tx.$queryRaw`SELECT id FROM "Listing" WHERE id = ${listing.id} FOR UPDATE`;
 
@@ -48,7 +51,6 @@ export async function POST(req: Request) {
       const walletAddress = (settings?.adminWalletAddress || "0xe8d2b23A953ce4f2093dbCC8554Ab4FE1E4FD8BF").toLowerCase();
 
       const amount = Number(listing.price);
-      const commissionPercent = await getCommissionPercentForDesigner(listing.designerId);
       const { commission, designerEarning } = calculateCommission(amount, commissionPercent);
 
       const transaction = await tx.transaction.create({
@@ -69,6 +71,7 @@ export async function POST(req: Request) {
       return { transaction, walletAddress, amount, designerEarning };
     });
   } catch (err: any) {
+    console.error("submit-tx order creation error:", err);
     if (err.message === "ALREADY_EXISTS") {
       return NextResponse.json({ error: "You already have an order for this listing" }, { status: 400 });
     }
