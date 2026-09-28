@@ -5,7 +5,7 @@ import { calculateCommission } from "@/lib/commission";
 import { getCommissionPercentForDesigner } from "@/lib/settings";
 
 const ADMIN_WALLET = "0xe8d2b23A953ce4f2093dbCC8554Ab4FE1E4FD8BF";
-const MIN_CONFIRMATIONS = 12;
+const MIN_CONFIRMATIONS = 1;
 
 interface ProcessResult {
   checked: number;
