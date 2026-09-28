@@ -1,6 +1,6 @@
 import { prisma } from "@/lib/db";
 import { createNotification } from "@/lib/notifications";
-import { getIncomingUsdtTransactions, getLatestBlock, sendUsdt, checkUsdtBalance } from "@/lib/bsc";
+import { getIncomingUsdtTransactions, getLatestBlock, verifyTransactionOnChain, sendUsdt, checkUsdtBalance } from "@/lib/bsc";
 import { calculateCommission } from "@/lib/commission";
 import { getCommissionPercentForDesigner } from "@/lib/settings";
 
@@ -20,12 +20,51 @@ export async function checkPendingPayments(): Promise<ProcessResult> {
   const settings = await prisma.appSettings.findUnique({ where: { id: 1 } });
   const walletAddress = (settings?.adminWalletAddress || ADMIN_WALLET).toLowerCase();
 
+  // 1) Advance SUBMITTED orders (already have a txHash, waiting on confirmations) to COMPLETED.
+  const submittedTxns = await prisma.transaction.findMany({
+    where: { status: "SUBMITTED", paymentMethod: "usdt", txHash: { not: null } },
+    include: { listing: { select: { title: true } } },
+    orderBy: { createdAt: "asc" },
+  });
+
+  for (const t of submittedTxns) {
+    try {
+      const txHash = t.txHash as string;
+      const v = await verifyTransactionOnChain(txHash, walletAddress, Number(t.amount));
+      if (v.valid && v.confirmations >= MIN_CONFIRMATIONS) {
+        await confirmTransaction(t.id, txHash, v.from);
+        result.autoConfirmed++;
+      }
+    } catch (confirmErr: any) {
+      result.errors.push(`Confirm failed for ${t.id}: ${confirmErr.message}`);
+    }
+  }
+
+  // 2) Auto-pay designers for COMPLETED sales that haven't been paid out yet (retry-safe).
+  const unpaidTxns = await prisma.transaction.findMany({
+    where: { status: "COMPLETED", paymentMethod: "usdt", designerPaidAt: null },
+    include: {
+      listing: { select: { title: true } },
+      designer: { select: { payoutWalletAddress: true } },
+    },
+    orderBy: { createdAt: "asc" },
+  });
+
+  for (const t of unpaidTxns) {
+    try {
+      await payoutDesigner(t.id);
+      result.autoPaid++;
+    } catch (payoutErr: any) {
+      result.errors.push(`Payout failed for ${t.id}: ${payoutErr.message}`);
+    }
+  }
+
+  // 3) Fallback: match PENDING orders (no submitted hash yet) against incoming transfers.
   const pendingTxns = await prisma.transaction.findMany({
     where: { status: "PENDING", paymentMethod: "usdt" },
     include: { listing: { select: { title: true } } },
     orderBy: { createdAt: "asc" },
   });
-
   if (pendingTxns.length === 0) return result;
 
   const oldestCreation = pendingTxns[0].createdAt;
@@ -57,7 +96,7 @@ export async function checkPendingPayments(): Promise<ProcessResult> {
     if (confirmations < MIN_CONFIRMATIONS) continue;
 
     try {
-      await confirmTransaction(pending.id, match.transaction_id, match.from);
+      await confirmTransaction(pending.id, match.hash, match.from);
       result.autoConfirmed++;
 
       try {
@@ -84,7 +123,8 @@ async function confirmTransaction(
     include: { listing: { select: { title: true } } },
   });
 
-  if (!transaction || transaction.status !== "PENDING") return;
+  if (!transaction) return;
+  if (transaction.status !== "PENDING" && transaction.status !== "SUBMITTED") return;
 
   await prisma.transaction.update({
     where: { id: transactionId },
