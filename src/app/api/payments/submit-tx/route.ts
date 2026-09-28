@@ -38,7 +38,7 @@ export async function POST(req: Request) {
     // Prisma client, which must not run nested inside prisma.$transaction.
     const commissionPercent = await getCommissionPercentForDesigner(listing.designerId);
     txResult = await prisma.$transaction(async (tx) => {
-      await tx.$queryRaw`SELECT id FROM "Listing" WHERE id = ${listing.id} FOR UPDATE`;
+      await tx.$queryRaw`SELECT id FROM "listings" WHERE id = ${listing.id} FOR UPDATE`;
 
       const existing = await tx.transaction.findFirst({
         where: { listingId: listing.id, buyerId: buyerId, status: { in: ["PENDING", "SUBMITTED", "COMPLETED"] } },
