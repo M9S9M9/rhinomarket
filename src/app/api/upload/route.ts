@@ -68,6 +68,12 @@ export async function POST(req: NextRequest) {
 
     const previewUrls: string[] = [];
     for (let i = 0; i < previews.length; i++) {
+      if (!/\.(jpe?g|png)$/i.test(previews[i].name) ||
+          (previews[i].type !== "image/jpeg" && previews[i].type !== "image/png")) {
+        return NextResponse.json({
+          error: `"${previews[i].name}" is not a valid preview image. Only JPG and PNG files are allowed.`,
+        }, { status: 400 });
+      }
       const previewBuffer = Buffer.from(await previews[i].arrayBuffer());
       const previewUrl = await savePreviewImage(previewBuffer, i);
       previewUrls.push(previewUrl);

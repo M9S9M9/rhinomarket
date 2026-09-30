@@ -48,7 +48,11 @@ export default function UploadPage() {
 
   const handlePreviewSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
-    setPreviews(prev => [...prev, ...files].slice(0, 10));
+    const allowed = /\.(jpe?g|png)$/i;
+    const valid = files.filter(f => allowed.test(f.name) && (f.type === "image/jpeg" || f.type === "image/png"));
+    const invalid = files.length - valid.length;
+    if (invalid > 0) toast.error("Preview images must be JPG or PNG only");
+    setPreviews(prev => [...prev, ...valid].slice(0, 10));
   };
 
   const handleUpload = async () => {
@@ -136,7 +140,7 @@ export default function UploadPage() {
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">Preview Images (up to 10)</label>
-              <input type="file" accept="image/*" multiple onChange={handlePreviewSelect} className="hidden" id="preview-upload" />
+              <input type="file" accept=".jpg,.jpeg,.png,image/jpeg,image/png" multiple onChange={handlePreviewSelect} className="hidden" id="preview-upload" />
               <label htmlFor="preview-upload" className="cursor-pointer inline-flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg text-sm hover:bg-gray-50">
                 <Upload className="h-4 w-4" /> Add Images
               </label>
