@@ -117,7 +117,17 @@ export default function AdminTransactionsPage() {
                       <code className="text-xs text-amber-600 mt-1 block truncate">Payout: {tx.adminPayoutTxHash}</code>
                     )}
                     {tx.designer.payoutWalletAddress && (
-                      <p className="text-xs text-gray-400 mt-1">Designer wallet: <code>{tx.designer.payoutWalletAddress}</code></p>
+                      <div className="flex items-center gap-2 mt-1">
+                        <span className="text-xs text-gray-400">Designer wallet:</span>
+                        <code className="text-xs text-gray-400 break-all">{tx.designer.payoutWalletAddress}</code>
+                        <button
+                          type="button"
+                          onClick={() => { navigator.clipboard.writeText(tx.designer.payoutWalletAddress as string); toast.success("Wallet address copied"); }}
+                          className="text-xs text-gray-400 hover:text-gray-600 underline shrink-0"
+                        >
+                          Copy
+                        </button>
+                      </div>
                     )}
                   </div>
                   <div className="flex flex-col items-end gap-2 shrink-0">

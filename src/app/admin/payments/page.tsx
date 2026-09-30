@@ -180,7 +180,14 @@ export default function AdminPaymentsPage() {
                       {designerWallet && (
                         <div className="mt-2 flex items-center gap-2 text-xs">
                           <span className="text-gray-400">Designer wallet:</span>
-                          <code className="bg-gray-100 px-2 py-1 rounded">{designerWallet.slice(0, 12)}...{designerWallet.slice(-4)}</code>
+                          <code className="bg-gray-100 px-2 py-1 rounded break-all">{designerWallet}</code>
+                          <button
+                            type="button"
+                            onClick={() => { navigator.clipboard.writeText(designerWallet); toast.success("Wallet address copied"); }}
+                            className="shrink-0 text-gray-400 hover:text-gray-600 underline"
+                          >
+                            Copy
+                          </button>
                         </div>
                       )}
                       {tx.adminPayoutTxHash && (
