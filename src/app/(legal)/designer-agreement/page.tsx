@@ -14,10 +14,10 @@ export default function DesignerAgreementPage() {
         <p>By uploading a model, you grant 3DM Store a limited license to host, display, and distribute your model through the marketplace. You retain all other rights.</p>
 
         <h2 className="text-lg font-semibold text-gray-900 mt-8">3. Pricing and Commissions</h2>
-        <p>You set your own prices. 3DM Store deducts a <strong>15% commission</strong> from each sale. This is the standard Platform Fee applied to all transactions. Per-designer commission adjustments may be made by agreement and will be documented in your account settings. Commissions are deducted before payout is credited to your available balance.</p>
+        <p>You set your own prices. 3DM Store deducts a <strong>5% commission</strong> from each sale. This is the standard Platform Fee applied to all transactions. Per-designer commission adjustments may be made by agreement and will be documented in your account settings. Commissions are deducted before payout is credited to your available balance.</p>
 
         <h2 className="text-lg font-semibold text-gray-900 mt-8">4. Payment Terms</h2>
-        <p>Payouts are processed in cryptocurrency (USDC) to your designated wallet address. Earnings are credited to your account balance after each sale.</p>
+        <p>Payouts are processed in cryptocurrency (USDT) to your designated wallet address. Earnings are credited to your account balance after each sale.</p>
 
         <h2 className="text-lg font-semibold text-gray-900 mt-8">5. Content Standards</h2>
         <ul className="list-disc pl-6 space-y-2">
@@ -25,6 +25,7 @@ export default function DesignerAgreementPage() {
           <li>Models must be in .3dm format compatible with Rhino 3D</li>
           <li>Descriptions and tags must be accurate</li>
           <li>Preview images must accurately represent the model</li>
+          <li>It's better to add photo of all views (top, down, right, left, front, back)</li>
           <li>No illegal, offensive, or prohibited content</li>
         </ul>
 
