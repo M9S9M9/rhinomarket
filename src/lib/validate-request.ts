@@ -3,7 +3,7 @@ import { NextResponse } from "next/server";
 const MAX_BODY_BYTES: Record<string, number> = {
   "default": 1024 * 1024,
   "/api/listings": 5 * 1024 * 1024,
-  "/api/upload": 500 * 1024 * 1024,
+  "/api/upload": 100 * 1024 * 1024,
 };
 
 export async function validateApiRequest(req: Request): Promise<{ ok: true } | { ok: false; response: NextResponse }> {

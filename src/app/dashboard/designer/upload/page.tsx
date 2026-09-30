@@ -41,7 +41,7 @@ export default function UploadPage() {
     const file = e.target.files?.[0];
     if (file) {
       if (!file.name.endsWith(".3dm")) { toast.error("Only .3dm files are allowed"); return; }
-      if (file.size > 500 * 1024 * 1024) { toast.error("File too large (max 500MB)"); return; }
+      if (file.size > 100 * 1024 * 1024) { toast.error("File too large (max 100MB)"); return; }
       setModelFile(file);
     }
   };
@@ -130,7 +130,7 @@ export default function UploadPage() {
               <label htmlFor="model-upload" className="cursor-pointer">
                 <Upload className="h-10 w-10 text-gray-400 mx-auto mb-4" />
                 <p className="font-medium text-gray-700">{modelFile ? modelFile.name : "Click to upload .3dm file"}</p>
-                <p className="text-sm text-gray-500 mt-1">Max 500MB</p>
+                <p className="text-sm text-gray-500 mt-1">Max 100MB</p>
               </label>
             </div>
 

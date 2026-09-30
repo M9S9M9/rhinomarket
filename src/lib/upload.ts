@@ -7,7 +7,7 @@ const UPLOAD_DIR = path.join(process.cwd(), "uploads");
 const MODELS_DIR = path.join(UPLOAD_DIR, "models");
 const PREVIEWS_DIR = path.join(UPLOAD_DIR, "previews");
 
-const MAX_FILE_SIZE = (parseInt(process.env.UPLOAD_MAX_FILE_SIZE_MB || "500")) * 1024 * 1024;
+const MAX_FILE_SIZE = (parseInt(process.env.UPLOAD_MAX_FILE_SIZE_MB || "100")) * 1024 * 1024;
 const ALLOWED_TYPES = [".3dm"];
 
 const useBlob = !!process.env.BLOB_READ_WRITE_TOKEN;

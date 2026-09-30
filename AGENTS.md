@@ -207,7 +207,7 @@ Core entities:
 
 - **Password hashing** with bcryptjs (12 rounds)
 - **JWT sessions** via NextAuth.js
-- **File validation** - Only .3dm files allowed, max 500MB
+- **File validation** - Only .3dm files allowed, max 100MB
 - **File hash** - SHA-256 hash stored for integrity verification
 - **Download authentication** - Protected download endpoints
 - **Role-based access** - Admin/Designer/Buyer authorization checks
