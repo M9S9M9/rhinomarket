@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, useEffect, useState, useCallback } from "react";
+import { Suspense, useEffect, useState, useCallback, useRef } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { Search, SlidersHorizontal, X, FileText } from "lucide-react";
@@ -66,22 +66,43 @@ function MarketplaceContent() {
 
   useEffect(() => { fetchListings(); }, [fetchListings]);
 
+  // Keep the input in sync when navigating (e.g. browser back/forward).
+  useEffect(() => { setSearchInput(currentQuery); }, [currentQuery]);
+
   useEffect(() => {
     fetch("/api/categories").then(r => r.json()).then(setCategories).catch(() => {});
   }, []);
 
-  const updateSearch = (params: Record<string, string>) => {
+  const updateSearch = (params: Record<string, string>, replace = false) => {
     const sp = new URLSearchParams(searchParams.toString());
     Object.entries(params).forEach(([k, v]) => {
       if (v) sp.set(k, v);
       else sp.delete(k);
     });
     if (params.page === undefined) sp.set("page", "1");
-    router.push(`/marketplace?${sp.toString()}`);
+    const url = `/marketplace?${sp.toString()}`;
+    if (replace) router.replace(url);
+    else router.push(url);
   };
+
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Live search-as-you-type: debounce keystrokes, update results without spamming history.
+  useEffect(() => {
+    if (searchInput === currentQuery) return;
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(() => {
+      updateSearch({ query: searchInput, page: "1" }, true);
+    }, 300);
+    return () => {
+      if (debounceRef.current) clearTimeout(debounceRef.current);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchInput]);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
+    if (debounceRef.current) clearTimeout(debounceRef.current);
     updateSearch({ query: searchInput, page: "1" });
   };
 
