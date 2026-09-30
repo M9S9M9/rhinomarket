@@ -6,6 +6,9 @@ import { z } from "zod";
 const applicationSchema = z.object({
   fullName: z.string().min(2),
   portfolioUrl: z.string().url().optional().or(z.literal("")),
+  payoutWalletAddress: z
+    .string()
+    .regex(/^0x[a-fA-F0-9]{40}$/, "Enter a valid USDT (BSC) wallet address (0x + 40 hexadecimal characters)"),
   experience: z.string().min(20),
   reason: z.string().min(20),
 });

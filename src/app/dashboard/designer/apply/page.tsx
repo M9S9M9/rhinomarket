@@ -14,7 +14,7 @@ export default function DesignerApplyPage() {
   const router = useRouter();
   const [existing, setExisting] = useState<any>(null);
   const [loading, setLoading] = useState(false);
-  const [form, setForm] = useState({ fullName: "", portfolioUrl: "", experience: "", reason: "" });
+  const [form, setForm] = useState({ fullName: "", portfolioUrl: "", payoutWalletAddress: "", experience: "", reason: "" });
 
   useEffect(() => {
     if (status === "unauthenticated") { router.push("/auth/login"); return; }
@@ -29,6 +29,7 @@ export default function DesignerApplyPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (form.fullName.length < 2) { toast.error("Enter your full name"); return; }
+    if (!/^0x[a-fA-F0-9]{40}$/.test(form.payoutWalletAddress.trim())) { toast.error("Enter a valid USDT (BSC) wallet address"); return; }
     if (form.experience.length < 20) { toast.error("Please provide more detail about your experience"); return; }
 
     setLoading(true);
@@ -63,6 +64,9 @@ export default function DesignerApplyPage() {
           {existing.status === "PENDING" && <p className="text-gray-500 mt-4">We&apos;re reviewing your application. This usually takes 24-48 hours.</p>}
           {existing.status === "APPROVED" && <p className="text-emerald-600 mt-4">Congratulations! You&apos;re now a designer.</p>}
           {existing.status === "REJECTED" && <p className="text-red-600 mt-4">Your application was not approved at this time.</p>}
+          {existing.payoutWalletAddress && (
+            <p className="text-sm text-gray-400 mt-4">Payout wallet: <code className="break-all">{existing.payoutWalletAddress}</code></p>
+          )}
         </CardContent></Card>
       </div>
     );
@@ -78,6 +82,10 @@ export default function DesignerApplyPage() {
           <form onSubmit={handleSubmit} className="space-y-5">
             <Input id="fullName" label="Full Name *" value={form.fullName} onChange={e => setForm({...form, fullName: e.target.value})} placeholder="Your legal name" />
             <Input id="portfolioUrl" label="Portfolio URL" value={form.portfolioUrl} onChange={e => setForm({...form, portfolioUrl: e.target.value})} placeholder="https://your-portfolio.com" />
+            <div>
+              <Input id="payoutWalletAddress" label="USDT (BSC) Wallet Address *" value={form.payoutWalletAddress} onChange={e => setForm({...form, payoutWalletAddress: e.target.value})} placeholder="0x..." />
+              <p className="text-xs text-gray-400 mt-1">You will receive your designer earnings here as USDT on the BNB Smart Chain (BEP-20)</p>
+            </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">3D Design Experience *</label>
               <textarea value={form.experience} onChange={e => setForm({...form, experience: e.target.value})} rows={3}

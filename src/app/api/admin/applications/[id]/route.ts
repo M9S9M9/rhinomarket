@@ -23,7 +23,10 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
   if (status === "APPROVED") {
     await prisma.user.update({
       where: { id: application.userId },
-      data: { role: "DESIGNER" },
+      data: {
+        role: "DESIGNER",
+        payoutWalletAddress: application.payoutWalletAddress || undefined,
+      },
     });
   }
 

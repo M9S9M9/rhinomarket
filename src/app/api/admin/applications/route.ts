@@ -10,7 +10,7 @@ export async function GET() {
 
   const applications = await prisma.designerApplication.findMany({
     orderBy: { createdAt: "desc" },
-    include: { user: { select: { name: true, email: true } } },
+    include: { user: { select: { name: true, email: true, payoutWalletAddress: true } } },
   });
 
   return NextResponse.json(applications);

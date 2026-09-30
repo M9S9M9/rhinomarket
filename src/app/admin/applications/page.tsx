@@ -11,9 +11,10 @@ import toast from "react-hot-toast";
 
 interface Application {
   id: string; fullName: string; portfolioUrl: string | null;
+  payoutWalletAddress: string | null;
   experience: string; reason: string; status: string;
   createdAt: string;
-  user: { name: string | null; email: string };
+  user: { name: string | null; email: string; payoutWalletAddress: string | null };
 }
 
 export default function AdminApplicationsPage() {
@@ -71,6 +72,19 @@ export default function AdminApplicationsPage() {
                     </div>
                     <p className="text-sm text-gray-500">{app.user.email}</p>
                     {app.portfolioUrl && <p className="text-sm text-gray-600 mt-1">Portfolio: {app.portfolioUrl}</p>}
+                    {(app.payoutWalletAddress || app.user.payoutWalletAddress) && (
+                      <div className="flex items-center gap-2 mt-1">
+                        <span className="text-sm text-gray-600">Payout wallet:</span>
+                        <code className="text-xs bg-gray-100 px-2 py-0.5 rounded break-all">{app.payoutWalletAddress || app.user.payoutWalletAddress}</code>
+                        <button
+                          type="button"
+                          onClick={() => { navigator.clipboard.writeText(app.payoutWalletAddress || app.user.payoutWalletAddress || ""); toast.success("Wallet address copied"); }}
+                          className="text-xs text-gray-400 hover:text-gray-600 underline shrink-0"
+                        >
+                          Copy
+                        </button>
+                      </div>
+                    )}
                     <div className="mt-3 bg-gray-50 rounded-lg p-3">
                       <p className="text-xs text-gray-500 font-medium mb-1">Experience:</p>
                       <p className="text-sm text-gray-700">{app.experience}</p>

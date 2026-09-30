@@ -110,6 +110,7 @@ model DesignerApplication {
   user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   fullName        String
   portfolioUrl    String?
+  payoutWalletAddress String?
   experience      String
   reason          String
   status          String   @default("PENDING") // PENDING, APPROVED, REJECTED
