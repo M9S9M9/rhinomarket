@@ -15,15 +15,7 @@ npm run setup:sqlite
 npm run dev
 ```
 
-Visit **http://localhost:3000**
 
-### Test Accounts
-
-| Role     | Email                       | Password         |
-|----------|-----------------------------|------------------|
-| Admin    | admin@3dmstore.com       | admin123456      |
-| Designer | designer@example.com        | designer123456   |
-| Buyer    | buyer@example.com           | buyer123456      |
 
 ## Features
 
