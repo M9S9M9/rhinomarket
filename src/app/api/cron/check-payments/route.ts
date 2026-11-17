@@ -1,6 +1,9 @@
 import { NextResponse } from "next/server";
 import { checkPendingPayments } from "@/lib/payment-monitor";
 
+// Runs every 2 minutes (vercel.json). Waiting for on-chain payouts can take a while.
+export const maxDuration = 60;
+
 export async function GET(req: Request) {
   const authHeader = req.headers.get("authorization");
   const cronSecret = process.env.CRON_SECRET;
