@@ -111,6 +111,18 @@ export default function LicensesPage() {
         </section>
 
         <section>
+          <h2 className="text-lg font-semibold text-gray-900 mb-3">Third-Party Content on This Site</h2>
+          <p className="text-sm text-gray-600">
+            The sneaker shown in the homepage video is the &ldquo;Materials Variants Shoe&rdquo; model &copy; 2021 Shopify,
+            from the Khronos glTF Sample Assets, licensed under{" "}
+            <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener noreferrer" className="text-gray-600 underline">Creative Commons Attribution 4.0 (CC BY 4.0)</a>.
+            It is shown for illustration and is not for sale on 3DM Store. The video is an animated illustration of a
+            Rhino 8-style modeling workflow; Rhino is a trademark of Robert McNeel &amp; Associates, and 3DM Store is not
+            affiliated with or endorsed by McNeel.
+          </p>
+        </section>
+
+        <section>
           <h2 className="text-lg font-semibold text-gray-900 mb-3">Questions?</h2>
           <p className="text-sm text-gray-600">If you&apos;re unsure which license you need, contact the designer directly or reach out to us at <a href="mailto:support@3dmstore.com" className="text-gray-600 underline">support@3dmstore.com</a>.</p>
         </section>

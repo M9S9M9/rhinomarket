@@ -4,8 +4,8 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
-import { ArrowRight, Star, Shield, Users, FileText, Search, Gem, Building2, Heart, Cog, Package, TrendingUp, DollarSign, Globe, BadgeCheck, Footprints, Lock, Wallet, UserCheck, Sparkles, Award } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
+import { ArrowRight, Star, Shield, Users, FileText, Search, Gem, Building2, Heart, Cog, Package, TrendingUp, DollarSign, Globe, BadgeCheck, Lock, Wallet, UserCheck, Sparkles, Award } from "lucide-react";
+import { HeroVideo } from "@/components/marketplace/hero-video";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { AnimatedSection, StaggerContainer, StaggerItem } from "@/components/ui/animated-section";
@@ -104,21 +104,6 @@ export default function HomePage() {
     }
   }, [session]);
 
-  const rotatingItems = [
-    { icon: Footprints, label: "Footwear", color: "text-blue-400" },
-    { icon: Gem, label: "Jewelry", color: "text-purple-400" },
-    { icon: Building2, label: "Architecture", color: "text-emerald-400" },
-    { icon: Heart, label: "Prosthetics", color: "text-red-400" },
-    { icon: Cog, label: "Industrial", color: "text-amber-400" },
-  ];
-  const [rotIndex, setRotIndex] = useState(0);
-
-  useEffect(() => {
-    const timer = setInterval(() => setRotIndex(i => (i + 1) % rotatingItems.length), 2800);
-    return () => clearInterval(timer);
-  }, []);
-
-  const current = rotatingItems[rotIndex];
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -168,34 +153,10 @@ export default function HomePage() {
               </div>
             </div>
 
-            {/* Right: rotating category icons */}
-            <div className="hidden md:flex flex-col items-center justify-center min-h-[400px]">
-              <div className="relative w-72 h-72">
-                <AnimatePresence mode="wait" initial={false}>
-                  <motion.div
-                    key={rotIndex}
-                    initial={{ opacity: 0, scale: 0.85 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    exit={{ opacity: 0, scale: 0.85 }}
-                    transition={{ duration: 0.45, ease: "easeInOut" }}
-                    className="absolute inset-0 flex flex-col items-center justify-center"
-                  >
-                    <current.icon className={`w-44 h-44 ${current.color} drop-shadow-lg`} strokeWidth={1.1} />
-                    <span className={`mt-5 text-xl font-semibold tracking-wide ${current.color}`}>{current.label}</span>
-                  </motion.div>
-                </AnimatePresence>
-              </div>
-              {/* Dots indicator */}
-              <div className="flex gap-3 mt-8">
-                {rotatingItems.map((_, i) => (
-                  <button
-                    key={i}
-                    onClick={() => setRotIndex(i)}
-                    className={`rounded-full transition-all duration-300 ${
-                      i === rotIndex ? "bg-white w-8 h-2.5" : "bg-white/30 hover:bg-white/50 w-2.5 h-2.5"
-                    }`}
-                  />
-                ))}
+            {/* Right: every category being designed in Rhino 8 */}
+            <div className="hidden md:flex items-center justify-center">
+              <div className="w-full max-w-[480px] aspect-square">
+                <HeroVideo />
               </div>
             </div>
           </div>
