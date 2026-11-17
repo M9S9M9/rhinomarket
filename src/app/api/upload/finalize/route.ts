@@ -39,6 +39,14 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Invalid file reference" }, { status: 400 });
   }
 
+  if (previews.length === 0) {
+    await deleteModelFile(fileUrl);
+    return NextResponse.json(
+      { error: "Add at least one preview image (JPG or PNG) so buyers can see your model." },
+      { status: 400 }
+    );
+  }
+
   const inUse = await prisma.listing.findFirst({ where: { fileUrl }, select: { id: true } });
   if (inUse) {
     return NextResponse.json({ error: "This file is already attached to a listing" }, { status: 409 });

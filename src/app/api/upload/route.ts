@@ -21,6 +21,12 @@ export async function POST(req: NextRequest) {
     if (!file) {
       return NextResponse.json({ error: "No file provided" }, { status: 400 });
     }
+    if (previews.length === 0) {
+      return NextResponse.json(
+        { error: "Add at least one preview image (JPG or PNG) so buyers can see your model." },
+        { status: 400 }
+      );
+    }
 
     const validation = validateFile({ name: file.name, size: file.size });
     if (!validation.valid) {

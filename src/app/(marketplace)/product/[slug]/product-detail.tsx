@@ -11,6 +11,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Stars } from "@/components/ui/stars";
 import { formatPrice, formatDate } from "@/lib/utils";
 import toast from "react-hot-toast";
+import { NoPreview } from "@/components/ui/no-preview";
 
 export interface ListingDetail {
   id: string; title: string; slug: string; description: string;
@@ -148,9 +149,7 @@ export function ProductDetailClient({ initialData, slug }: { initialData: Listin
             {previews[selectedImage] ? (
               <img src={previews[selectedImage]} alt={listing.title} className="w-full h-full object-cover" />
             ) : (
-              <div className="flex items-center justify-center h-full text-gray-400">
-                <FileText className="h-20 w-20" />
-              </div>
+              <NoPreview size="lg" />
             )}
           </div>
           {previews.length > 1 && (
@@ -253,7 +252,7 @@ export function ProductDetailClient({ initialData, slug }: { initialData: Listin
               </Button>
             )}
             <p className="text-xs text-gray-400 text-center flex items-center justify-center gap-1">
-              <Shield className="h-3 w-3" /> Pay with USDT (BSC) · Manual verification
+              <Shield className="h-3 w-3" /> Pay with USDT (BEP-20) · Confirmed on-chain, usually within minutes
             </p>
           </div>
         </div>

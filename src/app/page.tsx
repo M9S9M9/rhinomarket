@@ -4,12 +4,13 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
-import { ArrowRight, Star, Shield, Users, FileText, Search, Gem, Building2, Heart, Cog, Package, TrendingUp, DollarSign, Globe, BadgeCheck, Quote, Footprints, UserCheck, Sparkles, Award } from "lucide-react";
+import { ArrowRight, Star, Shield, Users, FileText, Search, Gem, Building2, Heart, Cog, Package, TrendingUp, DollarSign, Globe, BadgeCheck, Footprints, Lock, Wallet, UserCheck, Sparkles, Award } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { AnimatedSection, StaggerContainer, StaggerItem } from "@/components/ui/animated-section";
 import { formatPrice } from "@/lib/utils";
+import { NoPreview } from "@/components/ui/no-preview";
 
 interface Listing {
   id: string;
@@ -48,9 +49,12 @@ const categoryIcons: Record<string, typeof Gem> = {
   Other: Package,
 };
 
-const testimonials = [
-  { name: "Alex M.", role: "Industrial Designer", text: "I've been selling on 3DM Store for 3 months and it's already my biggest revenue stream. The platform handles everything." },
-  { name: "Sarah K.", role: "Architect", text: "Found the perfect facade model for my project. Saved me days of modeling. Instant download, no hassle." },
+// What the store actually guarantees — shown instead of testimonials until real reviews exist.
+const safeguards = [
+  { icon: Lock, title: "Protected files", text: "Model files are stored privately and only released to buyers after their payment is confirmed. Every download is tagged to its buyer." },
+  { icon: BadgeCheck, title: "Verified accounts", text: "Every account is confirmed with a code sent to its Gmail address, and admin access is protected by two-step sign-in." },
+  { icon: Shield, title: "On-chain payments", text: "Payments are made in USDT on BNB Smart Chain and checked directly on the blockchain — usually confirmed within minutes." },
+  { icon: Wallet, title: "Fair to designers", text: "Designers set their own prices and receive their share automatically to their own wallet, protected by email confirmation." },
 ];
 
 export default function HomePage() {
@@ -135,7 +139,7 @@ export default function HomePage() {
                 <span className="text-gray-300">Rhino 3D</span> Models
               </h1>
               <p className="text-lg md:text-xl text-gray-200 mb-8 leading-relaxed">
-                Buy and sell premium .3dm files. Join thousands of designers and architects sharing high-quality Rhino 3D models.
+                Buy and sell premium .3dm files from independent designers — protected downloads and on-chain USDT payments.
               </p>
 
               {/* Search */}
@@ -167,7 +171,7 @@ export default function HomePage() {
             {/* Right: rotating category icons */}
             <div className="hidden md:flex flex-col items-center justify-center min-h-[400px]">
               <div className="relative w-72 h-72">
-                <AnimatePresence mode="wait">
+                <AnimatePresence mode="wait" initial={false}>
                   <motion.div
                     key={rotIndex}
                     initial={{ opacity: 0, scale: 0.85 }}
@@ -229,10 +233,10 @@ export default function HomePage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
           <StaggerContainer className="grid grid-cols-2 md:grid-cols-4 gap-8">
             {[
-              { icon: FileText, label: "Models Available", value: `${(stats.totalListings || 0).toLocaleString()}+` },
-              { icon: Shield, label: "Secure Payments", value: "100%" },
-              { icon: Star, label: "Average Rating", value: "4.8/5" },
-              { icon: Users, label: "Active Designers", value: `${Math.max(1, Math.floor((stats.totalListings || 0) / 3)).toLocaleString()}+` },
+              { icon: FileText, label: "Models available", value: (stats.totalListings || 0).toLocaleString() },
+              { icon: Shield, label: "Checked on-chain", value: "USDT" },
+              { icon: Lock, label: "Private file storage", value: "Protected" },
+              { icon: Users, label: "Verified accounts", value: "Gmail" },
             ].map(stat => (
               <StaggerItem key={stat.label}>
                 <div className="text-center">
@@ -276,9 +280,7 @@ export default function HomePage() {
                     {listing.thumbnailUrl ? (
                       <img src={listing.thumbnailUrl} alt={listing.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
                     ) : (
-                      <div className="flex items-center justify-center h-full text-gray-400">
-                        <FileText className="h-12 w-12" />
-                      </div>
+                      <NoPreview size="md" />
                     )}
                   </div>
                   <div className="p-4">
@@ -322,9 +324,7 @@ export default function HomePage() {
                     {listing.thumbnailUrl ? (
                       <img src={listing.thumbnailUrl} alt={listing.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
                     ) : (
-                      <div className="flex items-center justify-center h-full text-gray-400">
-                        <FileText className="h-12 w-12" />
-                      </div>
+                      <NoPreview size="md" />
                     )}
                   </div>
                   <div className="p-4">
@@ -373,9 +373,7 @@ export default function HomePage() {
                     {listing.thumbnailUrl ? (
                       <img src={listing.thumbnailUrl} alt={listing.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
                     ) : (
-                      <div className="flex items-center justify-center h-full text-gray-400">
-                        <FileText className="h-12 w-12" />
-                      </div>
+                      <NoPreview size="md" />
                     )}
                   </div>
                   <div className="p-4">
@@ -452,7 +450,7 @@ export default function HomePage() {
           <StaggerContainer className="grid md:grid-cols-3 gap-8">
             {[
               { icon: DollarSign, title: "Set Your Own Prices", desc: "You control what your work is worth. List models at any price point and keep the majority of each sale." },
-              { icon: Globe, title: "Global Audience", desc: "Reach thousands of architects, engineers, and designers looking for quality .3dm files worldwide." },
+              { icon: Globe, title: "Global Audience", desc: "Sell to architects, engineers and designers anywhere — buyers pay in USDT, so there are no card or currency barriers." },
               { icon: TrendingUp, title: "Passive Income", desc: "Upload once, earn forever. Your models keep selling while you focus on creating new designs." },
             ].map(item => (
               <StaggerItem key={item.title}>
@@ -477,9 +475,9 @@ export default function HomePage() {
           <h2 className="text-2xl md:text-3xl font-bold text-gray-900 text-center mb-12">How It Works</h2>
           <StaggerContainer className="grid md:grid-cols-3 gap-8">
             {[
-              { step: "01", title: "Browse & Discover", desc: "Explore thousands of high-quality .3dm files from talented designers worldwide across multiple categories." },
-              { step: "02", title: "Purchase Securely", desc: "Buy with confidence using our secure crypto payment system with instant delivery." },
-              { step: "03", title: "Instant Download", desc: "Get immediate access to your purchased files. Download anytime, anywhere, with no limits." },
+              { step: "01", title: "Browse & Discover", desc: "Explore .3dm files from independent designers across jewelry, footwear, architecture, industrial parts and more." },
+              { step: "02", title: "Purchase Securely", desc: "Pay in USDT on BNB Smart Chain. Your payment is checked on the blockchain, usually within minutes." },
+              { step: "03", title: "Instant Download", desc: "As soon as your payment is confirmed, the file is yours — download it again any time from your purchases." },
             ].map(item => (
               <StaggerItem key={item.step}>
                 <div className="text-center">
@@ -496,26 +494,21 @@ export default function HomePage() {
       </section>
       </AnimatedSection>
 
-      {/* ── Testimonials ── */}
+      {/* ── How we protect buyers and designers ── */}
       <AnimatedSection>
       <section className="bg-gray-50 border-t border-gray-200 py-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h2 className="text-2xl md:text-3xl font-bold text-gray-900 text-center mb-12">Trusted by the Community</h2>
-          <StaggerContainer className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
-            {testimonials.map(t => (
-              <StaggerItem key={t.name}>
-                <Card className="p-6">
-                  <Quote className="h-6 w-6 text-gray-300 mb-3" />
-                  <p className="text-gray-600 text-sm leading-relaxed mb-4">&ldquo;{t.text}&rdquo;</p>
-                  <div className="flex items-center gap-2">
-                    <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center text-xs font-bold text-gray-600">
-                      {t.name.charAt(0)}
-                    </div>
-                    <div>
-                      <p className="text-sm font-medium text-gray-900">{t.name}</p>
-                      <p className="text-xs text-gray-400">{t.role}</p>
-                    </div>
+          <h2 className="text-2xl md:text-3xl font-bold text-gray-900 text-center mb-4">Built to Protect Buyers and Designers</h2>
+          <p className="text-gray-500 text-center mb-12 max-w-xl mx-auto">What happens behind the scenes on every purchase</p>
+          <StaggerContainer className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            {safeguards.map(item => (
+              <StaggerItem key={item.title}>
+                <Card className="p-6 h-full">
+                  <div className="w-10 h-10 bg-gray-900 rounded-lg flex items-center justify-center mb-4">
+                    <item.icon className="h-5 w-5 text-white" />
                   </div>
+                  <h3 className="font-semibold text-gray-900 mb-2">{item.title}</h3>
+                  <p className="text-gray-500 text-sm leading-relaxed">{item.text}</p>
                 </Card>
               </StaggerItem>
             ))}

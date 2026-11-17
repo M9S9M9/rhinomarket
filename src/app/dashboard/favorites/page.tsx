@@ -8,6 +8,7 @@ import { Heart, FileText } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { formatPrice } from "@/lib/utils";
+import { NoPreview } from "@/components/ui/no-preview";
 
 interface Favorite {
   id: string; listing: {
@@ -60,7 +61,7 @@ export default function FavoritesPage() {
                   {fav.listing.thumbnailUrl ? (
                     <img src={fav.listing.thumbnailUrl} alt="" className="w-full h-full object-cover group-hover:scale-105 transition-transform" />
                   ) : (
-                    <div className="flex items-center justify-center h-full"><FileText className="h-12 w-12 text-gray-400" /></div>
+                    <NoPreview size="md" />
                   )}
                 </div>
                 <div className="p-4">

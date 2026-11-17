@@ -11,7 +11,7 @@ export function Footer() {
               <img src="/logo-white.svg" alt="3DM Store" className="h-10 w-auto" />
             </Link>
             <p className="text-sm leading-relaxed">
-              The premier marketplace for Rhino 3D files. Buy and sell premium .3dm models with confidence.
+              A marketplace for Rhino 3D files. Buy and sell .3dm models with protected downloads and on-chain payments.
             </p>
           </div>
 

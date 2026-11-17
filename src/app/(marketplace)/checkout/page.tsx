@@ -105,7 +105,7 @@ function CheckoutForm() {
         <p className="text-gray-500 mb-6">
           {autoVerified
             ? "Your USDT payment has been verified on-chain. Your download is ready!"
-            : "Your payment is being verified on the blockchain. It will auto-confirm within a minute."
+            : "We're checking your payment on the blockchain — this usually takes a few minutes. We'll notify you when your download is ready. If it can't be matched automatically, our team reviews it."
           }
         </p>
         <Button onClick={() => router.push(autoVerified ? "/dashboard/purchases" : "/dashboard")}>
@@ -202,7 +202,7 @@ function CheckoutForm() {
           </Button>
 
           <p className="text-xs text-gray-400 text-center mt-4">
-            Your download will be available instantly once verified on-chain
+            Your download unlocks as soon as the payment is confirmed on-chain — usually within a few minutes
           </p>
         </CardContent>
       </Card>

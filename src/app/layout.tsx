@@ -12,7 +12,7 @@ export const metadata: Metadata = {
     default: "3DM Store - Premium .3D Models Marketplace",
     template: "%s | 3DM Store",
   },
-  description: "Buy and sell premium Rhino 3D (.3dm) models. The premier marketplace for 3D designers and architects.",
+  description: "Buy and sell Rhino 3D (.3dm) models from independent designers. Protected downloads, on-chain USDT payments.",
   keywords: ["rhino 3d", "3dm files", "3d models", "rhinoceros", "marketplace", "3d design"],
   verification: {
     google: process.env.NEXT_PUBLIC_GOOGLE_VERIFICATION || "",

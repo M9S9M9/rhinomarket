@@ -81,6 +81,7 @@ export default function UploadPage() {
 
   const handleUpload = async () => {
     if (!modelFile) { toast.error("Please select a .3dm file"); return; }
+    if (previews.length === 0) { toast.error("Add at least one preview image (JPG or PNG) so buyers can see your model"); return; }
     setUploading(true);
     setProgress(null);
 
@@ -194,7 +195,7 @@ export default function UploadPage() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Preview Images (up to 10)</label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Preview Images <span className="text-red-500">*</span> <span className="font-normal text-gray-400">(at least 1, up to 10 — the first one is the cover)</span></label>
               <input type="file" accept=".jpg,.jpeg,.png,image/jpeg,image/png" multiple onChange={handlePreviewSelect} className="hidden" id="preview-upload" />
               <label htmlFor="preview-upload" className="cursor-pointer inline-flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg text-sm hover:bg-gray-50">
                 <Upload className="h-4 w-4" /> Add Images

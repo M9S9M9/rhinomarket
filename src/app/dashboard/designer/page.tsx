@@ -7,6 +7,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { formatPrice } from "@/lib/utils";
+import { NoPreview } from "@/components/ui/no-preview";
 
 export const dynamic = "force-dynamic";
 
@@ -168,7 +169,7 @@ export default async function DesignerDashboardPage() {
               <CardContent className="p-4">
                 <div className="flex items-center gap-4">
                   <div className="w-16 h-16 bg-gray-100 rounded-lg overflow-hidden flex-shrink-0">
-                    {listing.thumbnailUrl ? <img src={listing.thumbnailUrl} alt="" className="w-full h-full object-cover" /> : <div className="flex items-center justify-center h-full text-gray-400">No img</div>}
+                    {listing.thumbnailUrl ? <img src={listing.thumbnailUrl} alt="" className="w-full h-full object-cover" /> : <NoPreview size="sm" />}
                   </div>
                   <div className="flex-1 min-w-0">
                     <Link href={`/product/${listing.slug}`} className="font-semibold text-gray-900 hover:text-gray-600 truncate block">{listing.title}</Link>

@@ -10,6 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { formatPrice, formatDate } from "@/lib/utils";
 import toast from "react-hot-toast";
+import { NoPreview } from "@/components/ui/no-preview";
 
 interface Purchase {
   id: string; amount: string; status: string; createdAt: string;
@@ -79,7 +80,7 @@ export default function PurchasesPage() {
                     {purchase.listing.thumbnailUrl ? (
                       <img src={purchase.listing.thumbnailUrl} alt="" className="w-full h-full object-cover" />
                     ) : (
-                      <div className="flex items-center justify-center h-full"><FileText className="h-6 w-6 text-gray-400" /></div>
+                      <NoPreview size="sm" />
                     )}
                   </div>
                   <div className="flex-1 min-w-0">

@@ -1,16 +1,18 @@
 "use client";
 
-import { motion } from "framer-motion";
+import { motion, MotionConfig } from "framer-motion";
 import { ReactNode } from "react";
 
 type Direction = "up" | "down" | "left" | "right" | "none";
 
+// Content is never hidden: sections only slide in slightly, so the page is fully
+// readable before JavaScript loads (slow phones) and if animations never run.
 const dirVariants = {
-  up: { hidden: { opacity: 0, y: 40 }, visible: { opacity: 1, y: 0 } },
-  down: { hidden: { opacity: 0, y: -40 }, visible: { opacity: 1, y: 0 } },
-  left: { hidden: { opacity: 0, x: -40 }, visible: { opacity: 1, x: 0 } },
-  right: { hidden: { opacity: 0, x: 40 }, visible: { opacity: 1, x: 0 } },
-  none: { hidden: { opacity: 0 }, visible: { opacity: 1 } },
+  up: { hidden: { y: 16 }, visible: { y: 0 } },
+  down: { hidden: { y: -16 }, visible: { y: 0 } },
+  left: { hidden: { x: -16 }, visible: { x: 0 } },
+  right: { hidden: { x: 16 }, visible: { x: 0 } },
+  none: { hidden: {}, visible: {} },
 } as const;
 
 interface AnimatedSectionProps {
@@ -32,16 +34,19 @@ export function AnimatedSection({
 }: AnimatedSectionProps) {
   const v = dirVariants[direction];
   return (
-    <motion.div
-      variants={v}
-      initial="hidden"
-      whileInView="visible"
-      viewport={{ once, margin: "-50px" }}
-      transition={{ duration, delay, ease: "easeOut" }}
-      className={className}
-    >
-      {children}
-    </motion.div>
+    // reducedMotion="user": no movement for visitors who turned on "reduce motion".
+    <MotionConfig reducedMotion="user">
+      <motion.div
+        variants={v}
+        initial="hidden"
+        whileInView="visible"
+        viewport={{ once, margin: "0px" }}
+        transition={{ duration: Math.min(duration, 0.35), delay, ease: "easeOut" }}
+        className={className}
+      >
+        {children}
+      </motion.div>
+    </MotionConfig>
   );
 }
 
@@ -50,8 +55,8 @@ export function StaggerContainer({ children, className, staggerDelay = 0.1 }: { 
     <motion.div
       initial="hidden"
       whileInView="visible"
-      viewport={{ once: true, margin: "-50px" }}
-      variants={{ hidden: {}, visible: { transition: { staggerChildren: staggerDelay } } }}
+      viewport={{ once: true, margin: "0px" }}
+      variants={{ hidden: {}, visible: { transition: { staggerChildren: Math.min(staggerDelay, 0.05) } } }}
       className={className}
     >
       {children}

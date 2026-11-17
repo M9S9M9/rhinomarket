@@ -9,6 +9,7 @@ import { formatPrice, formatDate } from "@/lib/utils";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import toast from "react-hot-toast";
+import { NoPreview } from "@/components/ui/no-preview";
 
 interface DesignerProfile {
   id: string; name: string | null; username: string | null;
@@ -138,9 +139,7 @@ export default function DesignerPage() {
                     {listing.thumbnailUrl ? (
                       <img src={listing.thumbnailUrl} alt={listing.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform" />
                     ) : (
-                      <div className="flex items-center justify-center h-full text-gray-300">
-                        <FileText className="h-12 w-12" />
-                      </div>
+                      <NoPreview size="md" />
                     )}
                   </div>
                   <CardContent className="p-4">

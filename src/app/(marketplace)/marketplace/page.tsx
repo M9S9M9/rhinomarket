@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { formatPrice } from "@/lib/utils";
+import { NoPreview } from "@/components/ui/no-preview";
 
 interface Listing {
   id: string; title: string; slug: string; price: string;
@@ -243,9 +244,7 @@ function MarketplaceContent() {
                         {listing.thumbnailUrl ? (
                           <img src={listing.thumbnailUrl} alt={listing.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
                         ) : (
-                          <div className="flex items-center justify-center h-full text-gray-400">
-                            <FileText className="h-12 w-12" />
-                          </div>
+                          <NoPreview size="md" />
                         )}
                       </div>
                       <div className="p-4">
