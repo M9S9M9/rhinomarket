@@ -6,6 +6,7 @@ import { compare } from "bcryptjs";
 import { isLockedOut, recordAttempt, clearAttempts } from "@/lib/lockout";
 import type { Adapter } from "next-auth/adapters";
 import { normalizeEmail } from "@/lib/gmail";
+import { sendLoginCode, checkLoginCode } from "@/lib/verification-code";
 
 // Error codes the login page can show (NextAuth passes `code` through to signIn()).
 class AccountLockedError extends CredentialsSignin {
@@ -14,6 +15,22 @@ class AccountLockedError extends CredentialsSignin {
 class EmailNotVerifiedError extends CredentialsSignin {
   code = "EMAIL_NOT_VERIFIED";
 }
+
+// Admin two-step sign-in: after the password, a 6-digit code is emailed.
+class OtpRequiredError extends CredentialsSignin {
+  code = "OTP_REQUIRED";
+}
+class OtpInvalidError extends CredentialsSignin {
+  constructor(public code: string) {
+    super();
+  }
+}
+class OtpSendFailedError extends CredentialsSignin {
+  code = "OTP_SEND_FAILED";
+}
+// Emergency switch: set ADMIN_2FA=off in Vercel (and redeploy) if admin emails ever
+// can't be delivered. Leave unset to keep two-step sign-in on.
+const ADMIN_2FA_ENABLED = process.env.ADMIN_2FA !== "off";
 
 // Email verification became mandatory on 2026-11-17. Accounts that already existed
 // (e.g. created by an admin, never marked verified) keep working.
@@ -33,6 +50,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       credentials: {
         email: { label: "Email", type: "email" },
         password: { label: "Password", type: "password" },
+        otp: { label: "Sign-in code", type: "text" },
       },
       async authorize(credentials) {
         if (!credentials?.email || !credentials?.password) return null;
@@ -66,6 +84,24 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         // Only reveal "not verified" after the password was correct.
         if (!user.emailVerified && user.createdAt >= VERIFICATION_REQUIRED_SINCE) {
           throw new EmailNotVerifiedError();
+        }
+
+        // Admins need a second step: a code emailed to their address.
+        if (user.role === "ADMIN" && ADMIN_2FA_ENABLED) {
+          const otp = typeof credentials.otp === "string" ? credentials.otp.trim() : "";
+          if (!otp) {
+            try {
+              await sendLoginCode(user.email, user.name);
+            } catch (err) {
+              console.error("Admin sign-in code email failed:", err);
+              throw new OtpSendFailedError();
+            }
+            throw new OtpRequiredError();
+          }
+          const result = await checkLoginCode(user.email, otp);
+          if (result !== "ok") {
+            throw new OtpInvalidError(`OTP_${result.toUpperCase()}`);
+          }
         }
 
         return {
