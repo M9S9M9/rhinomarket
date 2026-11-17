@@ -14,16 +14,21 @@ const useBlob = !!process.env.BLOB_READ_WRITE_TOKEN;
 // Token of a PRIVATE Vercel Blob store for .3dm model files. When set, model files are
 // stored privately and can only be read by the server (paid downloads, admin review).
 // Previews and avatars stay in the public store.
-// Vercel names the variable after the prefix chosen when connecting the store; accept
-// any BLOB_MODELS…READ_WRITE_TOKEN spelling.
-export function getModelsBlobToken(): string | undefined {
-  if (process.env.BLOB_MODELS_READ_WRITE_TOKEN) return process.env.BLOB_MODELS_READ_WRITE_TOKEN;
-  const key = Object.keys(process.env).find(
+/**
+ * Credentials for the PRIVATE Blob store that holds .3dm model files, or null if
+ * none is connected. Supports both ways Vercel connects a store:
+ *  - a read-write token (BLOB_MODELS_READ_WRITE_TOKEN or similar), or
+ *  - a store id (BLOB_MODELS_STORE_ID) used with Vercel's built-in OIDC identity.
+ */
+export type ModelsBlobAuth = { token: string } | { storeId: string };
+export function getModelsBlobAuth(): ModelsBlobAuth | null {
+  const tokenKey = Object.keys(process.env).find(
     (k) => k.startsWith("BLOB_MODELS") && k.endsWith("READ_WRITE_TOKEN") && process.env[k]
   );
-  return key ? process.env[key] : undefined;
+  if (tokenKey) return { token: process.env[tokenKey] as string };
+  if (process.env.BLOB_MODELS_STORE_ID) return { storeId: process.env.BLOB_MODELS_STORE_ID };
+  return null;
 }
-const MODELS_BLOB_TOKEN = getModelsBlobToken();
 
 function isPrivateBlobUrl(url: string): boolean {
   return /\.private\.blob\.vercel-storage\.com\//i.test(url);
@@ -57,11 +62,12 @@ export async function saveModelFile(
   const ext = path.extname(originalName);
   const uniqueName = `${randomUUID()}${ext}`;
 
-  if (MODELS_BLOB_TOKEN) {
+  const modelsAuth = getModelsBlobAuth();
+  if (modelsAuth) {
     const { put } = await import("@vercel/blob");
     const blob = await put(`models/${uniqueName}`, buffer, {
       access: "private",
-      token: MODELS_BLOB_TOKEN,
+      ...modelsAuth,
       contentType: "application/octet-stream",
     });
     return { url: blob.url, hash, size: buffer.length };
@@ -204,9 +210,10 @@ export function getModelPath(relativeUrl: string): string {
  */
 export async function readModelFile(fileUrl: string): Promise<Buffer | null> {
   if (isPrivateBlobUrl(fileUrl)) {
-    if (!MODELS_BLOB_TOKEN) throw new Error("BLOB_MODELS_READ_WRITE_TOKEN is not set");
+    const modelsAuth = getModelsBlobAuth();
+    if (!modelsAuth) throw new Error("Private model store is not connected (BLOB_MODELS_STORE_ID missing)");
     const { get } = await import("@vercel/blob");
-    const result = await get(fileUrl, { access: "private", token: MODELS_BLOB_TOKEN });
+    const result = await get(fileUrl, { access: "private", ...modelsAuth });
     if (!result || result.statusCode !== 200) return null;
     return Buffer.from(await new Response(result.stream).arrayBuffer());
   }

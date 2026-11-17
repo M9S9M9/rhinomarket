@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { randomUUID, createHash } from "crypto";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
-import { getModelsBlobToken } from "@/lib/upload";
+import { getModelsBlobAuth } from "@/lib/upload";
 
 // Moves .3dm model files from the PUBLIC Blob store into the PRIVATE one
 // (BLOB_MODELS_READ_WRITE_TOKEN), then deletes the public copy so old links stop working.
@@ -31,7 +31,7 @@ export async function GET() {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
   return NextResponse.json({
-    privateStoreConfigured: !!getModelsBlobToken(),
+    privateStoreConfigured: !!getModelsBlobAuth(),
     // Names only (never values) of storage-related variables this deployment can see.
     blobEnvNames: Object.keys(process.env).filter((k) => k.includes("BLOB")).sort(),
     vercelEnv: process.env.VERCEL_ENV || "local",
@@ -43,10 +43,10 @@ export async function POST() {
   if (!(await requireAdmin())) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
-  const privateToken = getModelsBlobToken();
-  if (!privateToken) {
+  const privateAuth = getModelsBlobAuth();
+  if (!privateAuth) {
     return NextResponse.json(
-      { error: "Private store not connected (BLOB_MODELS_READ_WRITE_TOKEN missing). Connect it in Vercel and redeploy." },
+      { error: "Private store not connected (BLOB_MODELS_STORE_ID missing). Connect it in Vercel and redeploy." },
       { status: 400 }
     );
   }
@@ -78,7 +78,7 @@ export async function POST() {
 
       const blob = await put(`models/${randomUUID()}.3dm`, buffer, {
         access: "private",
-        token: privateToken,
+        ...privateAuth,
         contentType: "application/octet-stream",
       });
 
@@ -88,13 +88,13 @@ export async function POST() {
         data: { fileUrl: blob.url },
       });
       if (updated.count === 0) {
-        await del(blob.url, { token: privateToken });
+        await del(blob.url, privateAuth);
         throw new Error("listing file changed during the move; skipped");
       }
 
       // Remove the public copy so any previously leaked link stops working.
       try {
-        await del(oldUrl);
+        await del(oldUrl, { token: process.env.BLOB_READ_WRITE_TOKEN });
       } catch (err: any) {
         console.error(`Moved ${listing.id} but could not delete public copy:`, err);
       }
