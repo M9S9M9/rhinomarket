@@ -7,6 +7,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import toast from "react-hot-toast";
+import { signIn } from "next-auth/react";
+import { VerifyCodeForm } from "@/components/auth/verify-code-form";
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -14,11 +16,12 @@ export default function RegisterPage() {
   const [form, setForm] = useState({ name: "", email: "", password: "", confirmPassword: "" });
   const [legalConsent, setLegalConsent] = useState({ age: false, tos: false });
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [verifyEmail, setVerifyEmail] = useState<string | null>(null);
 
   const validate = () => {
     const errs: Record<string, string> = {};
     if (form.name.length < 2) errs.name = "Name must be at least 2 characters";
-    if (!form.email.includes("@")) errs.email = "Invalid email address";
+    if (!/^[^\s@]+@(gmail|googlemail)\.com$/i.test(form.email.trim())) errs.email = "Please use a Gmail address (@gmail.com)";
     if (form.password.length < 8) errs.password = "Password must be at least 8 characters";
     if (form.password !== form.confirmPassword) errs.confirmPassword = "Passwords do not match";
     if (!legalConsent.age) errs.age = "You must be 18 or older to register";
@@ -39,21 +42,50 @@ export default function RegisterPage() {
         body: JSON.stringify({ ...form, legalConsent }),
       });
 
-      const data = await res.json();
+      const data = await res.json().catch(() => ({}));
 
       if (!res.ok) {
-        toast.error(data.error);
+        toast.error(data.error || "Registration failed");
+        // A code was already sent recently: go straight to entering it.
+        if (data.needsVerification && data.email) setVerifyEmail(data.email);
         setLoading(false);
         return;
       }
 
-      toast.success("Account created! You can now sign in.");
-      router.push("/auth/login");
+      setVerifyEmail(data.email);
+      setLoading(false);
     } catch {
       toast.error("Registration failed");
       setLoading(false);
     }
   };
+
+  // Step 2: enter the code, then sign in automatically.
+  if (verifyEmail) {
+    return (
+      <div className="min-h-[80vh] flex items-center justify-center px-4 py-12">
+        <Card className="w-full max-w-md p-8">
+          <VerifyCodeForm
+            email={verifyEmail}
+            onVerified={async () => {
+              const result = await signIn("credentials", {
+                redirect: false,
+                email: verifyEmail,
+                password: form.password,
+              });
+              router.push(result?.error ? "/auth/login?verified=true" : "/dashboard");
+            }}
+          />
+          <p className="text-center text-sm text-gray-500 mt-6">
+            Wrong address?{" "}
+            <button type="button" onClick={() => setVerifyEmail(null)} className="text-gray-600 hover:text-gray-700 font-medium underline">
+              Go back
+            </button>
+          </p>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-[80vh] flex items-center justify-center px-4 py-12">
@@ -61,6 +93,7 @@ export default function RegisterPage() {
         <div className="text-center mb-8">
           <h1 className="text-2xl font-bold text-gray-900">Create your account</h1>
           <p className="text-gray-500 mt-1">Join the Rhino 3D marketplace</p>
+          <p className="text-xs text-gray-400 mt-2">Sign-up requires a Gmail address. We&apos;ll email you a 6-digit code.</p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -70,7 +103,7 @@ export default function RegisterPage() {
             error={errors.name} required
           />
           <Input
-            id="email" label="Email" type="email" placeholder="you@example.com"
+            id="email" label="Gmail address" type="email" placeholder="you@gmail.com"
             value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })}
             error={errors.email} required
           />

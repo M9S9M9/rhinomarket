@@ -4,6 +4,7 @@ import { randomUUID } from "crypto";
 import { sendEmail, getPasswordResetEmailHtml } from "@/lib/email";
 import { checkRateLimit, getRateLimitKey } from "@/lib/rate-limit";
 import { validateApiRequest } from "@/lib/validate-request";
+import { normalizeEmail } from "@/lib/gmail";
 
 export async function POST(req: Request) {
   const validation = await validateApiRequest(req);
@@ -15,9 +16,16 @@ export async function POST(req: Request) {
   }
 
   try {
-    const { email } = await req.json();
-
-    const user = await prisma.user.findUnique({ where: { email } });
+    const body = await req.json();
+    if (typeof body?.email !== "string") {
+      return NextResponse.json({ error: "Email is required" }, { status: 400 });
+    }
+    // Accept any spelling of a Gmail address; fall back to the exact address for older accounts.
+    const typed = body.email.trim().toLowerCase();
+    const user =
+      (await prisma.user.findUnique({ where: { email: normalizeEmail(typed) } })) ||
+      (await prisma.user.findUnique({ where: { email: typed } }));
+    const email = user?.email || typed;
     if (!user) {
       return NextResponse.json({ message: "If the email exists, a reset link has been sent." });
     }

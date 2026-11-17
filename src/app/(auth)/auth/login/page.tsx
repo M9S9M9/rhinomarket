@@ -31,8 +31,12 @@ function LoginForm() {
       });
 
       if (result?.error) {
-        if (result.error === "ACCOUNT_LOCKED") {
+        const code = (result as any).code || result.error;
+        if (code === "ACCOUNT_LOCKED") {
           setError("Account temporarily locked due to too many failed attempts. Try again in 15 minutes.");
+        } else if (code === "EMAIL_NOT_VERIFIED") {
+          router.push(`/auth/verify?email=${encodeURIComponent(email)}`);
+          return;
         } else {
           setError("Invalid email or password. If your account was restricted, contact support.");
         }

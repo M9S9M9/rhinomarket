@@ -407,7 +407,8 @@ model Session {
 model EmailVerification {
   id        String   @id @default(cuid())
   email     String
-  token     String
+  token     String   // SHA-256 of the 6-digit code (never the code itself)
+  attempts  Int      @default(0)
   expiresAt DateTime
   createdAt DateTime @default(now())
 

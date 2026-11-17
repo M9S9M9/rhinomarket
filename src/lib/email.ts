@@ -26,12 +26,17 @@ export async function sendEmail(params: {
   }
 
   const fromDomain = process.env.EMAIL_DOMAIN;
-  await client.emails.send({
+  // Resend reports problems in `error` instead of throwing — surface them so callers
+  // (e.g. sign-up) can tell the user the email wasn't sent.
+  const { error } = await client.emails.send({
     from: fromDomain ? `3DM Store <noreply@${fromDomain}>` : "3DM Store <onboarding@resend.dev>",
     to: params.to,
     subject: params.subject,
     html: params.html,
   });
+  if (error) {
+    throw new Error(`Email not sent: ${error.message}`);
+  }
 
   return { success: true };
 }

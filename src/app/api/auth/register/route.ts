@@ -1,15 +1,19 @@
 import { NextResponse } from "next/server";
 import { hash } from "bcryptjs";
 import { prisma } from "@/lib/db";
-import { randomUUID } from "crypto";
-import { sendEmail, getVerificationEmailHtml } from "@/lib/email";
 import { z } from "zod";
 import { checkRateLimit, getRateLimitKey } from "@/lib/rate-limit";
 import { validateApiRequest } from "@/lib/validate-request";
+import { isGmailAddress, normalizeEmail } from "@/lib/gmail";
+import { sendVerificationCode, secondsUntilResend } from "@/lib/verification-code";
 
 const registerSchema = z.object({
-  name: z.string().min(2).max(50),
-  email: z.string().email(),
+  name: z.string().trim().min(2).max(50),
+  email: z
+    .string()
+    .trim()
+    .email("Enter a valid email address")
+    .refine(isGmailAddress, "Please register with a Gmail address (@gmail.com)"),
   password: z.string().min(8).max(100),
   legalConsent: z.object({
     age: z.literal(true, { errorMap: () => ({ message: "You must be 18 or older" }) }),
@@ -17,6 +21,8 @@ const registerSchema = z.object({
   }),
 });
 
+// Step 1 of sign-up: create (or refresh) an UNVERIFIED account and email a 6-digit code.
+// The account can't sign in until the code is confirmed via /api/auth/verify-code.
 export async function POST(req: Request) {
   const validation = await validateApiRequest(req);
   if (!validation.ok) return validation.response;
@@ -26,48 +32,66 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Too many requests. Try again later." }, { status: 429 });
   }
 
+  let input: z.infer<typeof registerSchema>;
   try {
-    const body = await req.json();
-    const { name, email, password } = registerSchema.parse(body);
-
-    const existing = await prisma.user.findUnique({ where: { email } });
-    if (existing) {
-      return NextResponse.json({ error: "Email already registered" }, { status: 409 });
-    }
-
-    const passwordHash = await hash(password, 12);
-
-    const user = await prisma.user.create({
-      data: { name, email, passwordHash, role: "BUYER", emailVerified: new Date(), tosAcceptedAt: new Date() },
-    });
-
-    // Try to send verification email (Resend requires a custom domain to deliver to any recipient)
-    try {
-      const token = randomUUID();
-      await prisma.emailVerification.create({
-        data: {
-          email,
-          token,
-          expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000),
-        },
-      });
-      await sendEmail({
-        to: email,
-        subject: "Verify your 3DM Store account",
-        html: getVerificationEmailHtml(token),
-      });
-    } catch {
-      // Email delivery is best-effort; users are auto-verified
-    }
-
-    return NextResponse.json({
-      message: "Account created! You can now sign in.",
-      userId: user.id,
-    });
+    input = registerSchema.parse(await req.json());
   } catch (error: any) {
     if (error instanceof z.ZodError) {
       return NextResponse.json({ error: error.errors[0].message }, { status: 400 });
     }
-    return NextResponse.json({ error: "Registration failed" }, { status: 500 });
+    return NextResponse.json({ error: "Invalid request" }, { status: 400 });
   }
+
+  const email = normalizeEmail(input.email);
+  const passwordHash = await hash(input.password, 12);
+
+  const existing = await prisma.user.findUnique({ where: { email } });
+  if (existing?.emailVerified) {
+    return NextResponse.json(
+      { error: "This Gmail is already registered. Sign in or reset your password." },
+      { status: 409 }
+    );
+  }
+
+  if (existing) {
+    // Unfinished sign-up: let the person start over with the same Gmail.
+    const wait = await secondsUntilResend(email);
+    if (wait > 0) {
+      return NextResponse.json(
+        { error: `Please wait ${wait}s before requesting another code.`, needsVerification: true, email },
+        { status: 429 }
+      );
+    }
+    await prisma.user.update({
+      where: { id: existing.id },
+      data: { name: input.name, passwordHash, tosAcceptedAt: new Date() },
+    });
+  } else {
+    await prisma.user.create({
+      data: {
+        name: input.name,
+        email,
+        passwordHash,
+        role: "BUYER",
+        emailVerified: null,
+        tosAcceptedAt: new Date(),
+      },
+    });
+  }
+
+  try {
+    await sendVerificationCode(email, input.name);
+  } catch (err) {
+    console.error("Verification email failed:", err);
+    return NextResponse.json(
+      { error: "We couldn't send the verification email. Please try again in a moment." },
+      { status: 502 }
+    );
+  }
+
+  return NextResponse.json({
+    needsVerification: true,
+    email,
+    message: `We sent a 6-digit code to ${email}.`,
+  });
 }

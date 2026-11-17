@@ -51,6 +51,7 @@ export async function POST(req: Request) {
       role,
       uploadLimit: body.uploadLimit ?? 10,
       commissionOverride: body.commissionOverride ?? null,
+      emailVerified: new Date(), // created by an admin: no code needed
     },
     select: { id: true, name: true, email: true, role: true, isActive: true, createdAt: true },
   });
