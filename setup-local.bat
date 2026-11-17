@@ -47,8 +47,7 @@ echo  Run 'npm run dev' to start the server
 echo  Visit http://localhost:3000
 echo.
 echo  Test accounts:
-echo    Admin:    admin@rhinomarket.com / admin123456
-echo    Designer: designer@example.com / designer123456
-echo    Buyer:    buyer@example.com / buyer123456
+echo    Admin, designer and buyer test accounts were created.
+echo    Their passwords were printed by the seed step above (they are not stored in the code).
 echo ========================================
 pause

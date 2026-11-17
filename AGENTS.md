@@ -38,12 +38,14 @@ npm run dev
 
 Visit `http://localhost:3000`
 
-## Test Accounts (after seeding)
-| Role | Email | Password |
-|------|-------|----------|
-| Admin | admin@3dmstore.com | admin123456 |
-| Designer | designer@example.com | designer123456 |
-| Buyer | buyer@example.com | buyer123456 |
+## Test Accounts (local development only)
+`npx tsx prisma/seed.ts` creates an admin, a designer and a buyer account. Their passwords are
+**not** stored in this (public) repository: set `SEED_ADMIN_PASSWORD`, `SEED_DESIGNER_PASSWORD`
+and `SEED_BUYER_PASSWORD` (12+ characters), or the script generates random ones and prints
+them once. The seed refuses to run against production.
+
+**Never commit secrets.** This repository is public. Real keys live only in Vercel's
+environment variables and in local `.env*` files, which are git-ignored.
 
 ## Architecture
 
