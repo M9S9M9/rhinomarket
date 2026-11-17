@@ -12,6 +12,8 @@ interface StorageStatus {
   privateStoreConfigured: boolean;
   publicModels: number;
   privateModels: number;
+  blobEnvNames?: string[];
+  vercelEnv?: string;
 }
 
 export default function AdminStoragePage() {
@@ -81,10 +83,16 @@ export default function AdminStoragePage() {
 
       <Card><CardContent className="p-5 space-y-4">
         {!info.privateStoreConfigured ? (
+          <>
           <p className="text-sm text-red-600">
             The private store isn&apos;t connected to this deployment yet. In Vercel, connect a Private Blob
             store with the prefix <code>BLOB_MODELS</code>, then redeploy.
           </p>
+          <p className="text-xs text-gray-500">
+            Storage settings this deployment ({info.vercelEnv}) can see:{" "}
+            {info.blobEnvNames && info.blobEnvNames.length > 0 ? info.blobEnvNames.join(", ") : "none"}
+          </p>
+          </>
         ) : info.publicModels === 0 ? (
           <p className="text-sm text-green-700">All model files are private. New uploads go to private storage automatically.</p>
         ) : (

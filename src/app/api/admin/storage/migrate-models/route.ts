@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { randomUUID, createHash } from "crypto";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
+import { getModelsBlobToken } from "@/lib/upload";
 
 // Moves .3dm model files from the PUBLIC Blob store into the PRIVATE one
 // (BLOB_MODELS_READ_WRITE_TOKEN), then deletes the public copy so old links stop working.
@@ -30,7 +31,10 @@ export async function GET() {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
   return NextResponse.json({
-    privateStoreConfigured: !!process.env.BLOB_MODELS_READ_WRITE_TOKEN,
+    privateStoreConfigured: !!getModelsBlobToken(),
+    // Names only (never values) of storage-related variables this deployment can see.
+    blobEnvNames: Object.keys(process.env).filter((k) => k.includes("BLOB")).sort(),
+    vercelEnv: process.env.VERCEL_ENV || "local",
     ...(await counts()),
   });
 }
@@ -39,7 +43,7 @@ export async function POST() {
   if (!(await requireAdmin())) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
-  const privateToken = process.env.BLOB_MODELS_READ_WRITE_TOKEN;
+  const privateToken = getModelsBlobToken();
   if (!privateToken) {
     return NextResponse.json(
       { error: "Private store not connected (BLOB_MODELS_READ_WRITE_TOKEN missing). Connect it in Vercel and redeploy." },

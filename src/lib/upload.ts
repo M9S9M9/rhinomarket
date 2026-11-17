@@ -14,7 +14,16 @@ const useBlob = !!process.env.BLOB_READ_WRITE_TOKEN;
 // Token of a PRIVATE Vercel Blob store for .3dm model files. When set, model files are
 // stored privately and can only be read by the server (paid downloads, admin review).
 // Previews and avatars stay in the public store.
-const MODELS_BLOB_TOKEN = process.env.BLOB_MODELS_READ_WRITE_TOKEN;
+// Vercel names the variable after the prefix chosen when connecting the store; accept
+// any BLOB_MODELS…READ_WRITE_TOKEN spelling.
+export function getModelsBlobToken(): string | undefined {
+  if (process.env.BLOB_MODELS_READ_WRITE_TOKEN) return process.env.BLOB_MODELS_READ_WRITE_TOKEN;
+  const key = Object.keys(process.env).find(
+    (k) => k.startsWith("BLOB_MODELS") && k.endsWith("READ_WRITE_TOKEN") && process.env[k]
+  );
+  return key ? process.env[key] : undefined;
+}
+const MODELS_BLOB_TOKEN = getModelsBlobToken();
 
 function isPrivateBlobUrl(url: string): boolean {
   return /\.private\.blob\.vercel-storage\.com\//i.test(url);
