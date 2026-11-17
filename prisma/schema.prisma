@@ -228,7 +228,7 @@ model Transaction {
   designerEarning Decimal       @db.Decimal(10, 2)
   status          PaymentStatus @default(PENDING)
   paymentMethod   String?       // "usdt"
-  txHash          String?       // buyer's blockchain transaction hash
+  txHash          String?       @unique // buyer's blockchain transaction hash (one hash = one order)
   cryptoAmount    Decimal?      @db.Decimal(12, 6)
   cryptoCurrency  String?       // USDT
   refundAmount    Decimal?      @db.Decimal(10, 2)

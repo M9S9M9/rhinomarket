@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { createNotification } from "@/lib/notifications";
+import { normalizeTxHash } from "@/lib/bsc";
 
 export async function PATCH(req: Request, { params }: { params: Promise<{ id: string }> }) {
   const session = await auth();
@@ -27,14 +28,33 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
       return NextResponse.json({ error: "Transaction already processed" }, { status: 400 });
     }
 
-    const { txHash: confirmTxHash } = body;
     const updateData: any = { status: "COMPLETED", completedAt: new Date() };
-    if (confirmTxHash) updateData.txHash = confirmTxHash;
+    if (body.txHash) {
+      const confirmTxHash = normalizeTxHash(body.txHash);
+      if (!confirmTxHash) {
+        return NextResponse.json({ error: "Invalid transaction hash" }, { status: 400 });
+      }
+      const inUse = await prisma.transaction.findFirst({
+        where: { txHash: { equals: confirmTxHash, mode: "insensitive" }, id: { not: id } },
+        select: { id: true },
+      });
+      if (inUse) {
+        return NextResponse.json(
+          { error: `This transaction hash is already used by order ${inUse.id}` },
+          { status: 409 }
+        );
+      }
+      updateData.txHash = confirmTxHash;
+    }
 
-    await prisma.transaction.update({
-      where: { id },
+    // Atomic: only moves the order if it is still unprocessed, so earnings are credited once.
+    const moved = await prisma.transaction.updateMany({
+      where: { id, status: { in: ["SUBMITTED", "PENDING"] } },
       data: updateData,
     });
+    if (moved.count === 0) {
+      return NextResponse.json({ error: "Transaction already processed" }, { status: 400 });
+    }
 
     await prisma.earnings.upsert({
       where: { userId: transaction.designerId },
@@ -91,6 +111,12 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
   }
 
   if (action === "delete") {
+    if (transaction.designerPaidAt) {
+      return NextResponse.json(
+        { error: "The designer has already been paid for this sale, so it can't be deleted. Keep it for your records." },
+        { status: 400 }
+      );
+    }
     try {
       await prisma.$transaction(async (tx) => {
         await tx.download.deleteMany({ where: { transactionId: id } });
@@ -133,13 +159,17 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
       return NextResponse.json({ error: "Payout transaction hash required" }, { status: 400 });
     }
 
-    await prisma.transaction.update({
-      where: { id },
+    // Atomic: prevents recording (and crediting) the same payout twice.
+    const claimed = await prisma.transaction.updateMany({
+      where: { id, status: "COMPLETED", designerPaidAt: null },
       data: {
         designerPaidAt: new Date(),
-        adminPayoutTxHash: payoutTxHash,
+        adminPayoutTxHash: String(payoutTxHash).trim(),
       },
     });
+    if (claimed.count === 0) {
+      return NextResponse.json({ error: "Designer already paid" }, { status: 400 });
+    }
 
     await prisma.earnings.update({
       where: { userId: transaction.designerId },

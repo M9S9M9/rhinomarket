@@ -1,6 +1,13 @@
 import { prisma } from "@/lib/db";
 import { createNotification } from "@/lib/notifications";
-import { getIncomingUsdtTransactions, getLatestBlock, verifyTransactionOnChain, sendUsdt, checkUsdtBalance } from "@/lib/bsc";
+import {
+  getIncomingUsdtTransactions,
+  getLatestBlock,
+  verifyTransactionOnChain,
+  sendUsdt,
+  checkUsdtBalance,
+  getPlatformWalletAddress,
+} from "@/lib/bsc";
 import { calculateCommission } from "@/lib/commission";
 import { getCommissionPercentForDesigner } from "@/lib/settings";
 
@@ -52,8 +59,7 @@ export async function checkPendingPayments(): Promise<ProcessResult> {
 
   for (const t of unpaidTxns) {
     try {
-      await payoutDesigner(t.id);
-      result.autoPaid++;
+      if (await payoutDesigner(t.id)) result.autoPaid++;
     } catch (payoutErr: any) {
       result.errors.push(`Payout failed for ${t.id}: ${payoutErr.message}`);
     }
@@ -61,7 +67,7 @@ export async function checkPendingPayments(): Promise<ProcessResult> {
 
   // 3) Fallback: match PENDING orders (no submitted hash yet) against incoming transfers.
   const pendingTxns = await prisma.transaction.findMany({
-    where: { status: "PENDING", paymentMethod: "usdt" },
+    where: { status: "PENDING", paymentMethod: "usdt", txHash: null },
     include: { listing: { select: { title: true } } },
     orderBy: { createdAt: "asc" },
   });
@@ -80,15 +86,36 @@ export async function checkPendingPayments(): Promise<ProcessResult> {
 
   const currentBlock = await getLatestBlock();
 
+  // Never match a transfer that is already attached to an order — one on-chain payment
+  // can only ever pay for one order.
+  const incomingHashes = incomingTxns
+    .map((tx: any) => (tx.hash || "").toLowerCase())
+    .filter(Boolean);
+  const alreadyUsed = new Set(
+    (
+      await prisma.transaction.findMany({
+        where: { txHash: { in: incomingHashes, mode: "insensitive" } },
+        select: { txHash: true },
+      })
+    ).map((t) => (t.txHash || "").toLowerCase())
+  );
+  const available = incomingTxns.filter(
+    (tx: any) => tx.hash && !alreadyUsed.has(tx.hash.toLowerCase())
+  );
+
   for (const pending of pendingTxns) {
     const expectedAmount = Number(pending.amount);
-    const match = incomingTxns.find(
+    const pendingCreatedMs = new Date(pending.createdAt).getTime();
+    const matchIndex = available.findIndex(
       (tx: any) =>
         Math.abs(Number(tx.value) / 1_000_000_000_000_000_000 - expectedAmount) < 0.01 &&
-        (tx.to || "").toLowerCase() === walletAddress.toLowerCase()
+        (tx.to || "").toLowerCase() === walletAddress.toLowerCase() &&
+        // the transfer must not predate the order (allow 10 min clock skew)
+        (!tx.timeStamp || tx.timeStamp >= pendingCreatedMs - 10 * 60 * 1000)
     );
 
-    if (!match) continue;
+    if (matchIndex === -1) continue;
+    const [match] = available.splice(matchIndex, 1);
 
     result.checked++;
 
@@ -96,12 +123,11 @@ export async function checkPendingPayments(): Promise<ProcessResult> {
     if (confirmations < MIN_CONFIRMATIONS) continue;
 
     try {
-      await confirmTransaction(pending.id, match.hash, match.from);
+      await confirmTransaction(pending.id, match.hash.toLowerCase(), match.from);
       result.autoConfirmed++;
 
       try {
-        await payoutDesigner(pending.id);
-        result.autoPaid++;
+        if (await payoutDesigner(pending.id)) result.autoPaid++;
       } catch (payoutErr: any) {
         result.errors.push(`Payout failed for ${pending.id}: ${payoutErr.message}`);
       }
@@ -113,7 +139,7 @@ export async function checkPendingPayments(): Promise<ProcessResult> {
   return result;
 }
 
-async function confirmTransaction(
+export async function confirmTransaction(
   transactionId: string,
   txHash: string,
   buyerWallet: string
@@ -124,16 +150,18 @@ async function confirmTransaction(
   });
 
   if (!transaction) return;
-  if (transaction.status !== "PENDING" && transaction.status !== "SUBMITTED") return;
 
-  await prisma.transaction.update({
-    where: { id: transactionId },
+  // Atomic transition: only one caller can move this order to COMPLETED, so earnings
+  // are never credited twice when the cron and a buyer's submission race.
+  const moved = await prisma.transaction.updateMany({
+    where: { id: transactionId, status: { in: ["PENDING", "SUBMITTED"] } },
     data: {
       status: "COMPLETED",
       txHash,
       completedAt: new Date(),
     },
   });
+  if (moved.count === 0) return;
 
   const commissionPercent = await getCommissionPercentForDesigner(transaction.designerId);
   const { commission, designerEarning } = calculateCommission(
@@ -177,9 +205,15 @@ async function confirmTransaction(
   );
 }
 
-async function payoutDesigner(transactionId: string) {
-  const pk = process.env.PLATFORM_WALLET_PRIVATE_KEY;
-  if (!pk) return;
+/**
+ * Sends the designer's share for one COMPLETED sale from the platform wallet.
+ * Safe to call from several places at once: the sale is "claimed" atomically by
+ * setting designerPaidAt before any money moves, so it can never be paid twice.
+ * Returns true if a payout was sent.
+ */
+export async function payoutDesigner(transactionId: string): Promise<boolean> {
+  const platformWallet = getPlatformWalletAddress();
+  if (!platformWallet) return false; // auto-payouts not configured
 
   const transaction = await prisma.transaction.findUnique({
     where: { id: transactionId },
@@ -189,28 +223,43 @@ async function payoutDesigner(transactionId: string) {
     },
   });
 
-  if (!transaction || transaction.status !== "COMPLETED") return;
-  if (transaction.designerPaidAt) return;
+  if (!transaction || transaction.status !== "COMPLETED") return false;
+  if (transaction.designerPaidAt) return false;
 
   const designerWallet = transaction.designer.payoutWalletAddress;
-  if (!designerWallet) return;
+  if (!designerWallet) return false;
 
   const payoutAmount = Number(transaction.designerEarning);
-  if (payoutAmount <= 0) return;
+  if (payoutAmount <= 0) return false;
 
-  const balance = await checkUsdtBalance(ADMIN_WALLET);
+  // Check the balance of the wallet that will actually send the funds.
+  const balance = await checkUsdtBalance(platformWallet);
   if (balance < payoutAmount) {
     throw new Error(`Insufficient USDT balance: have ${balance}, need ${payoutAmount}`);
   }
 
-  const payoutTxHash = await sendUsdt(designerWallet, payoutAmount);
+  // Atomically claim this payout. If another request got here first, stop.
+  const claimed = await prisma.transaction.updateMany({
+    where: { id: transactionId, status: "COMPLETED", designerPaidAt: null },
+    data: { designerPaidAt: new Date() },
+  });
+  if (claimed.count === 0) return false;
+
+  let payoutTxHash: string;
+  try {
+    payoutTxHash = await sendUsdt(designerWallet, payoutAmount);
+  } catch (err) {
+    // Nothing was sent (or it failed before broadcast) — release the claim so it can be retried.
+    await prisma.transaction.update({
+      where: { id: transactionId },
+      data: { designerPaidAt: null },
+    });
+    throw err;
+  }
 
   await prisma.transaction.update({
     where: { id: transactionId },
-    data: {
-      designerPaidAt: new Date(),
-      adminPayoutTxHash: payoutTxHash,
-    },
+    data: { adminPayoutTxHash: payoutTxHash },
   });
 
   await prisma.earnings.update({
@@ -229,4 +278,6 @@ async function payoutDesigner(transactionId: string) {
     `Your earnings for "${transaction.listing.title}" have been auto-paid to your USDT wallet.`,
     "/dashboard/designer/earnings"
   );
+
+  return true;
 }

@@ -3,6 +3,7 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { validateFile, saveModelFile, savePreviewImage } from "@/lib/upload";
 import { extractMetadata } from "@/lib/metadata";
+import { createHash } from "crypto";
 
 export async function POST(req: NextRequest) {
   const session = await auth();
@@ -54,10 +55,10 @@ export async function POST(req: NextRequest) {
       }, { status: 409 });
     }
 
-    const { url, hash, size } = await saveModelFile(buffer, file.name);
-
+    // Check for duplicates BEFORE storing anything, so rejected uploads leave no orphan files.
+    const fileHash = createHash("sha256").update(buffer).digest("hex");
     const existing = await prisma.listing.findFirst({
-      where: { fileHash: hash, designerId: { not: session.user.id } },
+      where: { fileHash, designerId: { not: session.user.id } },
       include: { designer: { select: { name: true } } },
     });
     if (existing) {
@@ -66,14 +67,20 @@ export async function POST(req: NextRequest) {
       }, { status: 409 });
     }
 
-    const previewUrls: string[] = [];
-    for (let i = 0; i < previews.length; i++) {
-      if (!/\.(jpe?g|png)$/i.test(previews[i].name) ||
-          (previews[i].type !== "image/jpeg" && previews[i].type !== "image/png")) {
+    // Validate every preview before storing any file.
+    for (const preview of previews) {
+      if (!/\.(jpe?g|png)$/i.test(preview.name) ||
+          (preview.type !== "image/jpeg" && preview.type !== "image/png")) {
         return NextResponse.json({
-          error: `"${previews[i].name}" is not a valid preview image. Only JPG and PNG files are allowed.`,
+          error: `"${preview.name}" is not a valid preview image. Only JPG and PNG files are allowed.`,
         }, { status: 400 });
       }
+    }
+
+    const { url, hash, size } = await saveModelFile(buffer, file.name);
+
+    const previewUrls: string[] = [];
+    for (let i = 0; i < previews.length; i++) {
       const previewBuffer = Buffer.from(await previews[i].arrayBuffer());
       const previewUrl = await savePreviewImage(previewBuffer, i);
       previewUrls.push(previewUrl);

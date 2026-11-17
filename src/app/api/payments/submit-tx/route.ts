@@ -2,9 +2,12 @@ import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { createNotification } from "@/lib/notifications";
-import { verifyTransactionOnChain, sendUsdt, checkUsdtBalance } from "@/lib/bsc";
+import { verifyTransactionOnChain, normalizeTxHash } from "@/lib/bsc";
 import { calculateCommission } from "@/lib/commission";
 import { getCommissionPercentForDesigner } from "@/lib/settings";
+import { confirmTransaction, payoutDesigner } from "@/lib/payment-monitor";
+
+const DEFAULT_WALLET = "0xe8d2b23A953ce4f2093dbCC8554Ab4FE1E4FD8BF";
 
 export async function POST(req: Request) {
   const session = await auth();
@@ -13,9 +16,18 @@ export async function POST(req: Request) {
   }
   const buyerId = session.user.id;
 
-  const { listingId, txHash } = await req.json();
-  if (!listingId || !txHash) {
+  const body = await req.json().catch(() => ({}));
+  const listingId = body?.listingId;
+  if (!listingId || !body?.txHash) {
     return NextResponse.json({ error: "Listing ID and TX hash required" }, { status: 400 });
+  }
+
+  const txHash = normalizeTxHash(body.txHash);
+  if (!txHash) {
+    return NextResponse.json(
+      { error: "Invalid transaction hash. It should start with 0x followed by 64 characters." },
+      { status: 400 }
+    );
   }
 
   const listing = await prisma.listing.findUnique({
@@ -26,12 +38,23 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Listing not found" }, { status: 404 });
   }
 
-  if (listing.designerId === session.user.id) {
+  if (listing.designerId === buyerId) {
     return NextResponse.json({ error: "Cannot purchase your own listing" }, { status: 400 });
   }
 
-  // Use a serialized transaction with row-level locking to prevent duplicate orders
-  type TxResult = { transaction: any; walletAddress: string; amount: number; designerEarning: number };
+  // One on-chain payment can only ever pay for one order.
+  const hashInUse = await prisma.transaction.findFirst({
+    where: { txHash: { equals: txHash, mode: "insensitive" } },
+    select: { id: true },
+  });
+  if (hashInUse) {
+    return NextResponse.json(
+      { error: "This transaction hash has already been used for another order. Contact support if you think this is a mistake." },
+      { status: 409 }
+    );
+  }
+
+  type TxResult = { transactionId: string; walletAddress: string; amount: number };
   let txResult: TxResult;
   try {
     // Fetch commission BEFORE the interactive transaction: the helper uses the global
@@ -41,22 +64,24 @@ export async function POST(req: Request) {
       await tx.$queryRaw`SELECT id FROM "listings" WHERE id = ${listing.id} FOR UPDATE`;
 
       const existing = await tx.transaction.findFirst({
-        where: { listingId: listing.id, buyerId: buyerId, status: { in: ["PENDING", "SUBMITTED", "COMPLETED"] } },
+        where: { listingId: listing.id, buyerId, status: { in: ["PENDING", "SUBMITTED", "COMPLETED"] } },
       });
       if (existing) {
         throw new Error("ALREADY_EXISTS");
       }
 
       const settings = await tx.appSettings.findUnique({ where: { id: 1 } });
-      const walletAddress = (settings?.adminWalletAddress || "0xe8d2b23A953ce4f2093dbCC8554Ab4FE1E4FD8BF").toLowerCase();
+      const walletAddress = (settings?.adminWalletAddress || DEFAULT_WALLET).toLowerCase();
 
       const amount = Number(listing.price);
       const { commission, designerEarning } = calculateCommission(amount, commissionPercent);
 
+      // The hash is stored at creation time; the unique index on txHash rejects any
+      // concurrent attempt to reuse the same payment.
       const transaction = await tx.transaction.create({
         data: {
           listingId: listing.id,
-          buyerId: buyerId,
+          buyerId,
           designerId: listing.designerId,
           amount,
           commission,
@@ -64,112 +89,54 @@ export async function POST(req: Request) {
           status: "PENDING",
           paymentMethod: "usdt",
           cryptoCurrency: "USDT",
+          txHash,
         },
-        include: { listing: { select: { title: true } } },
       });
 
-      return { transaction, walletAddress, amount, designerEarning };
+      return { transactionId: transaction.id, walletAddress, amount };
     });
   } catch (err: any) {
-    console.error("submit-tx order creation error:", err);
-    if (err.message === "ALREADY_EXISTS") {
+    if (err?.message === "ALREADY_EXISTS") {
       return NextResponse.json({ error: "You already have an order for this listing" }, { status: 400 });
     }
+    if (err?.code === "P2002") {
+      return NextResponse.json(
+        { error: "This transaction hash has already been used for another order." },
+        { status: 409 }
+      );
+    }
+    console.error("submit-tx order creation error:", err);
     return NextResponse.json({ error: "Failed to create order" }, { status: 500 });
   }
 
-  const { transaction, walletAddress, amount, designerEarning } = txResult;
-  let verified = false;
-  const transactionId = transaction.id;
+  const { transactionId, walletAddress, amount } = txResult;
+
   try {
     const result = await verifyTransactionOnChain(txHash, walletAddress, amount);
     const minConfs = parseInt(process.env.MIN_BLOCK_CONFIRMATIONS || "1");
 
     if (result.valid && result.confirmations >= minConfs) {
-      await prisma.transaction.update({
-        where: { id: transactionId },
-        data: { status: "COMPLETED", txHash, completedAt: new Date() },
-      });
+      // Marks COMPLETED, credits designer earnings and notifies buyer + designer.
+      await confirmTransaction(transactionId, txHash, result.from);
 
-      await prisma.earnings.upsert({
-        where: { userId: listing.designerId },
-        create: {
-          userId: listing.designerId,
-          totalEarned: designerEarning,
-          pendingBalance: designerEarning,
-          availableBalance: 0,
-        },
-        update: {
-          totalEarned: { increment: designerEarning },
-          pendingBalance: { increment: designerEarning },
-        },
-      });
-
-      await createNotification(
-        session.user.id,
-        "purchase",
-        "Payment confirmed!",
-        `Your USDT payment for "${listing.title}" has been auto-verified. Download is now available.`,
-        "/dashboard/purchases"
-      );
-
-      await createNotification(
-        listing.designerId,
-        "sale",
-        "You made a sale!",
-        `Your model "${listing.title}" was purchased.`,
-        "/dashboard/designer/earnings"
-      );
-
-      // Auto-payout designer
-      const pk = process.env.PLATFORM_WALLET_PRIVATE_KEY;
-      if (pk && designerEarning > 0) {
-        const designer = await prisma.user.findUnique({
-          where: { id: listing.designerId },
-          select: { payoutWalletAddress: true },
-        });
-        const designerWallet = designer?.payoutWalletAddress;
-        if (designerWallet) {
-          try {
-            const balance = await checkUsdtBalance(walletAddress);
-            if (balance >= designerEarning) {
-              const payoutTxHash = await sendUsdt(designerWallet, designerEarning);
-              await prisma.transaction.update({
-                where: { id: transactionId },
-                data: { designerPaidAt: new Date(), adminPayoutTxHash: payoutTxHash },
-              });
-              await prisma.earnings.update({
-                where: { userId: listing.designerId },
-                data: {
-                  pendingBalance: { decrement: designerEarning },
-                  availableBalance: { increment: designerEarning },
-                  totalPaidOut: { increment: designerEarning },
-                },
-              });
-              await createNotification(
-                listing.designerId,
-                "payout",
-                "Payout sent!",
-                `Your earnings for "${listing.title}" have been auto-paid to your USDT wallet.`,
-                "/dashboard/designer/earnings"
-              );
-            }
-          } catch (err) {
-            console.error(`Auto-payout failed for ${transactionId}:`, err);
-          }
-        }
+      try {
+        await payoutDesigner(transactionId);
+      } catch (err) {
+        // The scheduled payment check retries unpaid sales.
+        console.error(`Auto-payout failed for ${transactionId}:`, err);
       }
 
-      verified = true;
       return NextResponse.json({
         success: true,
         autoVerified: true,
         message: "Payment verified on-chain! Download is now available.",
       });
-    } else if (result.valid) {
+    }
+
+    if (result.valid) {
       await prisma.transaction.update({
         where: { id: transactionId },
-        data: { status: "SUBMITTED", txHash },
+        data: { status: "SUBMITTED" },
       });
       return NextResponse.json({
         success: true,
@@ -181,22 +148,22 @@ export async function POST(req: Request) {
     console.error("On-chain verification error:", err);
   }
 
-  if (!verified) {
-    await prisma.transaction.update({
-      where: { id: transactionId },
-      data: { status: "SUBMITTED", txHash },
-    });
+  // Not verifiable right now (wrong amount/recipient, not yet indexed, or RPC error):
+  // keep it for an admin to review.
+  await prisma.transaction.update({
+    where: { id: transactionId },
+    data: { status: "SUBMITTED" },
+  });
 
-    const admins = await prisma.user.findMany({ where: { role: "ADMIN" }, select: { id: true } });
-    for (const admin of admins) {
-      await createNotification(
-        admin.id,
-        "payment",
-        "New payment submitted",
-        `A buyer submitted a USDT payment for "${listing.title}". Verify on admin panel.`,
-        "/admin/payments"
-      );
-    }
+  const admins = await prisma.user.findMany({ where: { role: "ADMIN" }, select: { id: true } });
+  for (const admin of admins) {
+    await createNotification(
+      admin.id,
+      "payment",
+      "New payment submitted",
+      `A buyer submitted a USDT payment for "${listing.title}". Verify on admin panel.`,
+      "/admin/payments"
+    );
   }
 
   return NextResponse.json({ success: true });

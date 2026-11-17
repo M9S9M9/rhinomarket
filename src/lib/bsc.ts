@@ -35,6 +35,24 @@ function getWallet(): Wallet {
   return new Wallet(pk, getProvider());
 }
 
+/** Address of the wallet that actually sends payouts (derived from PLATFORM_WALLET_PRIVATE_KEY). */
+export function getPlatformWalletAddress(): string | null {
+  const pk = process.env.PLATFORM_WALLET_PRIVATE_KEY;
+  if (!pk) return null;
+  try {
+    return new Wallet(pk).address;
+  } catch {
+    return null;
+  }
+}
+
+/** Returns the lowercase tx hash if it is a valid 32-byte hex hash, otherwise null. */
+export function normalizeTxHash(txHash: unknown): string | null {
+  if (typeof txHash !== "string") return null;
+  const h = txHash.trim().toLowerCase();
+  return /^0x[0-9a-f]{64}$/.test(h) ? h : null;
+}
+
 function getContract(signer?: Wallet): Contract {
   return new Contract(USDT_BEP20_CONTRACT, [
     "function transfer(address to, uint256 amount) returns (bool)",
