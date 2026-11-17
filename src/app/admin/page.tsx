@@ -7,7 +7,7 @@ import Link from "next/link";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Users, FileText, DollarSign, AlertTriangle, MessageSquare, ArrowRight } from "lucide-react";
+import { Users, FileText, DollarSign, AlertTriangle, MessageSquare, ArrowRight, Lock } from "lucide-react";
 import { formatPrice, formatDate } from "@/lib/utils";
 
 interface AdminStats {
@@ -147,6 +147,9 @@ export default function AdminPage() {
         </Link>
         <Link href="/admin/support">
           <Card hover className="p-6"><MessageSquare className="h-6 w-6 text-gray-600 mb-2" /><h3 className="font-semibold">Support Tickets</h3><p className="text-sm text-gray-500">Respond to user support requests</p></Card>
+        </Link>
+        <Link href="/admin/storage">
+          <Card hover className="p-6"><Lock className="h-6 w-6 text-gray-600 mb-2" /><h3 className="font-semibold">File Storage</h3><p className="text-sm text-gray-500">Keep model files private</p></Card>
         </Link>
       </div>
     </div>
