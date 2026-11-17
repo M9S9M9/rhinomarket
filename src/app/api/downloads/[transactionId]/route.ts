@@ -2,8 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { embedMetadata } from "@/lib/metadata";
-import fs from "fs";
-import path from "path";
+import { readModelFile } from "@/lib/upload";
 
 export async function GET(req: NextRequest, { params }: { params: Promise<{ transactionId: string }> }) {
   const session = await auth();
@@ -54,17 +53,15 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ tran
 
   const fileUrl = transaction.listing.fileUrl;
 
-  let fileBuffer: Buffer;
-
-  if (fileUrl.startsWith("http")) {
-    const resp = await fetch(fileUrl);
-    fileBuffer = Buffer.from(await resp.arrayBuffer());
-  } else {
-    const filePath = path.join(process.cwd(), "uploads", fileUrl.replace("/uploads/", ""));
-    if (!fs.existsSync(filePath)) {
-      return NextResponse.json({ error: "File not found on server" }, { status: 404 });
-    }
-    fileBuffer = fs.readFileSync(filePath) as Buffer;
+  let fileBuffer: Buffer | null;
+  try {
+    fileBuffer = await readModelFile(fileUrl);
+  } catch (err) {
+    console.error("Model file read error:", err);
+    fileBuffer = null;
+  }
+  if (!fileBuffer) {
+    return NextResponse.json({ error: "File not found on server" }, { status: 404 });
   }
 
   // Embed buyer metadata into the file for forensic tracing

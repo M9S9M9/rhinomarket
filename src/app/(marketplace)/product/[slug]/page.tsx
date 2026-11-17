@@ -2,7 +2,7 @@ import { prisma } from "@/lib/db";
 import { notFound } from "next/navigation";
 import { Metadata } from "next";
 import { ProductDetailClient } from "./product-detail";
-import { normalizeListing } from "@/lib/utils";
+import { normalizeListing, toPublicListing } from "@/lib/utils";
 
 interface PageProps {
   params: Promise<{ slug: string }>;
@@ -35,11 +35,11 @@ async function getListing(slug: string) {
     data: { viewCount: { increment: 1 } },
   });
 
-  const normalized = normalizeListing({
+  const normalized = toPublicListing(normalizeListing({
     ...listing,
     avgRating: avgRating._avg.rating || 0,
     reviewCount: listing._count.reviews,
-  }) as any;
+  })) as any;
   if (normalized?.price && typeof normalized.price !== "string") {
     normalized.price = normalized.price.toString();
   }

@@ -91,3 +91,14 @@ export function normalizeListing(listing: any) {
     previewUrls: parsePreviewUrls(listing.previewUrls),
   };
 }
+
+/**
+ * Removes fields that must never reach the browser for anyone who isn't the
+ * listing's owner or an admin. `fileUrl` points at the actual .3dm file — exposing
+ * it would let anyone download a paid model without buying it.
+ */
+export function toPublicListing<T extends Record<string, any>>(listing: T): Omit<T, "fileUrl" | "fileHash"> {
+  if (!listing) return listing;
+  const { fileUrl: _fileUrl, fileHash: _fileHash, ...rest } = listing;
+  return rest;
+}

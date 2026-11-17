@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
-import { normalizeListing } from "@/lib/utils";
+import { normalizeListing, toPublicListing } from "@/lib/utils";
 
 export async function GET(req: NextRequest) {
   const slug = req.nextUrl.searchParams.get("slug");
@@ -35,9 +35,12 @@ export async function GET(req: NextRequest) {
     _avg: { rating: true },
   });
 
-  return NextResponse.json(normalizeListing({
+  const result = normalizeListing({
     ...listing,
     avgRating: avgRating._avg.rating || 0,
     reviewCount: listing._count.reviews,
-  }));
+  });
+  const isOwner = listing.designerId === session?.user?.id;
+  const isAdmin = (session?.user as any)?.role === "ADMIN";
+  return NextResponse.json(isOwner || isAdmin ? result : toPublicListing(result));
 }

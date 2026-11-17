@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
-import { slugify, normalizeListing } from "@/lib/utils";
+import { slugify, normalizeListing, toPublicListing } from "@/lib/utils";
 import { checkRateLimit, getRateLimitKey } from "@/lib/rate-limit";
 import { validateApiRequest } from "@/lib/validate-request";
 
@@ -54,7 +54,7 @@ export async function GET(req: NextRequest) {
   ]);
 
   return NextResponse.json({
-    listings: listings.map(normalizeListing),
+    listings: listings.map((l) => toPublicListing(normalizeListing(l))),
     pagination: {
       page,
       limit,

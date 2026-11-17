@@ -11,6 +11,14 @@ const MAX_FILE_SIZE = (parseInt(process.env.UPLOAD_MAX_FILE_SIZE_MB || "100")) *
 const ALLOWED_TYPES = [".3dm"];
 
 const useBlob = !!process.env.BLOB_READ_WRITE_TOKEN;
+// Token of a PRIVATE Vercel Blob store for .3dm model files. When set, model files are
+// stored privately and can only be read by the server (paid downloads, admin review).
+// Previews and avatars stay in the public store.
+const MODELS_BLOB_TOKEN = process.env.BLOB_MODELS_READ_WRITE_TOKEN;
+
+function isPrivateBlobUrl(url: string): boolean {
+  return /\.private\.blob\.vercel-storage\.com\//i.test(url);
+}
 const useS3 = !!process.env.S3_ENDPOINT;
 
 async function ensureDir(dir: string) {
@@ -39,6 +47,16 @@ export async function saveModelFile(
   const hash = createHash("sha256").update(buffer).digest("hex");
   const ext = path.extname(originalName);
   const uniqueName = `${randomUUID()}${ext}`;
+
+  if (MODELS_BLOB_TOKEN) {
+    const { put } = await import("@vercel/blob");
+    const blob = await put(`models/${uniqueName}`, buffer, {
+      access: "private",
+      token: MODELS_BLOB_TOKEN,
+      contentType: "application/octet-stream",
+    });
+    return { url: blob.url, hash, size: buffer.length };
+  }
 
   if (useBlob) {
     const { put } = await import("@vercel/blob");
@@ -169,4 +187,29 @@ export async function saveAvatarImage(
 export function getModelPath(relativeUrl: string): string {
   if (relativeUrl.startsWith("http")) return relativeUrl;
   return path.join(UPLOAD_DIR, relativeUrl.replace("/uploads/", ""));
+}
+
+/**
+ * Reads a stored model file into memory, wherever it lives: private Blob store,
+ * public URL (public Blob / S3), or the local uploads folder. Returns null if missing.
+ */
+export async function readModelFile(fileUrl: string): Promise<Buffer | null> {
+  if (isPrivateBlobUrl(fileUrl)) {
+    if (!MODELS_BLOB_TOKEN) throw new Error("BLOB_MODELS_READ_WRITE_TOKEN is not set");
+    const { get } = await import("@vercel/blob");
+    const result = await get(fileUrl, { access: "private", token: MODELS_BLOB_TOKEN });
+    if (!result || result.statusCode !== 200) return null;
+    return Buffer.from(await new Response(result.stream).arrayBuffer());
+  }
+
+  if (fileUrl.startsWith("http")) {
+    const resp = await fetch(fileUrl);
+    if (!resp.ok) return null;
+    return Buffer.from(await resp.arrayBuffer());
+  }
+
+  const { readFile } = await import("fs/promises");
+  const filePath = getModelPath(fileUrl);
+  if (!existsSync(filePath)) return null;
+  return readFile(filePath);
 }

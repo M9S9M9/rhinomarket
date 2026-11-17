@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
-import { normalizeListing } from "@/lib/utils";
+import { normalizeListing, toPublicListing } from "@/lib/utils";
 import { createNotification, notifyFollowers } from "@/lib/notifications";
 import { checkRateLimit, getRateLimitKey } from "@/lib/rate-limit";
 import { validateApiRequest } from "@/lib/validate-request";
@@ -38,11 +38,13 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
     _avg: { rating: true },
   });
 
-  return NextResponse.json(normalizeListing({
+  const result = normalizeListing({
     ...listing,
     avgRating: avgRating._avg.rating || 0,
     reviewCount: listing._count.reviews,
-  }));
+  });
+  const isOwner = listing.designerId === session?.user?.id;
+  return NextResponse.json(isOwner || isAdmin ? result : toPublicListing(result));
 }
 
 export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {

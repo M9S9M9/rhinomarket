@@ -133,7 +133,7 @@ export default function AdminListingDetailPage() {
                     </p>
                   </div>
                 </div>
-                <a href={listing.fileUrl} target="_blank" rel="noopener noreferrer">
+                <a href={`/api/admin/listings/${listing.id}/file`}>
                   <Button size="sm" variant="outline"><Download className="h-4 w-4 mr-1" /> Download File</Button>
                 </a>
               </CardContent>
