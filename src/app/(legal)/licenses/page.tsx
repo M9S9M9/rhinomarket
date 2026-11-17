@@ -107,7 +107,7 @@ export default function LicensesPage() {
 
         <section className="bg-gray-50 rounded-xl p-6 border">
           <h2 className="text-lg font-semibold text-gray-900 mb-3">License Violations</h2>
-          <p className="text-sm text-gray-600">Violating a license agreement is a breach of our Terms of Service and may constitute copyright infringement. If you believe a buyer has misused your model, please report it using the <strong>"Report this Model"</strong> button on the product page or contact us at <a href="mailto:support@3dmstore.com" className="text-gray-600 underline">support@3dmstore.com</a>.</p>
+          <p className="text-sm text-gray-600">Violating a license agreement is a breach of our Terms of Service and may constitute copyright infringement. If you believe a buyer has misused your model, please report it using the <strong>"Report this Model"</strong> button on the product page or open a <Link href="/dashboard/support" className="text-gray-600 underline">support ticket</Link>.</p>
         </section>
 
         <section>
@@ -124,7 +124,7 @@ export default function LicensesPage() {
 
         <section>
           <h2 className="text-lg font-semibold text-gray-900 mb-3">Questions?</h2>
-          <p className="text-sm text-gray-600">If you&apos;re unsure which license you need, contact the designer directly or reach out to us at <a href="mailto:support@3dmstore.com" className="text-gray-600 underline">support@3dmstore.com</a>.</p>
+          <p className="text-sm text-gray-600">If you&apos;re unsure which license you need, see our <Link href="/help" className="text-gray-600 underline">Help Center</Link>, contact the designer directly, or open a <Link href="/dashboard/support" className="text-gray-600 underline">support ticket</Link>.</p>
         </section>
 
       </div>

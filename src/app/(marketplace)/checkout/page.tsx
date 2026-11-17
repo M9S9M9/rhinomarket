@@ -169,7 +169,8 @@ function CheckoutForm() {
               <AlertTriangle className="h-5 w-5 text-amber-600 mt-0.5 shrink-0" />
               <div className="text-sm text-amber-800">
                 <p className="font-medium mb-1">Send exactly <strong>{payment.amount} USDT</strong> on <strong>BSC</strong> network</p>
-                <p>After sending, paste your transaction hash below to verify.</p>
+                <p>Use the BNB Smart Chain (BEP-20) network only — USDT sent on any other network can&apos;t be recovered. After sending, paste your transaction hash below to verify.</p>
+                <p className="mt-1"><a href="/help#payments" target="_blank" rel="noopener noreferrer" className="underline">Payment help &amp; FAQ</a></p>
               </div>
             </div>
           </div>
