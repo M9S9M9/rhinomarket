@@ -20,7 +20,7 @@ export default function DMCAPage() {
           <li>Your physical or electronic signature</li>
         </ul>
 
-        <p className="mt-4">Send DMCA notices to: dmca@3dmstore.com</p>
+        <p className="mt-4">Submit DMCA notices using the <strong>&ldquo;Report this Model&rdquo;</strong> button on the listing&apos;s page, or open a <a href="/dashboard/support" className="text-gray-600 underline">support ticket</a> with the details above. Counter-notices are submitted through a support ticket as well.</p>
 
         <h2 className="text-lg font-semibold text-gray-900 mt-8">Counter-Notice</h2>
         <p>If you believe your content was removed in error, you may submit a counter-notice with the following:</p>

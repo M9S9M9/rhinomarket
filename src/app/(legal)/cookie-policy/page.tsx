@@ -73,7 +73,7 @@ export default function CookiePolicyPage() {
 
         <section>
           <h2 className="text-lg font-semibold text-gray-900">Contact</h2>
-          <p>If you have questions about our cookie usage, contact us at <a href="mailto:privacy@3dmstore.com" className="text-gray-600 underline">privacy@3dmstore.com</a>.</p>
+          <p>If you have questions about our cookie usage, open a <Link href="/dashboard/support" className="text-gray-600 underline">support ticket</Link>.</p>
         </section>
       </div>
 

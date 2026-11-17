@@ -114,7 +114,7 @@ export const FAQ: FaqSection[] = [
       },
       {
         q: "How much does it cost to sell?",
-        a: "Listing is free. 3DM Store takes a commission on each sale — 15% by default. The rate can change depending on your sales. The commission taken from every sale is shown on your [Earnings](/dashboard/designer/earnings) page.",
+        a: "Listing is free. 3DM Store takes a commission on each sale — 15% by default. The rate can change depending on your sales. The commission taken from every sale is shown on your [Earnings](/dashboard/designer/earnings) page. 3DM Store pays the network fees for sending your payouts, so they are never deducted from your earnings.",
       },
       {
         q: "Is there a minimum price?",
