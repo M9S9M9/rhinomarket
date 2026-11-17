@@ -8,6 +8,29 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
 import { Upload, FileText, X, AlertTriangle, TrendingUp, Gift, Target } from "lucide-react";
 import toast from "react-hot-toast";
+import { uploadPresigned } from "@vercel/blob/client";
+
+// Shrinks a preview image in the browser (max 1920px, JPEG) so a set of previews
+// stays well under the server's request size limit. Falls back to the original.
+async function compressPreview(file: File): Promise<File> {
+  try {
+    const bitmap = await createImageBitmap(file);
+    const scale = Math.min(1, 1920 / Math.max(bitmap.width, bitmap.height));
+    const canvas = document.createElement("canvas");
+    canvas.width = Math.round(bitmap.width * scale);
+    canvas.height = Math.round(bitmap.height * scale);
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return file;
+    ctx.fillStyle = "#ffffff";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.drawImage(bitmap, 0, 0, canvas.width, canvas.height);
+    const blob: Blob | null = await new Promise((resolve) => canvas.toBlob(resolve, "image/jpeg", 0.85));
+    if (!blob || blob.size >= file.size) return file;
+    return new File([blob], file.name.replace(/\.(png|jpe?g)$/i, "") + ".jpg", { type: "image/jpeg" });
+  } catch {
+    return file;
+  }
+}
 
 export default function UploadPage() {
   const { data: session, status } = useSession();
@@ -21,6 +44,7 @@ export default function UploadPage() {
   const [modelFile, setModelFile] = useState<File | null>(null);
   const [previews, setPreviews] = useState<File[]>([]);
   const [uploadResult, setUploadResult] = useState<any>(null);
+  const [progress, setProgress] = useState<number | null>(null);
 
   const [form, setForm] = useState({
     title: "", description: "", price: "", licenseType: "PERSONAL",
@@ -58,25 +82,56 @@ export default function UploadPage() {
   const handleUpload = async () => {
     if (!modelFile) { toast.error("Please select a .3dm file"); return; }
     setUploading(true);
-
-    const formData = new FormData();
-    formData.append("file", modelFile);
-    previews.forEach(p => formData.append("previews", p));
+    setProgress(null);
 
     try {
-      const res = await fetch("/api/upload", {
-        method: "POST",
-        body: formData,
-      });
-      const data = await res.json();
-      if (!res.ok) { toast.error(data.error); setUploading(false); return; }
+      const compressed = await Promise.all(previews.map(compressPreview));
+      const previewBytes = compressed.reduce((n, f) => n + f.size, 0);
+      if (previewBytes > 4 * 1024 * 1024) {
+        toast.error("Preview images are too large in total (max 4MB). Use fewer or smaller images.");
+        setUploading(false);
+        return;
+      }
+
+      const mode = await fetch("/api/upload/model").then(r => r.json()).catch(() => ({ direct: false }));
+
+      let res: Response;
+      if (mode.direct) {
+        // 1) Send the .3dm straight to private storage (no 4.5MB limit).
+        setProgress(0);
+        const blob = await uploadPresigned(`models/${crypto.randomUUID()}.3dm`, modelFile, {
+          access: "private",
+          handleUploadUrl: "/api/upload/model",
+          contentType: "application/octet-stream",
+          clientPayload: JSON.stringify({ size: modelFile.size }),
+          multipart: modelFile.size > 20 * 1024 * 1024,
+          onUploadProgress: ({ percentage }) => setProgress(Math.round(percentage)),
+        });
+        setProgress(100);
+
+        // 2) Ask the server to check the file and store the previews.
+        const formData = new FormData();
+        formData.append("fileUrl", blob.url);
+        compressed.forEach(p => formData.append("previews", p));
+        res = await fetch("/api/upload/finalize", { method: "POST", body: formData });
+      } else {
+        // Classic upload through the server (local development / no private store).
+        const formData = new FormData();
+        formData.append("file", modelFile);
+        compressed.forEach(p => formData.append("previews", p));
+        res = await fetch("/api/upload", { method: "POST", body: formData });
+      }
+
+      const data = await res.json().catch(() => ({ error: "Upload failed" }));
+      if (!res.ok) { toast.error(data.error || "Upload failed"); setUploading(false); setProgress(null); return; }
       setUploadResult(data);
       toast.success("Files uploaded successfully");
       setStep(2);
-    } catch {
-      toast.error("Upload failed");
+    } catch (err: any) {
+      toast.error(err?.message ? `Upload failed: ${err.message}` : "Upload failed");
     }
     setUploading(false);
+    setProgress(null);
   };
 
   const handleSubmit = async () => {
@@ -98,7 +153,7 @@ export default function UploadPage() {
           ...form,
           price: parseFloat(form.price),
           tags: form.tags.split(",").map(t => t.trim()).filter(Boolean),
-          ...uploadResult,
+          uploadReceipt: uploadResult?.uploadReceipt,
         }),
       });
       const data = await res.json();
@@ -160,7 +215,9 @@ export default function UploadPage() {
 
             <div className="flex justify-end">
               <Button onClick={handleUpload} loading={uploading} disabled={!modelFile}>
-                {uploading ? "Uploading..." : "Upload & Continue"}
+                {uploading
+                  ? (progress !== null && progress < 100 ? `Uploading... ${progress}%` : "Checking file...")
+                  : "Upload & Continue"}
               </Button>
             </div>
           </CardContent>

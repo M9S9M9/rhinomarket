@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { slugify, normalizeListing, toPublicListing } from "@/lib/utils";
+import { verifyUploadReceipt } from "@/lib/upload-receipt";
 import { checkRateLimit, getRateLimitKey } from "@/lib/rate-limit";
 import { validateApiRequest } from "@/lib/validate-request";
 
@@ -90,9 +91,25 @@ export async function POST(req: Request) {
     const body = await req.json();
     const {
       title, description, tags, categoryId, price, licenseType,
-      fileUrl, fileSize, fileHash, previewUrls, thumbnailUrl,
-      polyCount, rhinocerosVersion, copyrightConfirmed,
+      polyCount, rhinocerosVersion, copyrightConfirmed, uploadReceipt,
     } = body;
+
+    // The model file and images must come from this designer's own checked upload.
+    // File details are taken from the signed receipt, never from the request body.
+    const receipt = verifyUploadReceipt(uploadReceipt, session.user.id);
+    if (!receipt) {
+      return NextResponse.json(
+        { error: "Upload not found or expired. Please upload your model file again." },
+        { status: 400 }
+      );
+    }
+    const alreadyListed = await prisma.listing.findFirst({
+      where: { fileUrl: receipt.fileUrl },
+      select: { id: true },
+    });
+    if (alreadyListed) {
+      return NextResponse.json({ error: "This uploaded file is already used by a listing" }, { status: 409 });
+    }
 
     if (!copyrightConfirmed) {
       return NextResponse.json({ error: "You must confirm copyright ownership" }, { status: 400 });
@@ -116,9 +133,11 @@ export async function POST(req: Request) {
         price: parsedPrice,
         licenseType: licenseType || "PERSONAL",
         status: "PENDING_REVIEW",
-        fileUrl, fileSize: fileSize ? parseInt(fileSize) : null,
-        fileHash, previewUrls: previewUrls || [],
-        thumbnailUrl,
+        fileUrl: receipt.fileUrl,
+        fileSize: receipt.fileSize,
+        fileHash: receipt.fileHash,
+        previewUrls: receipt.previewUrls,
+        thumbnailUrl: receipt.thumbnailUrl,
         polyCount: polyCount ? parseInt(polyCount) : null,
         rhinocerosVersion,
         copyrightConfirmed,

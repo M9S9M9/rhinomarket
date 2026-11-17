@@ -213,7 +213,7 @@ export async function readModelFile(fileUrl: string): Promise<Buffer | null> {
     const modelsAuth = getModelsBlobAuth();
     if (!modelsAuth) throw new Error("Private model store is not connected (BLOB_MODELS_STORE_ID missing)");
     const { get } = await import("@vercel/blob");
-    const result = await get(fileUrl, { access: "private", ...modelsAuth });
+    const result = await get(fileUrl, { access: "private", useCache: false, ...modelsAuth });
     if (!result || result.statusCode !== 200) return null;
     return Buffer.from(await new Response(result.stream).arrayBuffer());
   }
@@ -228,4 +228,43 @@ export async function readModelFile(fileUrl: string): Promise<Buffer | null> {
   const filePath = getModelPath(fileUrl);
   if (!existsSync(filePath)) return null;
   return readFile(filePath);
+}
+
+/**
+ * True if `url` points at a model file in OUR private model store, under models/.
+ * Used to make sure browser-uploaded files really live in our store.
+ */
+export function isOwnPrivateModelUrl(url: string): boolean {
+  let u: URL;
+  try {
+    u = new URL(url);
+  } catch {
+    return false;
+  }
+  if (u.protocol !== "https:" || !u.hostname.endsWith(".private.blob.vercel-storage.com")) return false;
+  if (!/^\/models\/[0-9a-f-]{36}\.3dm$/i.test(u.pathname)) return false;
+
+  const storeId = process.env.BLOB_MODELS_STORE_ID;
+  if (storeId) {
+    const expected = storeId.replace(/^store_/, "").toLowerCase();
+    return u.hostname.split(".")[0].toLowerCase() === expected;
+  }
+  const auth = getModelsBlobAuth();
+  if (auth && "token" in auth) {
+    const fromToken = auth.token.split("_")[3];
+    return !!fromToken && u.hostname.split(".")[0].toLowerCase() === fromToken.toLowerCase();
+  }
+  return false;
+}
+
+/** Deletes a model file from the private store (best effort). */
+export async function deleteModelFile(url: string): Promise<void> {
+  const auth = getModelsBlobAuth();
+  if (!auth) return;
+  try {
+    const { del } = await import("@vercel/blob");
+    await del(url, auth);
+  } catch (err) {
+    console.error("Failed to delete model file:", err);
+  }
 }

@@ -1,31 +1,17 @@
 import { NextRequest, NextResponse } from "next/server";
-import { auth } from "@/lib/auth";
-import { prisma } from "@/lib/db";
 import { validateFile, saveModelFile, savePreviewImage } from "@/lib/upload";
-import { extractMetadata } from "@/lib/metadata";
-import { createHash } from "crypto";
+import { checkModelBuffer } from "@/lib/model-check";
+import { createUploadReceipt } from "@/lib/upload-receipt";
+import { requireUploadingDesigner } from "@/lib/designer-guard";
+
+// Classic upload: the file is sent through this function. On Vercel this only works for
+// small files (request body limit ≈4.5 MB); the upload page uses the direct-to-storage
+// flow (/api/upload/model + /api/upload/finalize) whenever private storage is configured.
 
 export async function POST(req: NextRequest) {
-  const session = await auth();
-  if (!session?.user?.id) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
-
-  const user = await prisma.user.findUnique({ where: { id: session.user.id } });
-  if (user?.role !== "DESIGNER") {
-    return NextResponse.json({ error: "Only designers can upload files" }, { status: 403 });
-  }
-  if (!user?.isActive) {
-    return NextResponse.json({ error: "Account restricted. Contact support." }, { status: 403 });
-  }
-
-  // Enforce upload limit
-  const listingCount = await prisma.listing.count({ where: { designerId: user.id } });
-  if (listingCount >= user.uploadLimit) {
-    return NextResponse.json({
-      error: `Upload limit reached (${user.uploadLimit}). Contact an admin to increase your limit.`,
-    }, { status: 403 });
-  }
+  const guard = await requireUploadingDesigner();
+  if (!guard.ok) return guard.response;
+  const designerId = guard.user.id;
 
   try {
     const formData = await req.formData();
@@ -36,35 +22,9 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "No file provided" }, { status: 400 });
     }
 
-    const validation = validateFile({
-      name: file.name,
-      size: file.size,
-    });
-
+    const validation = validateFile({ name: file.name, size: file.size });
     if (!validation.valid) {
       return NextResponse.json({ error: validation.error }, { status: 400 });
-    }
-
-    const buffer = Buffer.from(await file.arrayBuffer());
-
-    // Check for embedded buyer metadata (forensic watermark from a prior download)
-    const metadata = extractMetadata(buffer);
-    if (metadata) {
-      return NextResponse.json({
-        error: `This file was originally downloaded by ${metadata.buyerName} (${metadata.buyerEmail}). Re-uploading purchased files is a violation of our terms. If you believe this is a mistake, contact support.`,
-      }, { status: 409 });
-    }
-
-    // Check for duplicates BEFORE storing anything, so rejected uploads leave no orphan files.
-    const fileHash = createHash("sha256").update(buffer).digest("hex");
-    const existing = await prisma.listing.findFirst({
-      where: { fileHash, designerId: { not: session.user.id } },
-      include: { designer: { select: { name: true } } },
-    });
-    if (existing) {
-      return NextResponse.json({
-        error: `This file appears to already exist in another listing by ${existing.designer.name}. If you believe this is a mistake, contact support.`,
-      }, { status: 409 });
     }
 
     // Validate every preview before storing any file.
@@ -77,21 +37,39 @@ export async function POST(req: NextRequest) {
       }
     }
 
+    const buffer = Buffer.from(await file.arrayBuffer());
+
+    // Real .3dm file, not a re-uploaded purchase, not a duplicate of another designer's file.
+    const check = await checkModelBuffer(buffer, designerId);
+    if (!check.ok) {
+      return NextResponse.json({ error: check.error }, { status: check.status });
+    }
+
     const { url, hash, size } = await saveModelFile(buffer, file.name);
 
     const previewUrls: string[] = [];
     for (let i = 0; i < previews.length; i++) {
       const previewBuffer = Buffer.from(await previews[i].arrayBuffer());
-      const previewUrl = await savePreviewImage(previewBuffer, i);
-      previewUrls.push(previewUrl);
+      previewUrls.push(await savePreviewImage(previewBuffer, i));
     }
+    const thumbnailUrl = previewUrls[0] || null;
+
+    const uploadReceipt = createUploadReceipt({
+      userId: designerId,
+      fileUrl: url,
+      fileHash: hash,
+      fileSize: size,
+      previewUrls,
+      thumbnailUrl,
+    });
 
     return NextResponse.json({
       fileUrl: url,
       fileHash: hash,
       fileSize: size,
       previewUrls,
-      thumbnailUrl: previewUrls[0] || null,
+      thumbnailUrl,
+      uploadReceipt,
     });
   } catch (error) {
     console.error("Upload error:", error);
