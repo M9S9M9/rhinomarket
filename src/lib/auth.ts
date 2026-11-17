@@ -119,6 +119,17 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       if (user) {
         token.role = (user as any).role;
         token.id = user.id;
+        return token;
+      }
+      // On every request, re-check the account so that deactivating a user or
+      // changing their role takes effect immediately, not when the session expires.
+      if (token.id) {
+        const current = await prisma.user.findUnique({
+          where: { id: token.id as string },
+          select: { isActive: true, role: true },
+        });
+        if (!current || !current.isActive) return null; // ends the session
+        token.role = current.role;
       }
       return token;
     },

@@ -75,6 +75,31 @@ export function checkLoginCode(email: string, code: string): Promise<CodeCheck> 
   return checkVerificationCode(loginKey(email), code);
 }
 
+// ── Payout wallet changes ──────────────────────────────────────────────────────
+
+// The code is bound to the exact new address, so it can't be reused for another one.
+const walletKey = (email: string, address: string) => `wallet:${email}:${address.toLowerCase()}`;
+
+export async function sendWalletChangeCode(
+  email: string,
+  name: string | null | undefined,
+  address: string
+): Promise<"sent" | "recent"> {
+  const key = walletKey(email, address);
+  if ((await secondsUntilResend(key)) > 0) return "recent";
+  const code = await createCode(key);
+  await sendEmail({
+    to: email,
+    subject: `${code} is your code to change your payout wallet`,
+    html: getWalletCodeEmailHtml(code, name, address),
+  });
+  return "sent";
+}
+
+export function checkWalletChangeCode(email: string, address: string, code: string): Promise<CodeCheck> {
+  return checkVerificationCode(walletKey(email, address), code);
+}
+
 export type CodeCheck = "ok" | "invalid" | "expired" | "too_many_attempts" | "no_code";
 
 /** Checks a code; counts wrong attempts and deletes the code once used. */
@@ -135,5 +160,36 @@ export function getLoginCodeEmailHtml(code: string, name?: string | null): strin
     <p>Someone (hopefully you) entered the correct password for your 3DM Store admin account. Enter this code to finish signing in:</p>
     <p style="font-size:32px;font-weight:bold;letter-spacing:8px;margin:24px 0;padding:16px;background:#f3f4f6;border-radius:8px;text-align:center">${code}</p>
     <p style="color:#555">The code expires in 10 minutes. <strong>If this wasn't you, change your password now</strong> — your password is known to someone else.</p>
+  </div>`;
+}
+
+function shortAddress(a: string): string {
+  return `${a.slice(0, 6)}…${a.slice(-4)}`;
+}
+
+export function getWalletCodeEmailHtml(code: string, name: string | null | undefined, address: string): string {
+  const greeting = name ? `Hi ${escapeHtml(name)},` : "Hi,";
+  return `
+  <div style="font-family:Arial,Helvetica,sans-serif;max-width:480px;margin:0 auto;padding:24px;color:#111">
+    <h2 style="margin:0 0 16px">Confirm your new payout wallet</h2>
+    <p>${greeting}</p>
+    <p>Someone asked to change the wallet that receives your 3DM Store earnings to:</p>
+    <p style="font-family:monospace;background:#f3f4f6;padding:10px;border-radius:6px;word-break:break-all">${escapeHtml(address)}</p>
+    <p>If that's you, enter this code:</p>
+    <p style="font-size:32px;font-weight:bold;letter-spacing:8px;margin:24px 0;padding:16px;background:#f3f4f6;border-radius:8px;text-align:center">${code}</p>
+    <p style="color:#b91c1c"><strong>If this wasn't you, don't share this code — change your password right away.</strong></p>
+    <p style="color:#555">The code expires in 10 minutes.</p>
+  </div>`;
+}
+
+export function getWalletChangedEmailHtml(name: string | null | undefined, address: string): string {
+  const greeting = name ? `Hi ${escapeHtml(name)},` : "Hi,";
+  return `
+  <div style="font-family:Arial,Helvetica,sans-serif;max-width:480px;margin:0 auto;padding:24px;color:#111">
+    <h2 style="margin:0 0 16px">Your payout wallet was changed</h2>
+    <p>${greeting}</p>
+    <p>The wallet that receives your 3DM Store earnings is now <strong style="font-family:monospace">${escapeHtml(shortAddress(address))}</strong>.</p>
+    <p>For your security, automatic payouts are paused for 24 hours after a change.</p>
+    <p style="color:#b91c1c"><strong>If you didn't make this change, contact support immediately and change your password.</strong></p>
   </div>`;
 }

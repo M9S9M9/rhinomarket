@@ -39,6 +39,11 @@ export default function EarningsPage() {
   const [loading, setLoading] = useState(true);
   const [showWalletForm, setShowWalletForm] = useState(false);
   const [walletAddress, setWalletAddress] = useState("");
+  // Changing the wallet needs a code emailed to the designer.
+  const [walletStep, setWalletStep] = useState<"address" | "code">("address");
+  const [walletCode, setWalletCode] = useState("");
+  const [walletBusy, setWalletBusy] = useState(false);
+  const [walletError, setWalletError] = useState("");
 
   useEffect(() => {
     if (status === "unauthenticated") { router.push("/auth/login"); return; }
@@ -51,23 +56,51 @@ export default function EarningsPage() {
     }
   }, [status, router]);
 
-  const handleSaveWallet = async () => {
-    if (!walletAddress.trim()) { toast.error("Wallet address required"); return; }
+  const openWalletForm = () => {
+    setWalletAddress("");
+    setWalletCode("");
+    setWalletError("");
+    setWalletStep("address");
+    setShowWalletForm(true);
+  };
+
+  const walletRequest = async (body: Record<string, string>) => {
+    setWalletBusy(true);
+    setWalletError("");
     try {
-      const res = await fetch("/api/users/profile", {
-        method: "PATCH",
+      const res = await fetch("/api/users/payout-wallet", {
+        method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ payoutWalletAddress: walletAddress.trim() }),
+        body: JSON.stringify(body),
       });
-      if (res.ok) {
-        toast.success("Wallet address saved");
-        setShowWalletForm(false);
-        setStats(prev => prev ? { ...prev, payoutWalletAddress: walletAddress.trim() } : prev);
-      } else {
-        const d = await res.json();
-        toast.error(d.error || "Failed to save");
-      }
-    } catch { toast.error("Failed to save wallet address"); }
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) { setWalletError(data.error || "Something went wrong"); return null; }
+      return data;
+    } catch {
+      setWalletError("Something went wrong. Please try again.");
+      return null;
+    } finally {
+      setWalletBusy(false);
+    }
+  };
+
+  const handleSendWalletCode = async () => {
+    const address = walletAddress.trim();
+    if (!/^0x[0-9a-fA-F]{40}$/.test(address)) {
+      setWalletError("Enter a valid USDT (BEP-20) address: 0x followed by 40 characters.");
+      return;
+    }
+    const data = await walletRequest({ action: "request-code", address });
+    if (data) { toast.success(data.message || "Code sent"); setWalletStep("code"); }
+  };
+
+  const handleConfirmWallet = async () => {
+    const data = await walletRequest({ action: "confirm", address: walletAddress.trim(), code: walletCode.trim() });
+    if (data) {
+      toast.success("Payout wallet updated. Automatic payouts resume in 24 hours.");
+      setShowWalletForm(false);
+      setStats(prev => prev ? { ...prev, payoutWalletAddress: data.payoutWalletAddress } : prev);
+    }
   };
 
   if (loading) return <div className="p-8 text-center text-gray-500">Loading...</div>;
@@ -115,10 +148,10 @@ export default function EarningsPage() {
           {stats?.payoutWalletAddress ? (
             <div className="flex items-center gap-2">
               <Badge variant="success" className="px-3 py-1">Connected</Badge>
-              <Button variant="outline" size="sm" onClick={() => setShowWalletForm(true)}>Update</Button>
+              <Button variant="outline" size="sm" onClick={openWalletForm}>Update</Button>
             </div>
           ) : (
-            <Button onClick={() => setShowWalletForm(true)}>
+            <Button onClick={openWalletForm}>
               Set Wallet <ExternalLink className="ml-2 h-4 w-4" />
             </Button>
           )}
@@ -130,18 +163,45 @@ export default function EarningsPage() {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50" onClick={() => setShowWalletForm(false)}>
           <div className="bg-white rounded-2xl p-6 max-w-md w-full mx-4 shadow-xl" onClick={e => e.stopPropagation()}>
             <h2 className="text-lg font-bold text-gray-900 mb-2">Set Payout Wallet</h2>
-            <p className="text-sm text-gray-500 mb-4">Enter your USDT (BSC) wallet address to receive payouts.</p>
-            <input
-              type="text"
-              value={walletAddress}
-              onChange={e => setWalletAddress(e.target.value)}
-              placeholder="0x... or wallet address"
-              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-gray-500 focus:outline-none mb-4"
-            />
-            <div className="flex gap-3">
-              <Button variant="outline" className="flex-1" onClick={() => setShowWalletForm(false)}>Cancel</Button>
-              <Button className="flex-1" onClick={handleSaveWallet}>Save</Button>
-            </div>
+            {walletStep === "address" ? (
+              <>
+                <p className="text-sm text-gray-500 mb-4">
+                  Enter your USDT (BEP-20, BNB Smart Chain) wallet address. For your security we&apos;ll email you a code to confirm the change.
+                </p>
+                <input
+                  type="text"
+                  value={walletAddress}
+                  onChange={e => setWalletAddress(e.target.value)}
+                  placeholder="0x..."
+                  className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm font-mono focus:border-gray-500 focus:outline-none mb-3"
+                />
+                {walletError && <p className="text-sm text-red-600 mb-3">{walletError}</p>}
+                <div className="flex gap-3">
+                  <Button variant="outline" className="flex-1" onClick={() => setShowWalletForm(false)}>Cancel</Button>
+                  <Button className="flex-1" loading={walletBusy} onClick={handleSendWalletCode}>Send code</Button>
+                </div>
+              </>
+            ) : (
+              <>
+                <p className="text-sm text-gray-500 mb-2">Enter the 6-digit code we emailed you to confirm this wallet:</p>
+                <p className="text-xs font-mono bg-gray-50 border rounded px-2 py-1 mb-4 break-all">{walletAddress.trim()}</p>
+                <input
+                  inputMode="numeric"
+                  autoComplete="one-time-code"
+                  maxLength={6}
+                  value={walletCode}
+                  onChange={e => setWalletCode(e.target.value.replace(/\D/g, "").slice(0, 6))}
+                  placeholder="000000"
+                  className="w-full rounded-lg border border-gray-300 px-3 py-2 text-center text-xl font-semibold tracking-[0.4em] focus:border-gray-500 focus:outline-none mb-3"
+                />
+                {walletError && <p className="text-sm text-red-600 mb-3">{walletError}</p>}
+                <p className="text-xs text-gray-400 mb-4">Automatic payouts pause for 24 hours after a wallet change.</p>
+                <div className="flex gap-3">
+                  <Button variant="outline" className="flex-1" onClick={() => { setWalletStep("address"); setWalletError(""); }}>Back</Button>
+                  <Button className="flex-1" loading={walletBusy} disabled={walletCode.length !== 6} onClick={handleConfirmWallet}>Confirm</Button>
+                </div>
+              </>
+            )}
           </div>
         </div>
       )}

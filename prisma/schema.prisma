@@ -83,6 +83,7 @@ model User {
   // Crypto payouts (USDT BSC)
   payoutWalletAddress  String?
   payoutWalletCurrency String  @default("USDT")
+  payoutWalletChangedAt DateTime? // auto-payouts wait 24h after a change
 
   // Designer-specific
   designerApplication DesignerApplication?

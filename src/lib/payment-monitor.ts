@@ -218,7 +218,7 @@ export async function payoutDesigner(transactionId: string): Promise<boolean> {
   const transaction = await prisma.transaction.findUnique({
     where: { id: transactionId },
     include: {
-      designer: { select: { payoutWalletAddress: true } },
+      designer: { select: { payoutWalletAddress: true, payoutWalletChangedAt: true } },
       listing: { select: { title: true } },
     },
   });
@@ -228,6 +228,11 @@ export async function payoutDesigner(transactionId: string): Promise<boolean> {
 
   const designerWallet = transaction.designer.payoutWalletAddress;
   if (!designerWallet) return false;
+
+  // Security hold: no automatic payout within 24h of a wallet change, so a designer
+  // whose account was taken over has time to react to the "wallet changed" email.
+  const changedAt = transaction.designer.payoutWalletChangedAt;
+  if (changedAt && Date.now() - changedAt.getTime() < 24 * 60 * 60 * 1000) return false;
 
   const payoutAmount = Number(transaction.designerEarning);
   if (payoutAmount <= 0) return false;
