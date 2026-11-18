@@ -26,9 +26,9 @@ export function WalletHelp() {
           <div>
             <p className="font-semibold text-gray-900 text-sm mb-1">Option 1 — a free wallet app (about 5 minutes)</p>
             <ol className="list-decimal pl-4 space-y-1">
-              <li>Install a wallet app that supports BNB Smart Chain, such as <strong>Trust Wallet</strong> or <strong>MetaMask</strong>, from your phone&apos;s official app store or the wallet&apos;s official website.</li>
+              <li>Install <strong>Trust Wallet</strong> from your phone&apos;s official app store or the official website, trustwallet.com.</li>
               <li>Choose <strong>Create a new wallet</strong>. Write the recovery phrase (12 words) on paper and keep it somewhere safe.</li>
-              <li>Find <strong>USDT on BNB Smart Chain (BEP-20)</strong> and tap <strong>Receive</strong>. In MetaMask, switch the network to BNB Smart Chain first.</li>
+              <li>Find <strong>USDT on BNB Smart Chain (BEP-20)</strong> and tap <strong>Receive</strong>.</li>
               <li>Copy the address — it starts with <span className="font-mono">0x</span> and is 42 characters long — and paste it here.</li>
             </ol>
           </div>

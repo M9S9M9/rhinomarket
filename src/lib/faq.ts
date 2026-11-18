@@ -121,7 +121,7 @@ export const FAQ: FaqSection[] = [
       },
       {
         q: "I don't have a USDT wallet. How do I get one?",
-        a: "Install a free wallet app that supports BNB Smart Chain, such as Trust Wallet or MetaMask, from your phone's official app store. Create a new wallet and write the 12-word recovery phrase on paper — never share it with anyone; 3DM Store will never ask for it. Then open USDT on BNB Smart Chain (BEP-20), tap Receive and copy the address that starts with 0x. If you use an exchange such as Binance, you can instead use its USDT deposit address on the BNB Smart Chain (BEP-20) network. Addresses from other networks won't work.",
+        a: "Install the free Trust Wallet app from your phone's official app store. Create a new wallet and write the 12-word recovery phrase on paper — never share it with anyone; 3DM Store will never ask for it. Then open USDT on BNB Smart Chain (BEP-20), tap Receive and copy the address that starts with 0x. If you use an exchange such as Binance, you can instead use its USDT deposit address on the BNB Smart Chain (BEP-20) network. Addresses from other networks won't work.",
       },
       {
         q: "How do I change my payout wallet?",
