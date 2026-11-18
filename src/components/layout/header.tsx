@@ -64,8 +64,12 @@ export function Header() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
-          <Link href="/" className="flex items-center">
-            <img src="/logo.png" alt="3DM Store" className="h-10 w-auto" />
+          <Link href="/" className="flex items-center gap-2.5 shrink-0" aria-label="3DM Store home">
+            <img src="/logo.png" alt="" className="h-10 w-auto" />
+            <span className="text-xl tracking-tight whitespace-nowrap">
+              <span className="font-bold text-gray-900">3DM</span>{" "}
+              <span className="font-normal text-gray-500">Store</span>
+            </span>
           </Link>
 
           {/* Navigation */}
