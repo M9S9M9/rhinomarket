@@ -28,14 +28,6 @@ export const FAQ: FaqSection[] = [
         a: "Yes. Creating an account is free and takes a minute: sign up with your Gmail address and enter the 6-digit code we email you. [Create an account](/auth/register).",
       },
       {
-        q: "Why can I only sign up with a Gmail address?",
-        a: "Every account is confirmed with a code sent to its Gmail inbox. Limiting sign-up to verified Gmail addresses keeps fake and throwaway accounts off the marketplace, which protects both buyers and designers.",
-      },
-      {
-        q: "Which version of Rhino do I need?",
-        a: "Check the Rhino version on the listing. Rhino opens files saved in its own version or earlier versions, so a model saved in Rhino 8 may not open in Rhino 7 or older.",
-      },
-      {
         q: "Can I see a model before buying?",
         a: "Each listing has preview images, a description and details such as file size and Rhino version. You can also read reviews from buyers who purchased it.",
       },
@@ -51,16 +43,8 @@ export const FAQ: FaqSection[] = [
         a: "All payments are in USDT on BNB Smart Chain (BEP-20). Click Buy Now, and the checkout page shows the exact amount and our wallet address. Send exactly that amount of USDT on BNB Smart Chain from your wallet or exchange, then paste the transaction hash on the checkout page. Your payment is checked directly on the blockchain.",
       },
       {
-        q: "Why only USDT?",
-        a: "USDT lets anyone, in any country, buy and sell .3dm files without needing a card or a bank account that works internationally. For now, USDT on BNB Smart Chain is the only payment method.",
-      },
-      {
         q: "Which network should I use?",
         a: "BNB Smart Chain (BEP-20) only. Do not send USDT on Tron (TRC-20), Ethereum (ERC-20) or any other network — payments sent on the wrong network cannot be recovered or refunded.",
-      },
-      {
-        q: "Do I need BNB as well?",
-        a: "If you send from your own wallet, yes — a small amount of BNB pays the network fee. If you withdraw from an exchange, the exchange usually takes its withdrawal fee from your balance instead.",
       },
       {
         q: "How long does it take for my payment to be confirmed?",
@@ -69,10 +53,6 @@ export const FAQ: FaqSection[] = [
       {
         q: "I sent the wrong amount. What happens?",
         a: "Open a [support ticket](/dashboard/support) with your transaction hash and we will refund you. Please double-check the amount and network before sending to avoid delays.",
-      },
-      {
-        q: "Can I use the same transaction for two purchases?",
-        a: "No. Each blockchain payment can only be used for one order. Make a separate payment for every model you buy.",
       },
     ],
   },
@@ -86,16 +66,8 @@ export const FAQ: FaqSection[] = [
         a: "In [My Purchases](/dashboard/purchases) on your dashboard, as soon as your payment is confirmed. You can download your purchased files again at any time.",
       },
       {
-        q: "Why is my download tagged to my account?",
-        a: "Every download carries hidden details of the buyer's account and order. This protects designers from piracy and doesn't change the model itself.",
-      },
-      {
         q: "What's the difference between Personal, Commercial and Exclusive licenses?",
         a: "Personal: for personal, non-commercial projects. Commercial: also lets you use the model in commercial products, client projects and marketing. Exclusive: the design is yours alone and the model is removed from the marketplace. None of them allow reselling or sharing the original file. Full details: [License Types](/licenses).",
-      },
-      {
-        q: "Can I resell or share a model I bought?",
-        a: "No. Licenses don't allow reselling, sharing or redistributing the original file. Re-uploading purchased files to 3DM Store is detected and blocked.",
       },
       {
         q: "Can I get a refund?",
@@ -119,10 +91,6 @@ export const FAQ: FaqSection[] = [
       {
         q: "Is there a minimum price?",
         a: "No. You set your own prices, with no minimum.",
-      },
-      {
-        q: "What can I upload?",
-        a: "One .3dm file per listing (up to 100 MB) and 1–10 preview images in JPG or PNG — the first image is the cover. Every listing is reviewed by our team before it goes live.",
       },
       {
         q: "How many models can I list?",
@@ -155,10 +123,6 @@ export const FAQ: FaqSection[] = [
         q: "How do I change my payout wallet?",
         a: "Go to [Earnings](/dashboard/designer/earnings), click Update next to your wallet and enter the new address. For your security we email you a code to confirm the change, send you a notice afterwards, and pause automatic payouts for 24 hours.",
       },
-      {
-        q: "Why are my payouts paused after changing my wallet?",
-        a: "If someone ever got into your account and changed the wallet, the 24-hour pause gives you time to see our email and contact us before any money is sent. Payouts resume automatically afterwards.",
-      },
     ],
   },
   {
@@ -173,10 +137,6 @@ export const FAQ: FaqSection[] = [
       {
         q: "I forgot my password.",
         a: "Use [Forgot password](/auth/forgot-password) on the sign-in page and we'll email you a link to set a new one.",
-      },
-      {
-        q: "My account is locked.",
-        a: "After too many wrong passwords, sign-in is paused for 15 minutes to protect your account. Wait and try again, or reset your password.",
       },
     ],
   },
