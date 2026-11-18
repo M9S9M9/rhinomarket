@@ -29,12 +29,6 @@ interface Category {
   _count: { listings: number };
 }
 
-interface SiteStats {
-  totalListings: number;
-  totalDesigners: number;
-  totalTransactions: number;
-}
-
 interface Designer {
   id: string; name: string | null; avatarUrl: string | null;
   username: string | null; _count: { sales: number };
@@ -63,7 +57,6 @@ export default function HomePage() {
   const [featured, setFeatured] = useState<Listing[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
-  const [stats, setStats] = useState<SiteStats>({ totalListings: 0, totalDesigners: 0, totalTransactions: 0 });
   const [followingListings, setFollowingListings] = useState<Listing[]>([]);
   const [newListings, setNewListings] = useState<Listing[]>([]);
   const [topDesigners, setTopDesigners] = useState<Designer[]>([]);
@@ -77,12 +70,6 @@ export default function HomePage() {
       .then(r => r.json())
       .then(setCategories)
       .catch(() => {});
-    Promise.all([
-      fetch("/api/listings?limit=1").then(r => r.json()),
-      fetch("/api/categories").then(r => r.json()),
-    ]).then(([listingsRes]) => {
-      setStats(prev => ({ ...prev, totalListings: listingsRes.total || 0 }));
-    }).catch(() => {});
     fetch("/api/listings?sort=newest&limit=8")
       .then(r => r.json())
       .then(d => setNewListings(d.listings || []))
@@ -183,30 +170,6 @@ export default function HomePage() {
                 </StaggerItem>
               );
             })}
-          </StaggerContainer>
-        </div>
-      </section>
-      </AnimatedSection>
-
-      {/* ── Real Stats ── */}
-      <AnimatedSection>
-      <section className="bg-gray-50 border-b border-gray-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
-          <StaggerContainer className="grid grid-cols-2 md:grid-cols-4 gap-8">
-            {[
-              { icon: FileText, label: "Models available", value: (stats.totalListings || 0).toLocaleString() },
-              { icon: Shield, label: "Checked on-chain", value: "USDT" },
-              { icon: Lock, label: "Private file storage", value: "Protected" },
-              { icon: Users, label: "Verified accounts", value: "Gmail" },
-            ].map(stat => (
-              <StaggerItem key={stat.label}>
-                <div className="text-center">
-                  <stat.icon className="h-6 w-6 text-gray-600 mx-auto mb-2" />
-                  <div className="text-2xl font-bold text-gray-900">{stat.value}</div>
-                  <div className="text-sm text-gray-500">{stat.label}</div>
-                </div>
-              </StaggerItem>
-            ))}
           </StaggerContainer>
         </div>
       </section>
