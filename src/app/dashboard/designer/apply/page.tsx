@@ -55,7 +55,24 @@ export default function DesignerApplyPage() {
 
   if (existing) {
     return (
-      <div className="max-w-2xl mx-auto px-4 py-8">
+      <div className="max-w-3xl mx-auto px-4 py-8">
+        {existing.status !== "REJECTED" && (
+          <div className="mb-6">
+            <h1 className="text-2xl font-bold text-gray-900 mb-1">Welcome to 3DM Store, designer!</h1>
+            <p className="text-gray-500 mb-4">Watch this short video to see how to upload your models, sell them and earn money.</p>
+            <video
+              className="w-full rounded-2xl border border-gray-200 shadow-sm bg-gray-100"
+              src="/videos/designer-welcome.mp4"
+              poster="/videos/designer-welcome-poster.jpg"
+              controls
+              autoPlay
+              muted
+              playsInline
+              preload="metadata"
+              aria-label="How to upload, sell and earn on 3DM Store"
+            />
+          </div>
+        )}
         <Card><CardContent className="p-8 text-center">
           <h2 className="text-xl font-bold text-gray-900 mb-4">Application Status</h2>
           <Badge variant={existing.status === "PENDING" ? "warning" : existing.status === "APPROVED" ? "success" : "danger"} className="text-base px-4 py-1">
