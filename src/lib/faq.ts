@@ -120,6 +120,10 @@ export const FAQ: FaqSection[] = [
         a: "Automatically. Once a buyer's payment is confirmed on the blockchain, your share is sent in USDT (BEP-20) to your payout wallet.",
       },
       {
+        q: "I don't have a USDT wallet. How do I get one?",
+        a: "Install a free wallet app that supports BNB Smart Chain, such as Trust Wallet or MetaMask, from your phone's official app store. Create a new wallet and write the 12-word recovery phrase on paper — never share it with anyone; 3DM Store will never ask for it. Then open USDT on BNB Smart Chain (BEP-20), tap Receive and copy the address that starts with 0x. If you use an exchange such as Binance, you can instead use its USDT deposit address on the BNB Smart Chain (BEP-20) network. Addresses from other networks won't work.",
+      },
+      {
         q: "How do I change my payout wallet?",
         a: "Go to [Earnings](/dashboard/designer/earnings), click Update next to your wallet and enter the new address. For your security we email you a code to confirm the change, send you a notice afterwards, and pause automatic payouts for 24 hours.",
       },

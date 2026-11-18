@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { formatPrice, formatDate } from "@/lib/utils";
 import { DollarSign, Wallet, CheckCircle, XCircle, ExternalLink } from "lucide-react";
+import { WalletHelp } from "@/components/designer/wallet-help";
 import toast from "react-hot-toast";
 
 interface Transaction {
@@ -176,6 +177,7 @@ export default function EarningsPage() {
                   className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm font-mono focus:border-gray-500 focus:outline-none mb-3"
                 />
                 {walletError && <p className="text-sm text-red-600 mb-3">{walletError}</p>}
+                <div className="mb-4 -mt-1"><WalletHelp /></div>
                 <div className="flex gap-3">
                   <Button variant="outline" className="flex-1" onClick={() => setShowWalletForm(false)}>Cancel</Button>
                   <Button className="flex-1" loading={walletBusy} onClick={handleSendWalletCode}>Send code</Button>

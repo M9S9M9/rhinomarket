@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { WalletHelp } from "@/components/designer/wallet-help";
 import toast from "react-hot-toast";
 
 export default function DesignerApplyPage() {
@@ -102,6 +103,7 @@ export default function DesignerApplyPage() {
             <div>
               <Input id="payoutWalletAddress" label="USDT (BSC) Wallet Address *" value={form.payoutWalletAddress} onChange={e => setForm({...form, payoutWalletAddress: e.target.value})} placeholder="0x..." />
               <p className="text-xs text-gray-400 mt-1">You will receive your designer earnings here as USDT on the BNB Smart Chain (BEP-20)</p>
+              <WalletHelp />
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">3D Design Experience *</label>

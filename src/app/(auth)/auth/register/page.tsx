@@ -6,6 +6,7 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
+import { WalletHelp } from "@/components/designer/wallet-help";
 import toast from "react-hot-toast";
 import { signIn } from "next-auth/react";
 import { VerifyCodeForm } from "@/components/auth/verify-code-form";
@@ -158,6 +159,7 @@ function RegisterForm() {
                     error={errors.payoutWalletAddress} required autoComplete="off" spellCheck={false}
                   />
                   <p className="text-xs text-gray-500 mt-1">Your earnings are sent here as USDT on BNB Smart Chain.</p>
+                  <WalletHelp />
                 </div>
                 <Input
                   id="portfolioUrl" label="Portfolio link (optional)" type="url" placeholder="https://your-portfolio.com"
