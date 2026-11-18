@@ -187,6 +187,12 @@ function LoginForm() {
             Create one
           </Link>
         </p>
+        <p className="text-center text-sm text-gray-500 mt-2">
+          Want to sell your models?{" "}
+          <Link href="/auth/register?designer=1" className="text-gray-600 hover:text-gray-700 font-medium">
+            Sign up as a designer
+          </Link>
+        </p>
       </Card>
     </div>
   );

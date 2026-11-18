@@ -82,7 +82,7 @@ export const FAQ: FaqSection[] = [
     items: [
       {
         q: "How do I start selling?",
-        a: "Create a free account, then apply to become a designer from your [dashboard](/dashboard). Add your USDT (BEP-20) wallet address in the application. Our team reviews every application before approval.",
+        a: "When you [create your account](/auth/register?designer=1), tick \"I am a designer\" and add your USDT (BEP-20) wallet address and a few words about your Rhino experience. Already have an account? Apply from your [profile](/dashboard/profile). Our team reviews every application before you can upload models.",
       },
       {
         q: "How much does it cost to sell?",

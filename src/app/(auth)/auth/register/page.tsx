@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { Suspense, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -11,7 +11,18 @@ import { signIn } from "next-auth/react";
 import { VerifyCodeForm } from "@/components/auth/verify-code-form";
 
 export default function RegisterPage() {
+  return (
+    <Suspense fallback={null}>
+      <RegisterForm />
+    </Suspense>
+  );
+}
+
+function RegisterForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const [isDesigner, setIsDesigner] = useState(searchParams.get("designer") === "1");
+  const [designer, setDesigner] = useState({ payoutWalletAddress: "", portfolioUrl: "", experience: "" });
   const [loading, setLoading] = useState(false);
   const [form, setForm] = useState({ name: "", email: "", password: "", confirmPassword: "" });
   const [legalConsent, setLegalConsent] = useState({ age: false, tos: false });
@@ -24,6 +35,11 @@ export default function RegisterPage() {
     if (!/^[^\s@]+@(gmail|googlemail)\.com$/i.test(form.email.trim())) errs.email = "Please use a Gmail address (@gmail.com)";
     if (form.password.length < 8) errs.password = "Password must be at least 8 characters";
     if (form.password !== form.confirmPassword) errs.confirmPassword = "Passwords do not match";
+    if (isDesigner) {
+      if (!/^0x[a-fA-F0-9]{40}$/.test(designer.payoutWalletAddress.trim())) errs.payoutWalletAddress = "Enter a valid USDT (BEP-20) wallet address: 0x followed by 40 characters";
+      if (designer.portfolioUrl.trim() && !/^https?:\/\/\S+\.\S+/.test(designer.portfolioUrl.trim())) errs.portfolioUrl = "Enter a valid link starting with https://";
+      if (designer.experience.trim().length < 20) errs.experience = "Tell us a bit more (at least 20 characters)";
+    }
     if (!legalConsent.age) errs.age = "You must be 18 or older to register";
     if (!legalConsent.tos) errs.tos = "You must accept the Terms of Service";
     setErrors(errs);
@@ -39,7 +55,7 @@ export default function RegisterPage() {
       const res = await fetch("/api/auth/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...form, legalConsent }),
+        body: JSON.stringify({ ...form, legalConsent, ...(isDesigner ? { designer } : {}) }),
       });
 
       const data = await res.json().catch(() => ({}));
@@ -73,7 +89,8 @@ export default function RegisterPage() {
                 email: verifyEmail,
                 password: form.password,
               });
-              router.push(result?.error ? "/auth/login?verified=true" : "/dashboard");
+              if (isDesigner && !result?.error) toast.success("Account created. Your designer application is now being reviewed.");
+              router.push(result?.error ? "/auth/login?verified=true" : isDesigner ? "/dashboard/designer/apply" : "/dashboard");
             }}
           />
           <p className="text-center text-sm text-gray-500 mt-6">
@@ -118,6 +135,53 @@ export default function RegisterPage() {
             error={errors.confirmPassword} required
           />
 
+          <div className="pt-2 border-t">
+            <label className="flex items-start gap-2 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={isDesigner}
+                onChange={(e) => setIsDesigner(e.target.checked)}
+                className="mt-0.5 h-4 w-4 rounded border-gray-300 text-gray-600 focus:ring-gray-500"
+              />
+              <span className="text-sm text-gray-700">
+                <span className="font-medium">I am a designer</span>
+                <span className="block text-xs text-gray-500">I want to sell my .3dm models on 3DM Store</span>
+              </span>
+            </label>
+
+            {isDesigner && (
+              <div className="mt-4 space-y-4 rounded-xl bg-gray-50 border border-gray-200 p-4">
+                <div>
+                  <Input
+                    id="payoutWalletAddress" label="USDT (BEP-20) wallet address" type="text" placeholder="0x..."
+                    value={designer.payoutWalletAddress} onChange={(e) => setDesigner({ ...designer, payoutWalletAddress: e.target.value })}
+                    error={errors.payoutWalletAddress} required autoComplete="off" spellCheck={false}
+                  />
+                  <p className="text-xs text-gray-500 mt-1">Your earnings are sent here as USDT on BNB Smart Chain.</p>
+                </div>
+                <Input
+                  id="portfolioUrl" label="Portfolio link (optional)" type="url" placeholder="https://your-portfolio.com"
+                  value={designer.portfolioUrl} onChange={(e) => setDesigner({ ...designer, portfolioUrl: e.target.value })}
+                  error={errors.portfolioUrl}
+                />
+                <div>
+                  <label htmlFor="experience" className="block text-sm font-medium text-gray-700 mb-1">Your Rhino 3D experience</label>
+                  <textarea
+                    id="experience" rows={3} required
+                    value={designer.experience} onChange={(e) => setDesigner({ ...designer, experience: e.target.value })}
+                    placeholder="What do you design in Rhino, and for how long?"
+                    className="block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-gray-500 focus:outline-none focus:ring-1 focus:ring-gray-500"
+                  />
+                  {errors.experience && <p className="text-xs text-red-600 mt-1">{errors.experience}</p>}
+                </div>
+                <p className="text-xs text-gray-500">
+                  Our team reviews every designer application. You can shop right away, and you can upload models once you&apos;re approved.
+                  By applying you accept the <Link href="/designer-agreement" target="_blank" className="underline">Designer Agreement</Link>.
+                </p>
+              </div>
+            )}
+          </div>
+
           <div className="space-y-3 pt-2 border-t">
             <label className="flex items-start gap-2 cursor-pointer">
               <input
@@ -150,7 +214,7 @@ export default function RegisterPage() {
           </div>
 
           <Button type="submit" loading={loading} className="w-full">
-            Create Account
+            {isDesigner ? "Create Designer Account" : "Create Account"}
           </Button>
         </form>
 

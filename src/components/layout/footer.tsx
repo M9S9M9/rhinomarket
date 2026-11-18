@@ -31,7 +31,7 @@ export function Footer() {
           <div>
             <h3 className="text-white font-semibold mb-4 text-sm">For Designers</h3>
             <ul className="space-y-2">
-              <li><Link href="/auth/register" className="text-sm hover:text-white transition-colors">Start Selling</Link></li>
+              <li><Link href="/auth/register?designer=1" className="text-sm hover:text-white transition-colors">Start Selling</Link></li>
               <li><Link href="/dashboard/designer" className="text-sm hover:text-white transition-colors">Designer Dashboard</Link></li>
               <li><Link href="/designer-agreement" className="text-sm hover:text-white transition-colors">Designer Agreement</Link></li>
             </ul>

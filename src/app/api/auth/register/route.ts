@@ -15,6 +15,17 @@ const registerSchema = z.object({
     .email("Enter a valid email address")
     .refine(isGmailAddress, "Please register with a Gmail address (@gmail.com)"),
   password: z.string().min(8).max(100),
+  // Optional: apply to sell at the same time ("I am a designer").
+  designer: z
+    .object({
+      payoutWalletAddress: z
+        .string()
+        .trim()
+        .regex(/^0x[a-fA-F0-9]{40}$/, "Enter a valid USDT (BEP-20) wallet address: 0x followed by 40 characters"),
+      portfolioUrl: z.string().trim().url("Enter a valid portfolio link (https://...)").optional().or(z.literal("")),
+      experience: z.string().trim().min(20, "Tell us a bit more about your Rhino experience (at least 20 characters)").max(2000),
+    })
+    .optional(),
   legalConsent: z.object({
     age: z.literal(true, { errorMap: () => ({ message: "You must be 18 or older" }) }),
     tos: z.literal(true, { errorMap: () => ({ message: "You must accept the Terms of Service" }) }),
@@ -66,8 +77,9 @@ export async function POST(req: Request) {
       where: { id: existing.id },
       data: { name: input.name, passwordHash, tosAcceptedAt: new Date() },
     });
+    await saveDesignerApplication(existing.id, input);
   } else {
-    await prisma.user.create({
+    const user = await prisma.user.create({
       data: {
         name: input.name,
         email,
@@ -77,6 +89,7 @@ export async function POST(req: Request) {
         tosAcceptedAt: new Date(),
       },
     });
+    await saveDesignerApplication(user.id, input);
   }
 
   try {
@@ -91,7 +104,30 @@ export async function POST(req: Request) {
 
   return NextResponse.json({
     needsVerification: true,
+    designerApplied: !!input.designer,
     email,
     message: `We sent a 6-digit code to ${email}.`,
+  });
+}
+
+// Files (or refreshes) the designer application of a not-yet-verified account.
+// Admins only see it once the Gmail code is confirmed.
+async function saveDesignerApplication(userId: string, input: z.infer<typeof registerSchema>) {
+  if (!input.designer) {
+    // Unfinished sign-up re-submitted without the box ticked: drop the old application.
+    await prisma.designerApplication.deleteMany({ where: { userId, status: "PENDING" } });
+    return;
+  }
+  const data = {
+    fullName: input.name,
+    payoutWalletAddress: input.designer.payoutWalletAddress,
+    portfolioUrl: input.designer.portfolioUrl || null,
+    experience: input.designer.experience,
+    reason: "Applied when creating the account.",
+  };
+  await prisma.designerApplication.upsert({
+    where: { userId },
+    create: { userId, ...data },
+    update: { ...data, status: "PENDING" },
   });
 }

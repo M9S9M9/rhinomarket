@@ -132,7 +132,7 @@ export default function HomePage() {
                     Browse Marketplace <ArrowRight className="ml-2 h-5 w-5" />
                   </Button>
                 </Link>
-                <Link href="/auth/register">
+                <Link href="/auth/register?designer=1">
                   <Button size="lg" variant="outline" className="border-white text-white hover:bg-white hover:text-gray-900 bg-transparent text-base px-8 w-full sm:w-auto">
                     Start Selling
                   </Button>
