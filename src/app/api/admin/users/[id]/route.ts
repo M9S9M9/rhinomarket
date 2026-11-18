@@ -1,3 +1,4 @@
+import { deleteUserCompletely } from "@/lib/admin-delete";
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
@@ -49,13 +50,18 @@ export async function DELETE(req: Request, { params }: { params: Promise<{ id: s
     return NextResponse.json({ error: "Cannot delete yourself" }, { status: 400 });
   }
 
+  const force = new URL(req.url).searchParams.get("force") === "1";
   try {
-    await prisma.user.delete({ where: { id } });
-    return NextResponse.json({ message: "User deleted" });
-  } catch (err: any) {
-    if (err?.code === "P2003") {
-      return NextResponse.json({ error: "Cannot delete user with existing orders, listings, or other records. Restrict them instead." }, { status: 409 });
+    const result = await deleteUserCompletely(id, force);
+    if (!result.ok) {
+      return NextResponse.json(
+        { error: `This user has ${result.paidOrders} paid order(s).`, confirmRequired: true, paidOrders: result.paidOrders, listings: result.listings },
+        { status: 409 }
+      );
     }
+    return NextResponse.json({ message: "User deleted" });
+  } catch (err) {
+    console.error("Delete user failed:", err);
     return NextResponse.json({ error: "Failed to delete user" }, { status: 500 });
   }
 }

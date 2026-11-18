@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { formatPrice, formatDate } from "@/lib/utils";
 import { ArrowLeft, Download, FileText, Eye, Star, Tag, Trash2 } from "lucide-react";
+import { adminDeleteListing } from "@/lib/admin-delete-client";
 import toast from "react-hot-toast";
 
 interface ListingDetail {
@@ -227,9 +228,7 @@ export default function AdminListingDetailPage() {
               <Button variant="danger" className="w-full" onClick={async () => {
                 if (!confirm(`Delete "${listing.title}"? This cannot be undone.`)) return;
                 try {
-                  const res = await fetch(`/api/listings/${id}`, { method: "DELETE" });
-                  if (res.ok) { toast.success("Listing deleted"); router.push("/admin/listings"); }
-                  else { const d = await res.json(); toast.error(d.error); }
+                  if (await adminDeleteListing(id)) router.push("/admin/listings");
                 } catch { toast.error("Failed to delete"); }
               }}>
                 <Trash2 className="h-4 w-4 mr-1" /> Delete Listing

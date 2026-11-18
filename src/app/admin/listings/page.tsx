@@ -9,6 +9,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { formatPrice, formatDate } from "@/lib/utils";
+import { adminDeleteListing } from "@/lib/admin-delete-client";
 import toast from "react-hot-toast";
 
 interface Listing {
@@ -60,9 +61,7 @@ function AdminListingsInner() {
   const handleDelete = async (id: string, title: string) => {
     if (!confirm(`Permanently delete "${title}"? This cannot be undone.`)) return;
     try {
-      const res = await fetch(`/api/listings/${id}`, { method: "DELETE" });
-      if (res.ok) { toast.success("Listing deleted"); setListings(prev => prev.filter(l => l.id !== id)); }
-      else { const d = await res.json(); toast.error(d.error); }
+      if (await adminDeleteListing(id)) setListings(prev => prev.filter(l => l.id !== id));
     } catch { toast.error("Failed to delete"); }
   };
 

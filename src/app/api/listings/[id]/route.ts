@@ -1,3 +1,4 @@
+import { deleteListingCompletely } from "@/lib/admin-delete";
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
@@ -154,15 +155,15 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ i
   }
 
   if (user?.role === "ADMIN") {
-    try {
-      await prisma.listing.delete({ where: { id } });
-      return NextResponse.json({ message: "Listing permanently deleted" });
-    } catch (err: any) {
-      if (err?.code === "P2003") {
-        return NextResponse.json({ error: "Cannot delete listing with existing orders. Archive it instead." }, { status: 409 });
-      }
-      throw err;
+    const force = req.nextUrl.searchParams.get("force") === "1";
+    const result = await deleteListingCompletely(id, force);
+    if (!result.ok) {
+      return NextResponse.json(
+        { error: `This listing has ${result.paidOrders} paid order(s).`, confirmRequired: true, paidOrders: result.paidOrders },
+        { status: 409 }
+      );
     }
+    return NextResponse.json({ message: "Listing permanently deleted" });
   }
 
   await prisma.listing.update({ where: { id }, data: { status: "ARCHIVED" } });

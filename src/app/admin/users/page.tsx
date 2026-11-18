@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { formatDate } from "@/lib/utils";
 import { Search, Plus, Trash2, Shield, Key, Ban, CheckCircle, XCircle, FileText } from "lucide-react";
+import { adminDeleteUser } from "@/lib/admin-delete-client";
 import toast from "react-hot-toast";
 
 interface User {
@@ -113,9 +114,7 @@ export default function AdminUsersPage() {
   const handleDelete = async (id: string, email: string) => {
     if (!confirm(`Delete user ${email}? This cannot be undone.`)) return;
     try {
-      const res = await fetch(`/api/admin/users/${id}`, { method: "DELETE" });
-      if (res.ok) { toast.success("User deleted"); fetchUsers(); }
-      else { const d = await res.json(); toast.error(d.error); }
+      if (await adminDeleteUser(id)) fetchUsers();
     } catch { toast.error("Failed to delete user"); }
   };
 
