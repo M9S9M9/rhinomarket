@@ -2,15 +2,6 @@ import Link from "next/link";
 import { ShieldCheck, MessageCircle } from "lucide-react";
 import { VideoLink } from "@/components/help/video-link";
 
-const CATEGORIES = [
-  { href: "/categories/footwear", label: "Footwear" },
-  { href: "/categories/jewelry", label: "Jewelry" },
-  { href: "/categories/architect", label: "Architecture" },
-  { href: "/categories/human-artificial-limbs", label: "Prosthetics & Orthotics" },
-  { href: "/categories/industrial-parts", label: "Industrial Parts" },
-  { href: "/categories/other", label: "Other Models" },
-];
-
 // Support WhatsApp (international format, digits only for the wa.me link).
 const WHATSAPP_NUMBER = "966543546859";
 const WHATSAPP_DISPLAY = "+966 54 354 6859";
@@ -30,7 +21,7 @@ export function Footer() {
   return (
     <footer className="bg-gray-950 text-gray-400">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-8">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
           {/* Brand */}
           <div className="col-span-2 md:col-span-3 lg:col-span-1">
             <Link href="/" className="flex items-center gap-2.5 mb-4" aria-label="3DM Store home">
@@ -48,16 +39,6 @@ export function Footer() {
               <ShieldCheck className="h-4 w-4 shrink-0 text-emerald-400 mt-0.5" aria-hidden="true" />
               <span>Payments in <strong className="text-white">USDT · BNB Smart Chain (BEP-20)</strong>, checked on the blockchain.</span>
             </p>
-          </div>
-
-          {/* Categories */}
-          <div>
-            <h3 className="text-white font-semibold mb-4 text-sm">Categories</h3>
-            <ul className="space-y-2">
-              {CATEGORIES.map((c) => (
-                <li key={c.href}><Link href={c.href} className={link}>{c.label}</Link></li>
-              ))}
-            </ul>
           </div>
 
           {/* Marketplace */}
