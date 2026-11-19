@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { WalletHelp } from "@/components/designer/wallet-help";
+import { VideoLink } from "@/components/help/video-link";
 import toast from "react-hot-toast";
 import { signIn } from "next-auth/react";
 import { VerifyCodeForm } from "@/components/auth/verify-code-form";
@@ -149,6 +150,9 @@ function RegisterForm() {
                 <span className="block text-xs text-gray-500">I want to sell my .3dm models on 3DM Store</span>
               </span>
             </label>
+            <div className="mt-1 pl-6">
+              <VideoLink video="sell" label="Watch: how selling works" className="text-xs text-gray-700 underline" iconClassName="h-3.5 w-3.5" />
+            </div>
 
             {isDesigner && (
               <div className="mt-4 space-y-4 rounded-xl bg-gray-50 border border-gray-200 p-4">

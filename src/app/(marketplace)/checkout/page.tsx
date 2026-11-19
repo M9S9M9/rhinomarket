@@ -1,5 +1,6 @@
 "use client";
 
+import { VideoLink } from "@/components/help/video-link";
 import { Suspense, useEffect, useRef, useState } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
@@ -170,7 +171,7 @@ function CheckoutForm() {
               <div className="text-sm text-amber-800">
                 <p className="font-medium mb-1">Send exactly <strong>{payment.amount} USDT</strong> on <strong>BSC</strong> network</p>
                 <p>Use the BNB Smart Chain (BEP-20) network only — USDT sent on any other network can&apos;t be recovered. After sending, paste your transaction hash below to verify.</p>
-                <p className="mt-1"><a href="/help#payments" target="_blank" rel="noopener noreferrer" className="underline">Payment help &amp; FAQ</a></p>
+                <p className="mt-2 flex flex-wrap gap-x-4 gap-y-1"><VideoLink video="buy" label="Watch: how to pay (1 min)" className="underline font-medium" /><a href="/help#payments" target="_blank" rel="noopener noreferrer" className="underline">Payment help &amp; FAQ</a></p>
               </div>
             </div>
           </div>
