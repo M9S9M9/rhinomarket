@@ -378,32 +378,6 @@ export function HomeClient({ initial }: { initial: HomeData }) {
       </section>
       </AnimatedSection>
 
-      {/* ── How It Works (for buyers) ── */}
-      <AnimatedSection>
-      <section className="bg-white py-16 border-t border-gray-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h2 className="text-2xl md:text-3xl font-bold text-gray-900 text-center mb-12">How It Works</h2>
-          <StaggerContainer className="grid md:grid-cols-3 gap-8">
-            {[
-              { step: "01", title: "Browse & Discover", desc: "Explore .3dm files from independent designers across jewelry, footwear, architecture, industrial parts and more." },
-              { step: "02", title: "Purchase Securely", desc: "Pay in USDT on BNB Smart Chain. Your payment is checked on the blockchain, usually within minutes." },
-              { step: "03", title: "Instant Download", desc: "As soon as your payment is confirmed, the file is yours — download it again any time from your purchases." },
-            ].map(item => (
-              <StaggerItem key={item.step}>
-                <div className="text-center">
-                  <div className="w-12 h-12 bg-gray-100 rounded-xl flex items-center justify-center mx-auto mb-4">
-                    <span className="text-gray-600 font-bold">{item.step}</span>
-                  </div>
-                  <h3 className="text-lg font-semibold text-gray-900 mb-2">{item.title}</h3>
-                  <p className="text-gray-500 text-sm leading-relaxed">{item.desc}</p>
-                </div>
-              </StaggerItem>
-            ))}
-          </StaggerContainer>
-        </div>
-      </section>
-      </AnimatedSection>
-
       {/* ── How we protect buyers and designers ── */}
       <AnimatedSection>
       <section className="bg-gray-50 border-t border-gray-200 py-16">
