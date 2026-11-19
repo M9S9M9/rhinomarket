@@ -30,7 +30,9 @@ export function Footer() {
           {/* Brand */}
           <div className="col-span-2 md:col-span-3 lg:col-span-1">
             <Link href="/" className="flex items-center gap-2.5 mb-4" aria-label="3DM Store home">
-              <img src="/logo-white.svg" alt="" className="h-10 w-auto" />
+              <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-white p-1">
+                <img src="/logo.png" alt="" className="h-full w-auto" />
+              </span>
               <span className="text-xl tracking-tight whitespace-nowrap">
                 <span className="font-bold text-white">3DM</span> <span className="text-gray-400">Store</span>
               </span>
