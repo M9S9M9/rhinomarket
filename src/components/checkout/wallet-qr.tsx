@@ -26,48 +26,27 @@ function useQrSvg(text: string) {
   return svg;
 }
 
-type Mode = "trust" | "address";
-
 /**
- * Two QR codes:
- *  - "Trust Wallet": scanning with the phone camera opens Trust Wallet with
- *    USDT (BEP-20), the store address and the exact amount already filled in.
- *  - "Address only": plain address for exchanges and other wallets.
+ * QR code with the official Trust Wallet link: scanning it with the phone camera
+ * opens Trust Wallet with USDT (BEP-20), the store address and the exact amount
+ * already filled in. On phones, a button opens the same link directly.
  */
 export function WalletQr({ address, amount, size = 184 }: { address: string; amount: string | number; size?: number }) {
-  const [mode, setMode] = useState<Mode>("trust");
   const link = trustWalletSendLink(address, amount);
-  const svg = useQrSvg(mode === "trust" ? link : address);
-
-  const tab = (m: Mode, label: string) => (
-    <button
-      type="button"
-      onClick={() => setMode(m)}
-      aria-pressed={mode === m}
-      className={`flex-1 px-2 py-1.5 text-xs font-medium rounded-md transition-colors ${mode === m ? "bg-gray-900 text-white" : "text-gray-600 hover:text-gray-900"}`}
-    >
-      {label}
-    </button>
-  );
+  const svg = useQrSvg(link);
 
   return (
     <div className="flex flex-col items-center gap-2" style={{ width: size }}>
-      <div className="flex w-full gap-1 rounded-lg border border-gray-200 bg-white p-1" role="group" aria-label="QR code type">
-        {tab("trust", "Trust Wallet")}
-        {tab("address", "Address only")}
-      </div>
       <div
         className="rounded-xl border border-gray-200 bg-white p-2"
         style={{ width: size, height: size }}
         role="img"
-        aria-label={mode === "trust" ? "QR code that opens Trust Wallet with the payment filled in" : `QR code of wallet address ${address}`}
-        // qrcode builds a self-contained SVG from our own link / address only.
+        aria-label="QR code that opens Trust Wallet with the payment filled in"
+        // qrcode builds a self-contained SVG from our own link only.
         dangerouslySetInnerHTML={svg ? { __html: svg } : undefined}
       />
       <p className="text-[11px] leading-snug text-gray-500 text-center">
-        {mode === "trust"
-          ? "Scan with your phone camera — Trust Wallet opens with everything filled in."
-          : "For exchanges and other wallets: fills in the address only."}
+        Scan with your phone camera — Trust Wallet opens with everything filled in.
       </p>
       <a
         href={link}
