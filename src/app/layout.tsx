@@ -38,8 +38,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   const websiteJsonLd = {
     "@context": "https://schema.org",
     "@type": "WebSite",
-    url: siteUrl,
+    url: `${siteUrl}/`,
     name: "3DM Store",
+    alternateName: ["3DMStore", "3DM Store – Rhino 3D Models"],
     potentialAction: {
       "@type": "SearchAction",
       target: `${siteUrl}/marketplace?query={search_term_string}`,
