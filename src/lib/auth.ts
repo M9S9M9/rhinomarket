@@ -6,6 +6,7 @@ import { compare } from "bcryptjs";
 import { isLockedOut, recordAttempt, clearAttempts } from "@/lib/lockout";
 import type { Adapter } from "next-auth/adapters";
 import { normalizeEmail } from "@/lib/gmail";
+import { findUserByInbox } from "@/lib/find-user-by-email";
 import { sendLoginCode, checkLoginCode } from "@/lib/verification-code";
 
 // Error codes the login page can show (NextAuth passes `code` through to signIn()).
@@ -59,8 +60,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         // for accounts created before addresses were normalized.
         const typed = (credentials.email as string).trim().toLowerCase();
         const user =
-          (await prisma.user.findUnique({ where: { email: normalizeEmail(typed) } })) ||
-          (await prisma.user.findUnique({ where: { email: typed } }));
+          (await findUserByInbox(typed));
         const email = user?.email || typed;
 
         if (await isLockedOut(email)) {

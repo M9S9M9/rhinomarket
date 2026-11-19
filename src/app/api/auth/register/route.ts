@@ -5,6 +5,7 @@ import { z } from "zod";
 import { checkRateLimit, getRateLimitKey } from "@/lib/rate-limit";
 import { validateApiRequest } from "@/lib/validate-request";
 import { isGmailAddress, normalizeEmail } from "@/lib/gmail";
+import { findUserByInbox } from "@/lib/find-user-by-email";
 import { sendVerificationCode, secondsUntilResend } from "@/lib/verification-code";
 
 const registerSchema = z.object({
@@ -56,7 +57,8 @@ export async function POST(req: Request) {
   const email = normalizeEmail(input.email);
   const passwordHash = await hash(input.password, 12);
 
-  const existing = await prisma.user.findUnique({ where: { email } });
+  // One Gmail inbox = one account, however the address is spelled.
+  const existing = await findUserByInbox(input.email);
   if (existing?.emailVerified) {
     return NextResponse.json(
       { error: "This Gmail is already registered. Sign in or reset your password." },
@@ -75,7 +77,8 @@ export async function POST(req: Request) {
     }
     await prisma.user.update({
       where: { id: existing.id },
-      data: { name: input.name, passwordHash, tosAcceptedAt: new Date() },
+      // Also store the address in its standard form (older sign-ups may differ).
+      data: { email, name: input.name, passwordHash, tosAcceptedAt: new Date() },
     });
     await saveDesignerApplication(existing.id, input);
   } else {

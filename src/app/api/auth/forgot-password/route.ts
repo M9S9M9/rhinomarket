@@ -5,6 +5,7 @@ import { sendEmail, getPasswordResetEmailHtml } from "@/lib/email";
 import { checkRateLimit, getRateLimitKey } from "@/lib/rate-limit";
 import { validateApiRequest } from "@/lib/validate-request";
 import { normalizeEmail } from "@/lib/gmail";
+import { findUserByInbox } from "@/lib/find-user-by-email";
 
 export async function POST(req: Request) {
   const validation = await validateApiRequest(req);
@@ -23,8 +24,7 @@ export async function POST(req: Request) {
     // Accept any spelling of a Gmail address; fall back to the exact address for older accounts.
     const typed = body.email.trim().toLowerCase();
     const user =
-      (await prisma.user.findUnique({ where: { email: normalizeEmail(typed) } })) ||
-      (await prisma.user.findUnique({ where: { email: typed } }));
+      (await findUserByInbox(typed));
     const email = user?.email || typed;
     if (!user) {
       return NextResponse.json({ message: "If the email exists, a reset link has been sent." });
