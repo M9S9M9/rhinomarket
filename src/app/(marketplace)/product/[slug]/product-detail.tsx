@@ -136,7 +136,7 @@ export function ProductDetailClient({ initialData, slug }: { initialData: Listin
         <span>/</span>
         {listing.category && (
           <>
-            <Link href={`/marketplace?category=${listing.category.slug}`} className="hover:text-gray-700">{listing.category.name}</Link>
+            <Link href={`/categories/${listing.category.slug}`} className="hover:text-gray-700">{listing.category.name}</Link>
             <span>/</span>
           </>
         )}

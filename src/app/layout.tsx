@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { SITE_URL } from "@/lib/public-data";
 import "./globals.css";
 import { Providers } from "@/components/layout/providers";
 import { Header } from "@/components/layout/header";
@@ -8,11 +9,14 @@ import { SessionTimeout } from "@/components/ui/session-timeout";
 import { CookieConsent } from "@/components/ui/cookie-consent";
 
 export const metadata: Metadata = {
+  metadataBase: new URL(SITE_URL),
   title: {
-    default: "3DM Store - Premium .3D Models Marketplace",
+    default: "3DM Store – Rhino 3D (.3dm) Models Marketplace",
     template: "%s | 3DM Store",
   },
   description: "Buy and sell Rhino 3D (.3dm) models from independent designers. Protected downloads, on-chain USDT payments.",
+  applicationName: "3DM Store",
+  openGraph: { siteName: "3DM Store", type: "website", locale: "en_US" },
   keywords: ["rhino 3d", "3dm files", "3d models", "rhinoceros", "marketplace", "3d design"],
   verification: {
     google: process.env.NEXT_PUBLIC_GOOGLE_VERIFICATION || "",
@@ -20,14 +24,15 @@ export const metadata: Metadata = {
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
-  const siteUrl = process.env.NEXT_PUBLIC_APP_URL || "https://rhinomarket.vercel.app";
+  const siteUrl = SITE_URL;
 
   const organizationJsonLd = {
     "@context": "https://schema.org",
     "@type": "Organization",
     name: "3DM Store",
     url: siteUrl,
-    description: "Premium marketplace for Rhino 3D (.3dm) models",
+    description: "Marketplace for Rhino 3D (.3dm) models from independent designers",
+    logo: `${SITE_URL}/logo.png`,
   };
 
   const websiteJsonLd = {
@@ -37,7 +42,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     name: "3DM Store",
     potentialAction: {
       "@type": "SearchAction",
-      target: `${siteUrl}/marketplace?search={search_term_string}`,
+      target: `${siteUrl}/marketplace?query={search_term_string}`,
       "query-input": "required name=search_term_string",
     },
   };

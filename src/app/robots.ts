@@ -1,7 +1,8 @@
 import { MetadataRoute } from "next";
+import { SITE_URL } from "@/lib/public-data";
 
 export default function robots(): MetadataRoute.Robots {
-  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "https://rhinomarket.vercel.app";
+  const baseUrl = SITE_URL;
 
   return {
     rules: [

@@ -5,64 +5,22 @@ import { slugify, normalizeListing, toPublicListing } from "@/lib/utils";
 import { verifyUploadReceipt } from "@/lib/upload-receipt";
 import { checkRateLimit, getRateLimitKey } from "@/lib/rate-limit";
 import { validateApiRequest } from "@/lib/validate-request";
+import { getPublicListings } from "@/lib/public-data";
 
 export async function GET(req: NextRequest) {
-  const { searchParams } = req.nextUrl;
-  const query = searchParams.get("query") || "";
-  const category = searchParams.get("category") || "";
-  const minPrice = searchParams.get("minPrice");
-  const maxPrice = searchParams.get("maxPrice");
-  const licenseType = searchParams.get("licenseType");
-  const sort = searchParams.get("sort") || "newest";
-  const page = parseInt(searchParams.get("page") || "1");
-  const limit = parseInt(searchParams.get("limit") || "24");
-  const designerId = searchParams.get("designerId");
-
-  const where: any = { status: "APPROVED" };
-
-  if (query) {
-    where.OR = [
-      { title: { contains: query, mode: "insensitive" } },
-      { description: { contains: query, mode: "insensitive" } },
-    ];
-  }
-
-  if (category) where.category = { slug: category };
-  if (minPrice) where.price = { ...where.price, gte: parseFloat(minPrice) };
-  if (maxPrice) where.price = { ...where.price, lte: parseFloat(maxPrice) };
-  if (licenseType) where.licenseType = licenseType;
-  if (designerId) where.designerId = designerId;
-
-  const orderBy: any =
-    sort === "popular" ? { viewCount: "desc" } :
-    sort === "price_asc" ? { price: "asc" } :
-    sort === "price_desc" ? { price: "desc" } :
-    { publishedAt: "desc" };
-
-  const [listings, total] = await Promise.all([
-    prisma.listing.findMany({
-      where,
-      orderBy,
-      skip: (page - 1) * limit,
-      take: limit,
-      include: {
-        designer: { select: { id: true, name: true, avatarUrl: true } },
-        category: { select: { id: true, name: true, slug: true } },
-        _count: { select: { reviews: true, favorites: true } },
-      },
-    }),
-    prisma.listing.count({ where }),
-  ]);
-
-  return NextResponse.json({
-    listings: listings.map((l) => toPublicListing(normalizeListing(l))),
-    pagination: {
-      page,
-      limit,
-      total,
-      totalPages: Math.ceil(total / limit),
-    },
+  const sp = req.nextUrl.searchParams;
+  const data = await getPublicListings({
+    query: sp.get("query") || "",
+    category: sp.get("category") || "",
+    minPrice: sp.get("minPrice"),
+    maxPrice: sp.get("maxPrice"),
+    licenseType: sp.get("licenseType"),
+    sort: sp.get("sort") || "newest",
+    page: parseInt(sp.get("page") || "1") || 1,
+    limit: parseInt(sp.get("limit") || "24") || 24,
+    designerId: sp.get("designerId"),
   });
+  return NextResponse.json(data);
 }
 
 export async function POST(req: Request) {

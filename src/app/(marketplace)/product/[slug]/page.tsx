@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { Metadata } from "next";
 import { ProductDetailClient } from "./product-detail";
 import { normalizeListing, toPublicListing } from "@/lib/utils";
+import { SITE_URL } from "@/lib/public-data";
 
 interface PageProps {
   params: Promise<{ slug: string }>;
@@ -50,17 +51,22 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const { slug } = await params;
   const listing = await prisma.listing.findUnique({
     where: { slug },
-    select: { title: true, description: true, thumbnailUrl: true, tags: true, price: true, designer: { select: { name: true } } },
+    select: { title: true, description: true, thumbnailUrl: true, tags: true, price: true, status: true, designer: { select: { name: true } } },
   });
 
-  if (!listing) return { title: "Model Not Found" };
+  if (!listing || listing.status !== "APPROVED") return { title: "Model Not Found", robots: { index: false } };
 
-  const title = `${listing.title} - 3DM Store`;
-  const description = listing.description?.slice(0, 160) || `Buy ${listing.title} - a premium .3dm model by ${listing.designer.name || "Unknown Designer"}`;
+  // The layout adds " | 3DM Store" to every title.
+  const title = `${listing.title} – Rhino 3D Model (.3dm)`;
+  const plainDesc = (listing.description || "").replace(/\s+/g, " ").trim();
+  const description = plainDesc
+    ? (plainDesc.length > 155 ? plainDesc.slice(0, 152).trimEnd() + "…" : plainDesc)
+    : `Download ${listing.title}, a Rhino 3D (.3dm) model by ${listing.designer.name || "an independent designer"}. Pay in USDT, download instantly.`;
 
   return {
     title,
     description,
+    alternates: { canonical: `/product/${slug}` },
     openGraph: {
       title,
       description,
@@ -83,26 +89,35 @@ export default async function ProductPage({ params }: PageProps) {
 
   if (!listing) notFound();
 
-  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "https://rhinomarket.vercel.app";
-  const productUrl = `${baseUrl}/product/${slug}`;
+  const productUrl = `${SITE_URL}/product/${slug}`;
+  const images = [listing.thumbnailUrl, ...(Array.isArray(listing.previewUrls) ? listing.previewUrls : [])]
+    .filter((u: unknown, i: number, a: unknown[]): u is string => typeof u === "string" && !!u && a.indexOf(u) === i)
+    .slice(0, 6);
 
-  const jsonLd = {
+  const jsonLd: Record<string, unknown> = {
     "@context": "https://schema.org",
     "@type": "Product",
     name: listing.title,
-    description: listing.description?.slice(0, 300),
-    image: listing.thumbnailUrl || undefined,
+    description: (listing.description || `Rhino 3D (.3dm) model: ${listing.title}`).slice(0, 500),
+    image: images.length ? images : undefined,
     url: productUrl,
+    sku: listing.id,
+    category: listing.category?.name ? `${listing.category.name} 3D models` : "3D models",
+    keywords: [...(listing.tags || []), "rhino 3d", ".3dm"].join(", "),
+    brand: { "@type": "Brand", name: listing.designer.name || "3DM Store" },
     offers: {
       "@type": "Offer",
-      price: listing.price,
+      price: Number(listing.price).toFixed(2),
       priceCurrency: "USD",
       availability: "https://schema.org/InStock",
+      itemCondition: "https://schema.org/NewCondition",
       url: productUrl,
+      seller: { "@type": "Organization", name: "3DM Store", url: SITE_URL },
     },
     creator: {
       "@type": "Person",
       name: listing.designer.name || undefined,
+      url: `${SITE_URL}/designer/${listing.designer.id}`,
     },
     ...(listing.reviewCount > 0 ? {
       aggregateRating: {
@@ -113,11 +128,27 @@ export default async function ProductPage({ params }: PageProps) {
     } : {}),
   };
 
+  const breadcrumbs = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      { "@type": "ListItem", position: 1, name: "Home", item: SITE_URL },
+      ...(listing.category
+        ? [{ "@type": "ListItem", position: 2, name: listing.category.name, item: `${SITE_URL}/categories/${listing.category.slug}` }]
+        : [{ "@type": "ListItem", position: 2, name: "Browse", item: `${SITE_URL}/marketplace` }]),
+      { "@type": "ListItem", position: 3, name: listing.title, item: productUrl },
+    ],
+  };
+
   return (
     <>
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c") }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbs).replace(/</g, "\\u003c") }}
       />
       <ProductDetailClient initialData={listing} slug={slug} />
     </>

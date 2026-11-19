@@ -1,8 +1,12 @@
 import { MetadataRoute } from "next";
 import { prisma } from "@/lib/db";
+import { SITE_URL } from "@/lib/public-data";
+
+// Refreshed hourly so new models reach Google without a redeploy.
+export const revalidate = 3600;
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "https://rhinomarket.vercel.app";
+  const baseUrl = SITE_URL;
 
   const staticUrls = [
     { url: baseUrl, lastModified: new Date(), changeFrequency: "daily" as const, priority: 1.0 },
@@ -19,13 +23,29 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   ];
 
   try {
-    const listings = await prisma.listing.findMany({
-      where: { status: "APPROVED" },
-      select: { slug: true, updatedAt: true },
-    });
+    const [listings, categories, designers] = await Promise.all([
+      prisma.listing.findMany({ where: { status: "APPROVED" }, select: { slug: true, updatedAt: true } }),
+      prisma.category.findMany({ select: { slug: true } }),
+      prisma.user.findMany({
+        where: { isActive: true, listings: { some: { status: "APPROVED" } } },
+        select: { id: true, updatedAt: true },
+      }),
+    ]);
 
     return [
       ...staticUrls,
+      ...categories.map((c) => ({
+        url: `${baseUrl}/categories/${c.slug}`,
+        lastModified: new Date(),
+        changeFrequency: "daily" as const,
+        priority: 0.85,
+      })),
+      ...designers.map((d) => ({
+        url: `${baseUrl}/designer/${d.id}`,
+        lastModified: d.updatedAt,
+        changeFrequency: "weekly" as const,
+        priority: 0.6,
+      })),
       ...listings.map((l) => ({
         url: `${baseUrl}/product/${l.slug}`,
         lastModified: l.updatedAt,
