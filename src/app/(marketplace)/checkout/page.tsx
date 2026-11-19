@@ -190,9 +190,7 @@ function CheckoutForm() {
             <div className="flex flex-col sm:flex-row items-center sm:items-start gap-4">
               <WalletQr address={payment.walletAddress} amount={payment.amount} />
               <div className="flex-1 text-sm text-gray-700 space-y-2 w-full">
-                <p className="font-semibold text-gray-900">Scan to pay</p>
-                <p className="text-gray-600"><strong>Trust Wallet:</strong> scan the code with your phone camera (or tap <em>Open in Trust Wallet</em> on your phone). USDT on BNB Smart Chain, the store address and <strong>{payment.amount} USDT</strong> are filled in &mdash; check them and press <strong>Send</strong>.</p>
-                <p className="text-gray-600"><strong>Exchange or other wallet:</strong> copy the store address below and send exactly <strong>{payment.amount} USDT</strong> on <strong>BNB Smart Chain (BEP-20)</strong>.</p>
+                <p className="font-semibold text-gray-900">Scan to pay automatically, or copy address and amount manually</p>
                 <button
                   type="button"
                   onClick={copyAmount}

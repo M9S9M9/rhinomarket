@@ -45,9 +45,6 @@ export function WalletQr({ address, amount, size = 184 }: { address: string; amo
         // qrcode builds a self-contained SVG from our own link only.
         dangerouslySetInnerHTML={svg ? { __html: svg } : undefined}
       />
-      <p className="text-[11px] leading-snug text-gray-500 text-center">
-        Scan with your phone camera — Trust Wallet opens with everything filled in.
-      </p>
       <a
         href={link}
         target="_blank"
