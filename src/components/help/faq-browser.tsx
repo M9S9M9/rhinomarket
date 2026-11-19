@@ -15,10 +15,13 @@ function Answer({ text }: { text: string }) {
   let m: RegExpExecArray | null;
   while ((m = re.exec(text))) {
     if (m.index > last) parts.push(text.slice(last, m.index));
+    const cls = "text-gray-900 font-medium underline underline-offset-2";
     parts.push(
-      <Link key={m.index} href={m[2]} className="text-gray-900 font-medium underline underline-offset-2">
-        {m[1]}
-      </Link>
+      /^https?:\/\//.test(m[2]) ? (
+        <a key={m.index} href={m[2]} target="_blank" rel="noopener noreferrer" className={cls}>{m[1]}</a>
+      ) : (
+        <Link key={m.index} href={m[2]} className={cls}>{m[1]}</Link>
+      )
     );
     last = m.index + m[0].length;
   }

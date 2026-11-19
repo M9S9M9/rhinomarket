@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ShieldCheck } from "lucide-react";
+import { ShieldCheck, MessageCircle } from "lucide-react";
 import { VideoLink } from "@/components/help/video-link";
 
 const CATEGORIES = [
@@ -10,6 +10,10 @@ const CATEGORIES = [
   { href: "/categories/industrial-parts", label: "Industrial Parts" },
   { href: "/categories/other", label: "Other Models" },
 ];
+
+// Support WhatsApp (international format, digits only for the wa.me link).
+const WHATSAPP_NUMBER = "966543546859";
+const WHATSAPP_DISPLAY = "+966 54 354 6859";
 
 const LEGAL = [
   { href: "/terms", label: "Terms" },
@@ -105,6 +109,23 @@ export function Footer() {
           <p className="text-xs text-gray-500 text-center sm:text-left">
             Rhino and Rhinoceros are registered trademarks of Robert McNeel &amp; Associates. 3DM Store is an independent marketplace and is not affiliated with McNeel.
           </p>
+        </div>
+      </div>
+
+      {/* WhatsApp help line */}
+      <div className="bg-emerald-600 text-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 flex flex-wrap items-center justify-center gap-x-2 gap-y-1 text-sm text-center">
+          <MessageCircle className="h-4 w-4 shrink-0" aria-hidden="true" />
+          <span>Don&apos;t know how to use the website? Contact us on WhatsApp:</span>
+          <a
+            href={`https://wa.me/${WHATSAPP_NUMBER}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="font-semibold underline underline-offset-2 hover:text-emerald-100 whitespace-nowrap"
+            dir="ltr"
+          >
+            {WHATSAPP_DISPLAY}
+          </a>
         </div>
       </div>
     </footer>

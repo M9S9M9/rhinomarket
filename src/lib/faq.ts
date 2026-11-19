@@ -151,7 +151,7 @@ export const FAQ: FaqSection[] = [
     items: [
       {
         q: "How do I contact support?",
-        a: "Through support tickets only: sign in and go to [Support](/dashboard/support) on your dashboard. Include your order or transaction hash if your question is about a payment.",
+        a: "For orders, payments and account questions, sign in and open a ticket from [Support](/dashboard/support) on your dashboard — include your order or transaction hash if it's about a payment. If you don't know how to use the website, you can also message us on WhatsApp: [+966 54 354 6859](https://wa.me/966543546859).",
       },
     ],
   },
