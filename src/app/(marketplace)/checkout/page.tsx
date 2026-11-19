@@ -1,5 +1,6 @@
 "use client";
 
+import { WalletQr } from "@/components/checkout/wallet-qr";
 import { VideoLink } from "@/components/help/video-link";
 import { Suspense, useEffect, useRef, useState } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
@@ -83,6 +84,15 @@ function CheckoutForm() {
     } catch { toast.error("Failed to submit"); }
     setLoading(false);
     submitting.current = false;
+  };
+
+  const [amountCopied, setAmountCopied] = useState(false);
+  const copyAmount = () => {
+    if (payment?.amount) {
+      navigator.clipboard.writeText(String(payment.amount));
+      setAmountCopied(true);
+      setTimeout(() => setAmountCopied(false), 2000);
+    }
   };
 
   const copyAddress = () => {
@@ -176,15 +186,33 @@ function CheckoutForm() {
             </div>
           </div>
 
-          <div className="mb-6">
-            <label className="block text-sm font-medium text-gray-700 mb-2">Platform Wallet Address (BSC)</label>
-            <div className="flex items-center gap-2 p-3 bg-gray-50 rounded-lg border border-gray-200">
+          <div className="mb-6 rounded-xl border border-gray-200 bg-gray-50 p-4">
+            <div className="flex flex-col sm:flex-row items-center gap-4">
+              <WalletQr address={payment.walletAddress} size={168} />
+              <div className="flex-1 text-sm text-gray-700 space-y-2 w-full">
+                <p className="font-semibold text-gray-900">Scan to pay</p>
+                <ol className="list-decimal pl-4 space-y-1 text-gray-600">
+                  <li>In Trust Wallet (or your exchange), open <strong>USDT – BNB Smart Chain</strong> and tap <strong>Send</strong>.</li>
+                  <li>Scan this code to fill in the store&apos;s address.</li>
+                  <li>Enter exactly <strong>{payment.amount} USDT</strong> and confirm.</li>
+                </ol>
+                <button
+                  type="button"
+                  onClick={copyAmount}
+                  className="inline-flex items-center gap-1.5 rounded-lg border border-gray-300 bg-white px-3 py-1.5 text-xs font-medium text-gray-700 hover:border-gray-400"
+                >
+                  <Copy className="h-3.5 w-3.5" /> {amountCopied ? "Amount copied" : `Copy amount (${payment.amount})`}
+                </button>
+              </div>
+            </div>
+
+            <label className="block text-sm font-medium text-gray-700 mt-4 mb-2">Or copy the store wallet address (BSC)</label>
+            <div className="flex items-center gap-2 p-3 bg-white rounded-lg border border-gray-200">
               <code className="text-xs break-all flex-1">{payment.walletAddress}</code>
-              <button onClick={copyAddress} className="p-2 rounded hover:bg-gray-200 text-gray-500 shrink-0">
-                <Copy className="h-4 w-4" />
+              <button onClick={copyAddress} className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-md bg-gray-900 text-white text-xs font-medium hover:bg-gray-800 shrink-0" aria-label="Copy wallet address">
+                <Copy className="h-3.5 w-3.5" /> {copied ? "Copied" : "Copy"}
               </button>
             </div>
-            {copied && <span className="text-xs text-emerald-600 mt-1">Copied!</span>}
           </div>
 
           <div className="mb-6">
