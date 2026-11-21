@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
-import { LogOut, Upload, Trash2, AlertTriangle } from "lucide-react";
+import { LogOut, Upload, Trash2, AlertTriangle, UserRound } from "lucide-react";
 import toast from "react-hot-toast";
 
 export default function ProfilePage() {
@@ -36,6 +36,7 @@ export default function ProfilePage() {
   const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
+    const hadPhoto = !!avatarUrl;
     setAvatarLoading(true);
     try {
       const fd = new FormData();
@@ -45,11 +46,11 @@ export default function ProfilePage() {
       if (res.ok) {
         setAvatarUrl(data.avatarUrl);
         update();
-        toast.success("Avatar updated");
+        toast.success(hadPhoto ? "Profile photo changed" : "Profile photo uploaded");
       } else {
-        toast.error(data.error || "Failed to upload avatar");
+        toast.error(data.error || "Failed to upload profile photo");
       }
-    } catch { toast.error("Failed to upload avatar"); }
+    } catch { toast.error("Failed to upload profile photo"); }
     setAvatarLoading(false);
   };
 
@@ -87,7 +88,7 @@ export default function ProfilePage() {
                 <img src={avatarUrl} alt="" className="w-20 h-20 rounded-full object-cover border-2 border-gray-200" />
               ) : (
                 <div className="w-20 h-20 rounded-full bg-gray-200 flex items-center justify-center text-gray-400">
-                  <LogOut className="w-8 h-8 rotate-90" />
+                  <UserRound className="w-9 h-9" aria-hidden="true" />
                 </div>
               )}
             </div>
@@ -95,7 +96,7 @@ export default function ProfilePage() {
               <input ref={fileRef} type="file" accept="image/jpeg,image/png,image/webp,image/gif" onChange={handleAvatarUpload} className="hidden" />
               <Button type="button" variant="outline" onClick={() => fileRef.current?.click()} loading={avatarLoading}>
                 <Upload className="w-4 h-4 mr-1.5" />
-                {avatarUrl ? "Change Photo" : "Upload Photo"}
+                {avatarUrl ? "Change profile photo" : "Upload profile photo"}
               </Button>
               <p className="text-xs text-gray-400 mt-1.5">JPEG, PNG, WebP, or GIF. Max 5MB.</p>
             </div>
