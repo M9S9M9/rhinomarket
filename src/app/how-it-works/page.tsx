@@ -21,7 +21,7 @@ const BUY_STEPS = [
 
 const SELL_STEPS = [
   "Create your account and tick “I am a designer” — our team reviews your application.",
-  "Upload your .3dm file (up to 100 MB) with 1–10 preview images and set your own price.",
+  "Upload your .3dm file (up to 40 MB) with 1–10 preview images and set your own price.",
   "Your listing goes live after a quick review.",
   "Buyers pay in USDT; every payment is checked on the blockchain.",
   "Your share is sent automatically to your USDT wallet. Default commission is 15%, lower as your sales grow.",

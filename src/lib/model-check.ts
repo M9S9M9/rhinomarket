@@ -3,7 +3,7 @@ import { prisma } from "@/lib/db";
 import { extractMetadata } from "@/lib/metadata";
 
 export const MAX_MODEL_BYTES =
-  parseInt(process.env.UPLOAD_MAX_FILE_SIZE_MB || "100") * 1024 * 1024;
+  parseInt(process.env.UPLOAD_MAX_FILE_SIZE_MB || "40") * 1024 * 1024;
 
 // Every Rhino/openNURBS .3dm file starts with this text.
 const RHINO_MAGIC = Buffer.from("3D Geometry File Format");
