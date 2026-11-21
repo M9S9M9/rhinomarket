@@ -73,7 +73,6 @@ export function Footer() {
               <li><Link href="/how-it-works" className={link}>How it works (videos)</Link></li>
               <li><Link href="/help" className={link}>Visit the FAQ page</Link></li>
               <li><Link href="/dashboard/support" className={link}>Open a support ticket</Link></li>
-              <li><Link href="/help#downloads" className={link}>Refunds</Link></li>
             </ul>
           </div>
         </div>
