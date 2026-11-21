@@ -1,6 +1,7 @@
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { redirect } from "next/navigation";
+import { cookies } from "next/headers";
 import Link from "next/link";
 import { Upload, DollarSign, Eye, Star, Package, ArrowRight, TrendingUp, Gift, Target, Download } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
@@ -13,7 +14,12 @@ export const dynamic = "force-dynamic";
 
 export default async function DesignerDashboardPage() {
   const session = await auth();
-  if (!session?.user?.id) redirect("/auth/login");
+  if (!session?.user?.id) {
+    // Diagnostic: which sign-in cookie names arrived (names only, never values).
+    const names = (await cookies()).getAll().map((c) => c.name).filter((n) => n.includes("authjs") || n.includes("next-auth"));
+    console.warn("[studio] no session on server", { authCookies: names });
+    redirect("/auth/login?redirect=/dashboard/designer");
+  }
 
   const user = session.user as any;
   const userId = user.id as string;

@@ -84,7 +84,7 @@ export function Header() {
               Categories
             </Link>
             {isDesigner && (
-              <Link href="/dashboard/designer" className="text-sm font-medium text-gray-600 hover:text-gray-900 transition-colors">
+              <Link prefetch={false} href="/dashboard/designer" className="text-sm font-medium text-gray-600 hover:text-gray-900 transition-colors">
                 Studio
               </Link>
             )}
@@ -148,13 +148,13 @@ export function Header() {
                 </div>
 
                 {/* Favorites */}
-                <Link href="/dashboard/favorites" className="hidden sm:block p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors">
+                <Link prefetch={false} href="/dashboard/favorites" className="hidden sm:block p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors">
                   <Heart className="h-5 w-5" />
                 </Link>
 
                 {/* Upload */}
                 {isDesigner && (
-                  <Link href="/dashboard/designer/upload">
+                  <Link prefetch={false} href="/dashboard/designer/upload">
                     <Button size="sm" className="hidden sm:flex gap-1.5">
                       <Upload className="h-4 w-4" />
                       Upload
@@ -188,21 +188,21 @@ export function Header() {
                           <p className="text-sm font-medium text-gray-900 truncate">{user?.name || "User"}</p>
                           <p className="text-xs text-gray-500 truncate">{user?.email}</p>
                         </div>
-                        <Link href="/dashboard" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50" onClick={() => setUserMenuOpen(false)}>
+                        <Link prefetch={false} href="/dashboard" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50" onClick={() => setUserMenuOpen(false)}>
                           Dashboard
                         </Link>
-                        <Link href="/dashboard/purchases" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50" onClick={() => setUserMenuOpen(false)}>
+                        <Link prefetch={false} href="/dashboard/purchases" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50" onClick={() => setUserMenuOpen(false)}>
                           My Purchases
                         </Link>
-                        <Link href="/dashboard/favorites" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50" onClick={() => setUserMenuOpen(false)}>
+                        <Link prefetch={false} href="/dashboard/favorites" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50" onClick={() => setUserMenuOpen(false)}>
                           Favorites
                         </Link>
                         {isDesigner && (
                           <>
-                            <Link href="/dashboard/designer" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50" onClick={() => setUserMenuOpen(false)}>
+                            <Link prefetch={false} href="/dashboard/designer" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50" onClick={() => setUserMenuOpen(false)}>
                               Designer Studio
                             </Link>
-                            <Link href="/dashboard/designer/earnings" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50" onClick={() => setUserMenuOpen(false)}>
+                            <Link prefetch={false} href="/dashboard/designer/earnings" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50" onClick={() => setUserMenuOpen(false)}>
                               Earnings
                             </Link>
                           </>
@@ -255,7 +255,7 @@ export function Header() {
             <Link href="/marketplace?sort=popular" className="block py-2 text-sm font-medium text-gray-700" onClick={() => setMobileMenuOpen(false)}>Popular</Link>
             <Link href="/categories" className="block py-2 text-sm font-medium text-gray-700" onClick={() => setMobileMenuOpen(false)}>Categories</Link>
             {session && isDesigner && (
-              <Link href="/dashboard/designer/upload" className="block py-2 text-sm font-medium text-gray-600" onClick={() => setMobileMenuOpen(false)}>
+              <Link prefetch={false} href="/dashboard/designer/upload" className="block py-2 text-sm font-medium text-gray-600" onClick={() => setMobileMenuOpen(false)}>
                 Upload Model
               </Link>
             )}

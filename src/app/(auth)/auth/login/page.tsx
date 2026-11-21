@@ -62,7 +62,10 @@ function LoginForm() {
         return;
       }
 
-      router.push(searchParams.get("redirect") || "/dashboard");
+      // Full page load (not a client-side route change) so every page is fetched
+      // fresh with the new sign-in cookie instead of a copy cached while signed out.
+      const target = searchParams.get("redirect") || "/dashboard";
+      window.location.assign(target.startsWith("/") && !target.startsWith("//") ? target : "/dashboard");
     } catch {
       setError("Something went wrong. Please try again.");
       setLoading(false);

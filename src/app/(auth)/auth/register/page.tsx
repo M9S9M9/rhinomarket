@@ -92,7 +92,8 @@ function RegisterForm() {
                 password: form.password,
               });
               if (isDesigner && !result?.error) toast.success("Account created. Your designer application is now being reviewed.");
-              router.push(result?.error ? "/auth/login?verified=true" : isDesigner ? "/dashboard/designer/apply" : "/dashboard");
+              // Full page load so pages are fetched fresh with the new sign-in cookie.
+              window.location.assign(result?.error ? "/auth/login?verified=true" : isDesigner ? "/dashboard/designer/apply" : "/dashboard");
             }}
           />
           <p className="text-center text-sm text-gray-500 mt-6">
