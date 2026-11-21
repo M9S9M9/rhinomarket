@@ -47,6 +47,10 @@ export const FAQ: FaqSection[] = [
         a: "BNB Smart Chain (BEP-20) only. Do not send USDT on Tron (TRC-20), Ethereum (ERC-20) or any other network — payments sent on the wrong network cannot be recovered or refunded.",
       },
       {
+        q: "Where can I find the TX hash after payment?",
+        a: "In Trust Wallet: on the home screen, tap History (the clock icon), then tap your USDT payment to the store. Tap \"View on block explorer\" — BscScan opens and shows the Transaction Hash at the top (it starts with 0x). Copy it and paste it on the checkout page, then click \"I've Sent the Payment\". Paid from an exchange? The hash (TxID) is in your withdrawal history, in the details of that withdrawal.",
+      },
+      {
         q: "How long does it take for my payment to be confirmed?",
         a: "Usually a few minutes. We check the blockchain automatically every couple of minutes. If a payment can't be matched automatically, our team reviews it and you'll get a notification when your download is ready.",
       },
