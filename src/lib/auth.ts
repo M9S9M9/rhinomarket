@@ -129,11 +129,11 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       // On every request, re-check the account so that deactivating a user or
       // changing their role takes effect immediately, not when the session expires.
       if (token.id) {
-        let current: { isActive: boolean; role: string } | null | undefined;
+        let current: { isActive: boolean; role: string; name: string | null; avatarUrl: string | null } | null | undefined;
         try {
           current = await prisma.user.findUnique({
             where: { id: token.id as string },
-            select: { isActive: true, role: true },
+            select: { isActive: true, role: true, name: true, avatarUrl: true },
           });
         } catch (err) {
           // A slow or briefly unavailable database must not sign people out:
@@ -142,7 +142,13 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           current = undefined;
         }
         if (current === null || (current && !current.isActive)) return null; // deleted or blocked: end the session
-        if (current) token.role = current.role;
+        if (current) {
+          token.role = current.role;
+          // Keep the name and picture current, so profile changes show in the
+          // account menu right away (no need to sign out and back in).
+          token.name = current.name;
+          token.avatarUrl = current.avatarUrl;
+        }
       }
       // Admin sessions end 8 hours after signing in.
       if (token.role === "ADMIN") {
@@ -158,6 +164,8 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       if (session.user) {
         (session.user as any).role = token.role;
         (session.user as any).id = token.id;
+        session.user.name = (token.name as string | null | undefined) ?? session.user.name;
+        (session.user as any).avatarUrl = token.avatarUrl ?? null;
       }
       return session;
     },
