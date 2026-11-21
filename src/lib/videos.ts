@@ -5,7 +5,7 @@ export const GUIDE_VIDEOS = {
     description: "Find a Rhino model, pay with USDT on BNB Smart Chain (BEP-20), paste the transaction hash and download your .3dm file.",
     src: "/videos/how-to-buy.mp4",
     poster: "/videos/how-to-buy-poster.jpg",
-    duration: "PT1M14S",
+    duration: "PT1M23S",
   },
   sell: {
     title: "How to sell a 3DM file",

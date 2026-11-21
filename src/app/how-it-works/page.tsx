@@ -13,7 +13,8 @@ export const metadata: Metadata = {
 const BUY_STEPS = [
   "Find a model and click Buy Now.",
   "Have USDT on BNB Smart Chain (BEP-20), in Trust Wallet or an exchange account.",
-  "Send exactly the amount shown at checkout to the store's wallet address — BNB Smart Chain only.",
+  "Pay with Trust Wallet: scan the QR code with your phone camera, or tap “Pay with Trust Wallet” on your phone.",
+  "Trust Wallet opens with the store's address and the exact amount filled in — check them and press Send. (From an exchange: copy the address and amount, BNB Smart Chain only.)",
   "Paste the transaction hash (TXID) and click “I've Sent the Payment”.",
   "Download your .3dm file from My Purchases once the payment is confirmed.",
 ];
@@ -59,7 +60,7 @@ export default function HowItWorksPage() {
       description: v.description,
       thumbnailUrl: `${SITE_URL}${v.poster}`,
       contentUrl: `${SITE_URL}${v.src}`,
-      uploadDate: "2026-11-19",
+      uploadDate: "2026-11-21",
       duration: v.duration,
     };
   });
