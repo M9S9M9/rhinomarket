@@ -14,6 +14,8 @@ import toast from "react-hot-toast";
 interface PaymentTx {
   id: string;
   amount: string;
+  commission: string | null;
+  designerEarning: string | null;
   status: string;
   txHash: string | null;
   designerPaidAt: string | null;
@@ -22,6 +24,18 @@ interface PaymentTx {
   listing: { title: string; slug: string };
   buyer: { name: string; email: string };
   designer: { name: string; payoutWalletAddress: string | null };
+}
+
+// The designer's share saved with the sale, using that designer's own commission
+// rate at the time of the sale (not a fixed 15%).
+function designerShare(tx: PaymentTx): number {
+  return tx.designerEarning != null ? Number(tx.designerEarning) : Number(tx.amount) - Number(tx.commission ?? 0);
+}
+function commissionRate(tx: PaymentTx): string {
+  const amount = Number(tx.amount);
+  if (!amount) return "0";
+  const pct = (Number(tx.commission ?? amount - designerShare(tx)) / amount) * 100;
+  return String(Math.round(pct * 10) / 10);
 }
 
 export default function AdminPaymentsPage() {
@@ -174,7 +188,10 @@ export default function AdminPaymentsPage() {
                         <span>Buyer: {tx.buyer.name} ({tx.buyer.email})</span>
                         <span>Designer: {tx.designer.name}</span>
                         <span>Amount: <strong className="text-gray-700">{formatPrice(tx.amount)} USDT</strong></span>
-                        <span>Designer earns: <strong className="text-emerald-600">{formatPrice(Number(tx.amount) * 0.85)} USDT</strong></span>
+                        <span>
+                          Designer earns: <strong className="text-emerald-600">{formatPrice(designerShare(tx))} USDT</strong>
+                          <span className="text-gray-400"> ({commissionRate(tx)}% commission)</span>
+                        </span>
                         <span>Created: {formatDate(tx.createdAt)}</span>
                       </div>
                       {designerWallet && (
