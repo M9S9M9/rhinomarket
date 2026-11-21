@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
 import { Upload, FileText, X, AlertTriangle, TrendingUp, Gift, Target } from "lucide-react";
 import toast from "react-hot-toast";
+import { calculateCommission } from "@/lib/commission";
 import { uploadPresigned } from "@vercel/blob/client";
 
 // Shrinks a preview image in the browser (max 1920px, JPEG) so a set of previews
@@ -53,6 +54,20 @@ export default function UploadPage() {
   });
 
   const [categories, setCategories] = useState<{ id: string; name: string; slug: string }[]>([]);
+
+  // Commission rate for this designer (their own rate or the default), to show earnings per sale.
+  const [commissionPercent, setCommissionPercent] = useState<number | null>(null);
+  useEffect(() => {
+    fetch("/api/dashboard/designer/commission")
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => { if (d && typeof d.commissionPercent === "number") setCommissionPercent(d.commissionPercent); })
+      .catch(() => {});
+  }, []);
+  const priceNum = parseFloat(form.price);
+  const earning =
+    commissionPercent !== null && !isNaN(priceNum)
+      ? calculateCommission(priceNum, commissionPercent).designerEarning
+      : null;
 
   useEffect(() => {
     fetch("/api/categories").then(r => r.json()).then(setCategories).catch(() => {});
@@ -240,7 +255,15 @@ export default function UploadPage() {
               />
             </div>
             <div className="grid grid-cols-2 gap-4">
-              <Input id="price" label="Price (USD) *" type="number" step="0.01" min="0" value={form.price} onChange={e => setForm({...form, price: e.target.value === '' ? '' : String(Math.max(0, parseFloat(e.target.value) || 0))})} placeholder="19.99" />
+              <div>
+                <Input id="price" label="Price (USD) *" type="number" step="0.01" min="0" value={form.price} onChange={e => setForm({...form, price: e.target.value === '' ? '' : String(Math.max(0, parseFloat(e.target.value) || 0))})} placeholder="19.99" />
+                {earning !== null && (
+                  <p className="mt-1.5 text-sm text-emerald-700" aria-live="polite">
+                    You will earn <strong>${earning.toFixed(2)}</strong> for each sale
+                    <span className="text-gray-500"> (after the {commissionPercent}% commission)</span>
+                  </p>
+                )}
+              </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">License Type</label>
                 <select value={form.licenseType} onChange={e => setForm({...form, licenseType: e.target.value})} className="block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-gray-500 focus:outline-none focus:ring-1 focus:ring-gray-500">
@@ -297,6 +320,9 @@ export default function UploadPage() {
             <div className="bg-gray-50 rounded-xl p-4 space-y-2 text-sm">
               <div className="flex justify-between"><span className="text-gray-500">Title:</span><span className="font-medium">{form.title}</span></div>
               <div className="flex justify-between"><span className="text-gray-500">Price:</span><span className="font-medium">${form.price}</span></div>
+              {earning !== null && (
+                <div className="flex justify-between"><span className="text-gray-500">You earn per sale:</span><span className="font-medium text-emerald-700">${earning.toFixed(2)} <span className="text-gray-400 font-normal">({commissionPercent}% commission)</span></span></div>
+              )}
               <div className="flex justify-between"><span className="text-gray-500">License:</span><span className="font-medium">{form.licenseType}</span></div>
               <div className="flex justify-between"><span className="text-gray-500">File:</span><span className="font-medium">{modelFile?.name}</span></div>
               <div className="flex justify-between"><span className="text-gray-500">Status:</span><span className="font-medium text-amber-600">Pending Review</span></div>
