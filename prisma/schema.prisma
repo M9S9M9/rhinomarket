@@ -67,6 +67,9 @@ enum ReviewStatus {
 model User {
   id                String    @id @default(cuid())
   email             String    @unique
+  /// The address exactly as the person typed it (dots kept). `email` holds the
+  /// standard form used for sign-in and duplicate checks.
+  emailDisplay      String?
   emailVerified     DateTime?
   passwordHash      String?
   name              String?

@@ -85,6 +85,11 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
 
         await clearAttempts(email);
 
+        // Remember the spelling the person uses (e.g. with dots) to show it back to them.
+        if (user.emailDisplay !== typed && normalizeEmail(typed) === normalizeEmail(user.email)) {
+          await prisma.user.update({ where: { id: user.id }, data: { emailDisplay: typed } }).catch(() => {});
+        }
+
         // Only reveal "not verified" after the password was correct.
         if (!user.emailVerified && user.createdAt >= VERIFICATION_REQUIRED_SINCE) {
           throw new EmailNotVerifiedError();
@@ -110,7 +115,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
 
         return {
           id: user.id,
-          email: user.email,
+          email: typed && normalizeEmail(typed) === normalizeEmail(user.email) ? typed : user.emailDisplay || user.email,
           name: user.name,
           image: user.avatarUrl,
           role: user.role,
@@ -129,11 +134,14 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       // On every request, re-check the account so that deactivating a user or
       // changing their role takes effect immediately, not when the session expires.
       if (token.id) {
-        let current: { isActive: boolean; role: string; name: string | null; avatarUrl: string | null } | null | undefined;
+        let current:
+          | { isActive: boolean; role: string; name: string | null; avatarUrl: string | null; email: string; emailDisplay: string | null }
+          | null
+          | undefined;
         try {
           current = await prisma.user.findUnique({
             where: { id: token.id as string },
-            select: { isActive: true, role: true, name: true, avatarUrl: true },
+            select: { isActive: true, role: true, name: true, avatarUrl: true, email: true, emailDisplay: true },
           });
         } catch (err) {
           // A slow or briefly unavailable database must not sign people out:
@@ -148,6 +156,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           // account menu right away (no need to sign out and back in).
           token.name = current.name;
           token.avatarUrl = current.avatarUrl;
+          token.email = current.emailDisplay || current.email;
         }
       }
       // Admin sessions end 8 hours after signing in.
@@ -165,6 +174,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         (session.user as any).role = token.role;
         (session.user as any).id = token.id;
         session.user.name = (token.name as string | null | undefined) ?? session.user.name;
+        if (typeof token.email === "string") session.user.email = token.email;
         (session.user as any).avatarUrl = token.avatarUrl ?? null;
       }
       return session;

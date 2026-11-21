@@ -24,3 +24,8 @@ export function normalizeEmail(email: string): string {
   local = local.split("+")[0].replace(/\./g, "");
   return `${local}@gmail.com`;
 }
+
+/** The address as the person wrote it, tidied (trimmed, lower-case), for display only. */
+export function displayEmail(typed: string): string {
+  return typed.trim().toLowerCase();
+}

@@ -4,7 +4,7 @@ import { prisma } from "@/lib/db";
 import { z } from "zod";
 import { checkRateLimit, getRateLimitKey } from "@/lib/rate-limit";
 import { validateApiRequest } from "@/lib/validate-request";
-import { isGmailAddress, normalizeEmail } from "@/lib/gmail";
+import { displayEmail, isGmailAddress, normalizeEmail } from "@/lib/gmail";
 import { findUserByInbox } from "@/lib/find-user-by-email";
 import { sendVerificationCode, secondsUntilResend } from "@/lib/verification-code";
 
@@ -78,7 +78,7 @@ export async function POST(req: Request) {
     await prisma.user.update({
       where: { id: existing.id },
       // Also store the address in its standard form (older sign-ups may differ).
-      data: { email, name: input.name, passwordHash, tosAcceptedAt: new Date() },
+      data: { email, emailDisplay: displayEmail(input.email), name: input.name, passwordHash, tosAcceptedAt: new Date() },
     });
     await saveDesignerApplication(existing.id, input);
   } else {
@@ -86,6 +86,7 @@ export async function POST(req: Request) {
       data: {
         name: input.name,
         email,
+        emailDisplay: displayEmail(input.email),
         passwordHash,
         role: "BUYER",
         emailVerified: null,

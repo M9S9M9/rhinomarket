@@ -11,14 +11,14 @@ export async function GET() {
   const user = await prisma.user.findUnique({
     where: { id: session.user.id },
     select: {
-      id: true, name: true, email: true, username: true,
+      id: true, name: true, email: true, emailDisplay: true, username: true,
       avatarUrl: true, bio: true, role: true, createdAt: true,
       payoutWalletAddress: true, payoutWalletCurrency: true,
       _count: { select: { listings: true, purchases: true } },
     },
   });
 
-  return NextResponse.json(user);
+  return NextResponse.json(withDisplayEmail(user));
 }
 
 export async function PATCH(req: Request) {
@@ -42,11 +42,18 @@ export async function PATCH(req: Request) {
     where: { id: session.user.id },
     data: { name, username, bio, avatarUrl },
     select: {
-      id: true, name: true, email: true, username: true,
+      id: true, name: true, email: true, emailDisplay: true, username: true,
       avatarUrl: true, bio: true, role: true,
       payoutWalletAddress: true, payoutWalletCurrency: true,
     },
   });
 
-  return NextResponse.json(user);
+  return NextResponse.json(withDisplayEmail(user));
+}
+
+// Show the address the way the person wrote it (e.g. with dots).
+function withDisplayEmail<T extends { email: string; emailDisplay: string | null } | null>(user: T) {
+  if (!user) return user;
+  const { emailDisplay, ...rest } = user;
+  return { ...rest, email: emailDisplay || user.email };
 }
