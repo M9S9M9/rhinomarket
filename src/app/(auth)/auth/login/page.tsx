@@ -5,6 +5,7 @@ import { signIn } from "next-auth/react";
 import { useSearchParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { Card } from "@/components/ui/card";
+import { PasswordToggle } from "@/components/ui/password-toggle";
 import { AlertCircle, CheckCircle, ShieldCheck } from "lucide-react";
 
 function LoginForm() {
@@ -12,6 +13,7 @@ function LoginForm() {
   const router = useRouter();
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   // Admin two-step sign-in: after the password is accepted, ask for the emailed code.
   const [pending, setPending] = useState<{ email: string; password: string } | null>(null);
   const [otp, setOtp] = useState("");
@@ -164,10 +166,13 @@ function LoginForm() {
           </div>
           <div>
             <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">Password</label>
-            <input id="password" name="password" type="password" required
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-500 focus:border-transparent"
-              placeholder="Enter your password"
-            />
+            <div className="relative">
+              <input id="password" name="password" type={showPassword ? "text" : "password"} required autoComplete="current-password"
+                className="w-full pl-3 pr-10 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-500 focus:border-transparent"
+                placeholder="Enter your password"
+              />
+              <PasswordToggle visible={showPassword} onToggle={() => setShowPassword((v) => !v)} />
+            </div>
             <div className="text-right mt-1">
               <Link href="/auth/forgot-password" className="text-xs text-gray-600 hover:text-gray-700">
                 Forgot password?
