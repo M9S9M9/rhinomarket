@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import toast from "react-hot-toast";
+import { MailCheck } from "lucide-react";
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState("");
@@ -26,7 +27,6 @@ export default function ForgotPasswordPage() {
       const data = await res.json();
       if (res.ok) {
         setSent(true);
-        toast.success(data.message);
       } else {
         toast.error(data.error);
       }
@@ -39,34 +39,39 @@ export default function ForgotPasswordPage() {
   return (
     <div className="min-h-[80vh] flex items-center justify-center px-4 py-12">
       <Card className="w-full max-w-md p-8">
-        <div className="text-center mb-8">
-          <h1 className="text-2xl font-bold text-gray-900">Reset your password</h1>
-          <p className="text-gray-500 mt-1">We&apos;ll send you a reset link</p>
-        </div>
-
         {sent ? (
           <div className="text-center">
-            <div className="p-4 bg-emerald-50 rounded-lg mb-4">
-              <p className="text-emerald-700 text-sm">
-                If an account exists with that email, we&apos;ve sent a password reset link.
-              </p>
+            <div className="mx-auto mb-5 flex h-12 w-12 items-center justify-center rounded-full bg-emerald-50">
+              <MailCheck className="h-6 w-6 text-emerald-600" aria-hidden="true" />
             </div>
-            <Link href="/auth/login" className="text-gray-600 hover:text-gray-700 text-sm font-medium">
-              Back to sign in
-            </Link>
+            <h1 className="text-2xl font-bold text-gray-900">Check your email</h1>
+            <p className="text-gray-600 mt-3">
+              If an account is associated with the email address you entered, you&rsquo;ll receive a password reset link.
+            </p>
+            <p className="text-gray-500 text-sm mt-3">
+              Follow the instructions in the email to reset your password. If you don&rsquo;t see it, check your spam or junk folder.
+            </p>
           </div>
         ) : (
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <Input
-              id="email" label="Email" type="email"
-              placeholder="you@example.com"
-              value={email} onChange={(e) => setEmail(e.target.value)}
-              required
-            />
-            <Button type="submit" loading={loading} className="w-full">
-              Send Reset Link
-            </Button>
-          </form>
+          <>
+            <div className="text-center mb-8">
+              <h1 className="text-2xl font-bold text-gray-900">Reset your password</h1>
+              <p className="text-gray-500 mt-2">
+                Enter the email address associated with your account, and we&rsquo;ll send you a link to reset your password.
+              </p>
+            </div>
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <Input
+                id="email" label="Email" type="email"
+                placeholder="you@example.com"
+                value={email} onChange={(e) => setEmail(e.target.value)}
+                required
+              />
+              <Button type="submit" loading={loading} className="w-full">
+                Send Reset Link
+              </Button>
+            </form>
+          </>
         )}
 
         <p className="text-center text-sm text-gray-500 mt-6">
